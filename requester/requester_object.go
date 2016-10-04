@@ -195,7 +195,7 @@ func (r *Requester) UpdateServer(server *datamodels.Server) error {
     ddl = ddl.Add(time.Second * 2)
     conn.SetDeadline(ddl)
 
-    msg := []byte(r.pp + "getinfo")
+    msg := []byte(r.pp + "getstatus")
     conn.Write(msg)
 
     // UDP Buffer.
@@ -218,10 +218,10 @@ func (r *Requester) UpdateServer(server *datamodels.Server) error {
         srv_config := strings.Split(received_lines[1], "\\")
         // Parse server configuration into passed server's datamodel.
         for i := 0; i < len(srv_config); i = i + 1 {
-            if srv_config[i] == "modversion" {
+            if srv_config[i] == "g_modversion" {
                 server.Version = srv_config[i + 1]
             }
-            if srv_config[i] == "gametype" {
+            if srv_config[i] == "g_gametype" {
                 server.Gamemode = srv_config[i + 1]
             }
             if srv_config[i] == "sv_maxclients" {
@@ -233,14 +233,22 @@ func (r *Requester) UpdateServer(server *datamodels.Server) error {
             if srv_config[i] == "mapname" {
                 server.Map = srv_config[i + 1]
             }
-            if srv_config[i] == "hostname" {
+            if srv_config[i] == "sv_hostname" {
                 server.Name = srv_config[i + 1]
             }
+        }
+        if len(received_lines) >= 2 {
+            // Here we go, players information.
+            players := received_lines[2:]
+            server.Players = strconv.Itoa(len(players))
         }
     }
 
     // ToDo: Calculate ping. 0 for now.
     server.Ping = "0"
+    // ToDo: put this info.
+    server.ExtendedConfig = ""
+    server.PlayersInfo = ""
 
     return nil
 }

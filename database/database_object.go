@@ -119,6 +119,9 @@ func (d *Database) UpdateServers(data map[string]*datamodels.Server) {
             cached_servers[mapping_item_name].Ping = s.Ping
             cached_servers[mapping_item_name].Map = s.Map
             cached_servers[mapping_item_name].Gamemode = s.Gamemode
+            cached_servers[mapping_item_name].Version = s.Version
+            cached_servers[mapping_item_name].ExtendedConfig = s.ExtendedConfig
+            cached_servers[mapping_item_name].PlayersInfo = s.PlayersInfo
         }
     }
 

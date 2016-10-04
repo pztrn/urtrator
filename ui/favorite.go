@@ -186,6 +186,16 @@ func (f *FavoriteDialog) saveFavorite() error {
         return errors.New("No server address specified")
     }
 
+    if len(f.profile.GetActiveText()) == 0 {
+        mbox_string := "Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab."
+        m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+        m.Response(func() {
+            m.Destroy()
+        })
+        m.Run()
+        return errors.New("No game profile specified")
+    }
+
     var port string = ""
     if strings.Contains(f.server_address.GetText(), ":") {
         port = strings.Split(f.server_address.GetText(), ":")[1]

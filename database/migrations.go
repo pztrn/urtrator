@@ -46,6 +46,7 @@ func migrate_full(db *Database, version int) {
     if version == 4 {four_to_five(db); version = 5}
     if version == 5 {five_to_six(db); version = 6 }
     if version == 6 {six_to_seven(db); version = 7}
+    if version == 7 {seven_to_eight(db); version = 8}
 }
 
 // Initial database structure.
@@ -97,4 +98,12 @@ func six_to_seven(db *Database) {
     fmt.Println("Upgrading database from 6 to 7...")
     db.Db.MustExec("CREATE TABLE configuration (key VARCHAR(128) NOT NULL, value VARCHAR(1024) NOT NULL)")
     db.Db.MustExec("UPDATE database SET version=7")
+}
+
+// Server's extended information.
+func seven_to_eight(db *Database) {
+    fmt.Println("Upgrading database from 7 to 8...")
+    db.Db.MustExec("ALTER TABLE servers ADD extended_config VARCHAR(4096) NOT NULL DEFAULT ''")
+    db.Db.MustExec("ALTER TABLE servers ADD players_info VARCHAR(8192) NOT NULL DEFAULT ''")
+    db.Db.MustExec("UPDATE database SET version=8")
 }

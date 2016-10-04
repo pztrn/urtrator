@@ -34,4 +34,8 @@ type Server struct {
     Password            string          `db:"password"`
     // Profile to use with server.
     ProfileToUse        string          `db:"profile_to_use"`
+    // Extended server's configuration.
+    ExtendedConfig      string          `db:"extended_config"`
+    // Players information.
+    PlayersInfo         string          `db:"players_info"`
 }
