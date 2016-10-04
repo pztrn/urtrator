@@ -468,7 +468,7 @@ func (m *MainWindow) launchGame() error {
     m.statusbar.Push(m.statusbar_context_id, "Launching Urban Terror...")
     m.launch_button.SetSensitive(false)
     // ToDo: handling server passwords.
-    ctx.Launcher.Launch(profile[0].Binary, profile[0].Additional_params, srv_address, "", m.unlockInterface)
+    ctx.Launcher.Launch(&profile[0], srv_address, "", m.unlockInterface)
 
     return nil
 }

@@ -23,6 +23,9 @@ Planning:
 * Game updating (not from official servers yet, sorry).
 * Pickup/matchmaking interfaces.
 * All kinds of notifications.
+* Extended profile editor, so every profile could have own configuration
+files, etc.
+* Clipboard monitoring.
 * ...maybe more :)
 
 # Installation
