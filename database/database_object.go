@@ -128,11 +128,11 @@ func (d *Database) UpdateServers(data map[string]*datamodels.Server) {
     tx := d.Db.MustBegin()
     fmt.Println("Adding new servers...")
     for _, srv := range new_servers {
-        tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version)", srv)
+        tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info)", srv)
     }
     fmt.Println("Updating cached servers...")
     for _, srv := range cached_servers {
-        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, version=:version WHERE ip=:ip AND port=:port", &srv)
+        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info WHERE ip=:ip AND port=:port", &srv)
     }
 
     tx.Commit()
