@@ -87,6 +87,22 @@ type MainWindow struct {
     // Other
     // Old profiles count.
     old_profiles_count int
+    // Window size.
+    window_width int
+    window_height int
+    // Window position.
+    window_pos_x int
+    window_pos_y int
+    // Main pane delimiter position. It is calculated like:
+    //
+    //     window_width - pane_position
+    //
+    // so we will get same right pane width even if we will resize
+    // main window. On resize and restore it will be set like:
+    //
+    //     window_width - m.pane_negative_position
+    pane_negative_position int
+
 
     // Flags.
     // Window is hidden?
@@ -131,7 +147,25 @@ func (m *MainWindow) addToFavorites() {
     }
 }
 
+func (m *MainWindow) checkMainPanePosition() {
+    m.pane_negative_position = m.window_width - m.hpane.GetPosition()
+}
+
+func (m *MainWindow) checkPositionAndSize() {
+    m.window.GetPosition(&m.window_pos_x, &m.window_pos_y)
+    m.window.GetSize(&m.window_width, &m.window_height)
+
+    m.hpane.SetPosition(m.window_width - m.pane_negative_position)
+}
+
 func (m *MainWindow) Close() {
+    // Save window parameters.
+    ctx.Cfg.Cfg["/mainwindow/width"] = strconv.Itoa(m.window_width)
+    ctx.Cfg.Cfg["/mainwindow/height"] = strconv.Itoa(m.window_height)
+    ctx.Cfg.Cfg["/mainwindow/position_x"] = strconv.Itoa(m.window_pos_x)
+    ctx.Cfg.Cfg["/mainwindow/position_y"] = strconv.Itoa(m.window_pos_y)
+    ctx.Cfg.Cfg["/mainwindow/pane_negative_position"] = strconv.Itoa(m.pane_negative_position)
+
     ctx.Close()
 }
 
@@ -259,7 +293,6 @@ func (m *MainWindow) Initialize() {
     m.window.SetTitle("URTrator")
     m.window.Connect("destroy", m.Close)
     m.vbox = gtk.NewVBox(false, 0)
-    m.hpane = gtk.NewHPaned()
 
     // Load program icon from base64.
     icon_bytes, _ := base64.StdEncoding.DecodeString(common.Logo)
@@ -268,10 +301,38 @@ func (m *MainWindow) Initialize() {
     logo = icon_pixbuf.GetPixbuf()
     m.window.SetIcon(logo)
 
-    // Default window size.
-    // ToDo: size and position restoring.
-    m.window.SetSizeRequest(1000, 600)
-    m.window.SetPosition(gtk.WIN_POS_CENTER)
+    m.window.Connect("configure-event", m.checkPositionAndSize)
+
+    // Restoring window position.
+    var win_pos_x_str string = "0"
+    var win_pos_y_str string = "0"
+    saved_win_pos_x_str, ok := ctx.Cfg.Cfg["/mainwindow/position_x"]
+    if ok {
+        win_pos_x_str = saved_win_pos_x_str
+    }
+    saved_win_pos_y_str, ok := ctx.Cfg.Cfg["/mainwindow/position_y"]
+    if ok {
+        win_pos_y_str = saved_win_pos_y_str
+    }
+    win_pos_x, _ := strconv.Atoi(win_pos_x_str)
+    win_pos_y, _ := strconv.Atoi(win_pos_y_str)
+    m.window.Move(win_pos_x, win_pos_y)
+
+    // Restoring window size.
+    var win_size_width_str string = "1000"
+    var win_size_height_str string = "600"
+    saved_win_size_width_str, ok := ctx.Cfg.Cfg["/mainwindow/width"]
+    if ok {
+        win_size_width_str = saved_win_size_width_str
+    }
+    saved_win_size_height_str, ok := ctx.Cfg.Cfg["/mainwindow/height"]
+    if ok {
+        win_size_height_str = saved_win_size_height_str
+    }
+
+    m.window_width, _ = strconv.Atoi(win_size_width_str)
+    m.window_height, _ = strconv.Atoi(win_size_height_str)
+    m.window.SetDefaultSize(m.window_width, m.window_height)
 
     // Dialogs initialization.
     m.options_dialog = &OptionsDialog{}
@@ -281,6 +342,22 @@ func (m *MainWindow) Initialize() {
 
     // Toolbar.
     m.InitializeToolbar()
+
+    m.hpane = gtk.NewHPaned()
+    m.vbox.PackStart(m.hpane, true, true, 5)
+    m.hpane.Connect("event", m.checkMainPanePosition)
+
+    // Restore pane position.
+    // We will restore saved thing, or will use "window_width - 150".
+    saved_pane_pos, ok := ctx.Cfg.Cfg["/mainwindow/pane_negative_position"]
+    if ok {
+        pane_negative_pos, _ := strconv.Atoi(saved_pane_pos)
+        m.hpane.SetPosition(m.window_width - pane_negative_pos)
+    } else {
+        var w, h int = 0, 0
+        m.window.GetSize(&w, &h)
+        m.hpane.SetPosition(w - 150)
+    }
 
     // Tabs initialization.
     m.InitializeTabs()
@@ -292,13 +369,6 @@ func (m *MainWindow) Initialize() {
     if ctx.Cfg.Cfg["/general/show_tray_icon"] == "1" {
         m.initializeTrayIcon()
     }
-
-    m.vbox.PackStart(m.hpane, true, true, 5)
-
-    // Temporary hack.
-    var w, h int = 0, 0
-    m.window.GetSize(&w, &h)
-    m.hpane.SetPosition(w - 150)
 
     // Game profiles and launch button.
     profile_and_launch_hbox := gtk.NewHBox(false, 0)
@@ -852,11 +922,12 @@ func (m *MainWindow) loadProfiles() {
 }
 
 func (m *MainWindow) showHide() {
-    // ToDo: set window position on restore. Window loosing it on
-    // multimonitor configurations.
     if m.hidden {
         m.window.Show()
         m.hidden = false
+        // Set window position on restore. Window loosing it on
+        // multimonitor configurations.
+        m.window.Move(m.window_pos_x, m.window_pos_y)
     } else {
         m.window.Hide()
         m.hidden = true
