@@ -805,9 +805,9 @@ func (m *MainWindow) UpdateServers() {
     case data := <- done_chan:
         fmt.Println("Information about servers successfully gathered")
         ctx.Database.UpdateServers(data)
-        if current_tab == "Servers" {
+        if strings.Contains(current_tab, "Servers") {
             ctx.Eventer.LaunchEvent("loadAllServers")
-        } else {
+        } else if strings.Contains(current_tab, "Favorites") {
             ctx.Eventer.LaunchEvent("loadFavoriteServers")
         }
     case <- error_chan:
