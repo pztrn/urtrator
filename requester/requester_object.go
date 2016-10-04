@@ -12,6 +12,7 @@ package requester
 import (
     // stdlib
     "bytes"
+    "errors"
     "fmt"
     "net"
     "strconv"
@@ -169,7 +170,7 @@ func (r *Requester) updateServerGoroutineDispatcher(data [][]string) map[string]
 }
 
 // Updates information about specific server.
-func (r *Requester) UpdateServer(server *datamodels.Server) {
+func (r *Requester) UpdateServer(server *datamodels.Server) error {
     srv := server.Ip + ":" + server.Port
     fmt.Println("Updating server: " + srv)
 
@@ -177,6 +178,7 @@ func (r *Requester) UpdateServer(server *datamodels.Server) {
     conn, err1 := net.Dial("udp", srv)
     if err1 != nil {
         fmt.Println("Error dialing to server " + srv + "!")
+        return errors.New("Error dialing to server " + srv + "!")
     }
     defer conn.Close()
 
@@ -233,4 +235,6 @@ func (r *Requester) UpdateServer(server *datamodels.Server) {
 
     // ToDo: Calculate ping. 0 for now.
     server.Ping = "0"
+
+    return nil
 }
