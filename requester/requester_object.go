@@ -144,6 +144,12 @@ func (r *Requester) UpdateAllServers(done_chan chan map[string]*datamodels.Serve
     done_chan <- servers
 }
 
+func (r *Requester) UpdateFavoriteServers(servers [][]string, done_chan chan map[string]*datamodels.Server, error_chan chan bool) {
+    fmt.Println("Updating favorites servers...")
+    updated_servers := r.updateServerGoroutineDispatcher(servers)
+    done_chan <- updated_servers
+}
+
 func (r *Requester) updateServerGoroutineDispatcher(data [][]string) map[string]*datamodels.Server {
     var wait sync.WaitGroup
     var lock = sync.RWMutex{}

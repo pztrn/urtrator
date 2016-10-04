@@ -65,12 +65,48 @@ func (d *Database) Migrate() {
 
 func (d *Database) UpdateServers(data map[string]*datamodels.Server) {
     fmt.Println("Updating servers information in database...")
-    // ToDo: real update :)
-    d.Db.MustExec("DELETE FROM servers")
+    raw_cached := []datamodels.Server{}
+    d.Db.Select(&raw_cached, "SELECT * FROM servers")
+
+    // Create map[string]*datamodels.Server once, so we won't iterate
+    // over slice of datamodels.Server everytime.
+    cached_servers := make(map[string]*datamodels.Server)
+    for s := range raw_cached {
+        mapping_item_name := raw_cached[s].Ip + ":" + raw_cached[s].Port
+        cached_servers[mapping_item_name] = &raw_cached[s]
+    }
+
+    new_servers := make(map[string]*datamodels.Server)
+
+    // Update our cached mapping.
+    for _, s := range data {
+        mapping_item_name := s.Ip + ":" + s.Port
+        _, ok := cached_servers[mapping_item_name]
+        if !ok {
+            fmt.Println(mapping_item_name + " not found!")
+            new_servers[mapping_item_name] = s
+        } else {
+            cached_servers[mapping_item_name].Ip = s.Ip
+            cached_servers[mapping_item_name].Port = s.Port
+            cached_servers[mapping_item_name].Name = s.Name
+            cached_servers[mapping_item_name].Players = s.Players
+            cached_servers[mapping_item_name].Maxplayers = s.Maxplayers
+            cached_servers[mapping_item_name].Ping = s.Ping
+            cached_servers[mapping_item_name].Map = s.Map
+            cached_servers[mapping_item_name].Gamemode = s.Gamemode
+        }
+    }
+
     tx := d.Db.MustBegin()
-    for _, srv := range data {
+    fmt.Println("Adding new servers...")
+    for _, srv := range new_servers {
         tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version)", srv)
     }
+    fmt.Println("Updating cached servers...")
+    for _, srv := range cached_servers {
+        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, version=:version WHERE ip=:ip AND port=:port", &srv)
+    }
+
     tx.Commit()
     fmt.Println("Done")
 }

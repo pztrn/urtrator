@@ -16,11 +16,14 @@ updating information about them.
 * Extended Urban Terror launching capabilities (e.g. launching game
 in another X session).
 * Supporting of multiple profiles with multiple game versions.
+When you're launching Urban Terror URTrator will check profile you're
+trying to use and, if version incompatability found, will not launch
+the game.
+* Favorites servers.
 
 Planning:
 
 * Updating single server.
-* Favorites servers.
 * Showing information about servers (like in UrT Connector).
 * Friends searching.
 * RCON console.

@@ -55,6 +55,14 @@ func migrate_full(db *Database, version int) {
         three_to_four(db)
         version = 4
     }
+    if version == 4 {
+        four_to_five(db)
+        version = 5
+    }
+    if version == 5 {
+        five_to_six(db)
+        version = 6
+    }
 }
 
 // Initial database structure.
@@ -84,4 +92,19 @@ func two_to_three(db *Database) {
 func three_to_four(db *Database) {
     fmt.Println("Upgrading database from 3 to 4...")
     db.Db.MustExec("UPDATE urt_profiles SET version='4.3.0' WHERE version='4.3.000'")
+    db.Db.MustExec("UPDATE database SET version=4")
+}
+
+// Server's passwords.
+func four_to_five(db *Database) {
+    fmt.Println("Upgrading database from 4 to 5...")
+    db.Db.MustExec("ALTER TABLE servers ADD password VARCHAR(64) DEFAULT ''")
+    db.Db.MustExec("UPDATE database SET version=5")
+}
+
+// Profile for server.
+func five_to_six(db *Database) {
+    fmt.Println("Upgrading database from 5 to 6...")
+    db.Db.MustExec("ALTER TABLE servers ADD profile_to_use VARCHAR(128) DEFAULT ''")
+    db.Db.MustExec("UPDATE database SET version=6")
 }

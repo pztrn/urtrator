@@ -30,4 +30,8 @@ type Server struct {
     Version             string          `db:"version"`
     // Is server was favorited?
     Favorite            string          `db:"favorite"`
+    // Server's password.
+    Password            string          `db:"password"`
+    // Profile to use with server.
+    ProfileToUse        string          `db:"profile_to_use"`
 }

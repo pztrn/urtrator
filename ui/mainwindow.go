@@ -15,6 +15,7 @@ import (
     "errors"
     "fmt"
     "strconv"
+    "strings"
 
     // Local
     "github.com/pztrn/urtrator/common"
@@ -61,6 +62,10 @@ type MainWindow struct {
     fav_servers_hide_offline *gtk.CheckButton
     // Game launch button.
     launch_button *gtk.Button
+    // Quick connect: server address
+    qc_server_address *gtk.Entry
+    // Quick connect: password
+    qc_password *gtk.Entry
 
     // Storages.
     // All servers store.
@@ -72,6 +77,8 @@ type MainWindow struct {
 
     // Dialogs.
     options_dialog *OptionsDialog
+    // Favorite server editing.
+    favorite_dialog *FavoriteDialog
 
     // Other
     // Old profiles count.
@@ -80,10 +87,123 @@ type MainWindow struct {
 
 func (m *MainWindow) addToFavorites() {
     fmt.Println("Adding server to favorites...")
+
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+
+    // Getting server's address from list.
+    sel := m.all_servers.GetSelection()
+    model := m.all_servers.GetModel()
+    if strings.Contains(current_tab, "Favorites") {
+        // Getting server's address from list.
+        sel = m.fav_servers.GetSelection()
+        model = m.fav_servers.GetModel()
+    }
+    iter := new(gtk.TreeIter)
+    _ = sel.GetSelected(iter)
+
+    // Getting server address.
+    var srv_addr string
+    srv_addr_gval := glib.ValueFromNative(srv_addr)
+    model.GetValue(iter, 7, srv_addr_gval)
+    server_address := srv_addr_gval.GetString()
+
+    // Getting server from database.
+    m.favorite_dialog = &FavoriteDialog{}
+    if len(server_address) > 0 {
+        servers := []datamodels.Server{}
+        address := strings.Split(server_address, ":")[0]
+        port := strings.Split(server_address, ":")[1]
+        err1 := ctx.Database.Db.Select(&servers, ctx.Database.Db.Rebind("SELECT * FROM servers WHERE ip=? AND port=?"), address, port)
+        if err1 != nil {
+            fmt.Println(err1.Error())
+        }
+        m.favorite_dialog.InitializeUpdate(&servers[0])
+    } else {
+        m.favorite_dialog.InitializeNew()
+    }
 }
 
 func (m *MainWindow) Close() {
     ctx.Close()
+}
+
+func (m *MainWindow) deleteFromFavorites() {
+    fmt.Println("Removing server from favorites...")
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+
+    // Assuming that deletion was called from "Servers" tab by default.
+    sel := m.all_servers.GetSelection()
+    model := m.all_servers.GetModel()
+    if strings.Contains(current_tab, "Favorites") {
+        // Getting server's address from list.
+        sel = m.fav_servers.GetSelection()
+        model = m.fav_servers.GetModel()
+    }
+
+    iter := new(gtk.TreeIter)
+    _ = sel.GetSelected(iter)
+
+    // Getting server address.
+    var srv_addr string
+    srv_addr_gval := glib.ValueFromNative(srv_addr)
+    model.GetValue(iter, 7, srv_addr_gval)
+    server_address := srv_addr_gval.GetString()
+
+    var not_favorited bool = false
+    if len(server_address) > 0 {
+        address := strings.Split(server_address, ":")[0]
+        port := strings.Split(server_address, ":")[1]
+        srv := []datamodels.Server{}
+        err := ctx.Database.Db.Select(&srv, ctx.Database.Db.Rebind("SELECT * FROM servers WHERE ip=? AND port=?"), address, port)
+        if err != nil {
+            fmt.Println(err.Error())
+        }
+        if srv[0].Favorite == "1" {
+            ctx.Database.Db.MustExec(ctx.Database.Db.Rebind("UPDATE servers SET favorite='0' WHERE ip=? AND port=?"), address, port)
+            ctx.Eventer.LaunchEvent("loadFavoriteServers")
+        } else {
+            not_favorited = true
+        }
+    } else {
+        not_favorited = true
+    }
+
+    if not_favorited {
+        mbox_string := "Cannot delete server from favorites.\n\nServer isn't favorited."
+        d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
+        d.Response(func() {
+            d.Destroy()
+        })
+        d.Run()
+    }
+}
+
+func (m *MainWindow) dropDatabasesData() {
+    fmt.Println("Dropping database data...")
+    var will_continue bool = false
+    mbox_string := "You are about to drop whole database data.\n\nAfter clicking \"YES\" ALL data in database (servers, profiles, settings, etc.)\nwill be lost FOREVER. Are you sure?"
+    d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, mbox_string)
+    d.Connect("response", func(resp *glib.CallbackContext) {
+        if resp.Args(0) == 4294967287 {
+            will_continue = false
+        } else {
+            will_continue = true
+        }
+    })
+    d.Response(func() {
+        d.Destroy()
+    })
+    d.Run()
+
+    if will_continue {
+        ctx.Database.Db.MustExec("DELETE FROM servers")
+        ctx.Database.Db.MustExec("DELETE FROM settings")
+        ctx.Database.Db.MustExec("DELETE FROM urt_profiles")
+
+        ctx.Eventer.LaunchEvent("loadProfiles")
+        ctx.Eventer.LaunchEvent("loadAllServers")
+        ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    }
 }
 
 func (m *MainWindow) hideOfflineAllServers() {
@@ -93,6 +213,7 @@ func (m *MainWindow) hideOfflineAllServers() {
 
 func (m *MainWindow) hideOfflineFavoriteServers() {
     fmt.Println("(Un)Hiding offline servers in 'Favorite' tab...")
+    ctx.Eventer.LaunchEvent("loadFavoriteServers")
 }
 
 func (m *MainWindow) Initialize() {
@@ -137,7 +258,7 @@ func (m *MainWindow) Initialize() {
     // Temporary hack.
     var w, h int = 0, 0
     m.window.GetSize(&w, &h)
-    m.hpane.SetPosition(w)
+    m.hpane.SetPosition(w - 150)
 
     // Game profiles and launch button.
     profile_and_launch_hbox := gtk.NewHBox(false, 0)
@@ -180,6 +301,7 @@ func (m *MainWindow) Initialize() {
     // Launch events.
     ctx.Eventer.LaunchEvent("loadProfiles")
     ctx.Eventer.LaunchEvent("loadAllServers")
+    ctx.Eventer.LaunchEvent("loadFavoriteServers")
 
     gtk.Main()
 }
@@ -199,6 +321,10 @@ func (m *MainWindow) InitializeMainMenu() {
     file_menu.Append(options_menu_item)
     options_menu_item.Connect("activate", m.options_dialog.ShowOptionsDialog)
 
+    // Separator.
+    file_menu_sep1 := gtk.NewSeparatorMenuItem()
+    file_menu.Append(file_menu_sep1)
+
     // Exit.
     exit_menu_item := gtk.NewMenuItemWithMnemonic("E_xit")
     file_menu.Append(exit_menu_item)
@@ -214,10 +340,45 @@ func (m *MainWindow) InitializeMainMenu() {
     about_app_item := gtk.NewMenuItemWithMnemonic("About _URTrator...")
     about_menu.Append(about_app_item)
     about_app_item.Connect("activate", ShowAboutDialog)
+
+    // Separator.
+    about_menu_sep1 := gtk.NewSeparatorMenuItem()
+    about_menu.Append(about_menu_sep1)
+
+    // Drop databases thing.
+    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic("Drop database data...")
+    about_menu.Append(about_menu_drop_database_data_item)
+    about_menu_drop_database_data_item.Connect("activate", m.dropDatabasesData)
 }
 
 func (m *MainWindow) initializeSidebar() {
     sidebar_vbox := gtk.NewVBox(false, 0)
+
+    // Quick connect frame.
+    quick_connect_frame := gtk.NewFrame("Quick connect")
+    sidebar_vbox.PackStart(quick_connect_frame, true, true, 5)
+    qc_vbox := gtk.NewVBox(false, 0)
+    quick_connect_frame.Add(qc_vbox)
+
+    // Server address.
+    srv_tooltip := "Server address we will connect to"
+    srv_label := gtk.NewLabel("Server address:")
+    srv_label.SetTooltipText(srv_tooltip)
+    qc_vbox.PackStart(srv_label, false, true, 5)
+
+    m.qc_server_address = gtk.NewEntry()
+    m.qc_server_address.SetTooltipText(srv_tooltip)
+    qc_vbox.PackStart(m.qc_server_address, false, true, 5)
+
+    // Password.
+    pass_tooltip := "Password we will use for server"
+    pass_label := gtk.NewLabel("Password:")
+    pass_label.SetTooltipText(pass_tooltip)
+    qc_vbox.PackStart(pass_label, false, true, 5)
+
+    m.qc_password = gtk.NewEntry()
+    m.qc_password.SetTooltipText(pass_tooltip)
+    qc_vbox.PackStart(m.qc_password, false, true, 5)
 
     m.hpane.Add2(sidebar_vbox)
 }
@@ -331,13 +492,34 @@ func (m *MainWindow) InitializeTabs() {
     m.tab_widget.AppendPage(tab_fav_srv_hbox, gtk.NewLabel("Favorites"))
     m.fav_servers.SetModel(m.fav_servers_store)
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "text", 1))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 2))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 3))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 4))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 5))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 6))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 7))
+
+    fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "text", 1)
+    fav_name_column.SetSortColumnId(1)
+    m.fav_servers.AppendColumn(fav_name_column)
+
+    fav_mode_column := gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 2)
+    fav_mode_column.SetSortColumnId(2)
+    m.fav_servers.AppendColumn(fav_mode_column)
+
+    fav_map_column := gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 3)
+    fav_map_column.SetSortColumnId(3)
+    m.fav_servers.AppendColumn(fav_map_column)
+
+    fav_players_column := gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 4)
+    fav_players_column.SetSortColumnId(4)
+    m.fav_servers.AppendColumn(fav_players_column)
+
+    fav_ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 5)
+    fav_ping_column.SetSortColumnId(5)
+    m.fav_servers.AppendColumn(fav_ping_column)
+
+    fav_version_column := gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 6)
+    fav_version_column.SetSortColumnId(6)
+    m.fav_servers.AppendColumn(fav_version_column)
+
+    fav_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 7)
+    fav_ip_column.SetSortColumnId(7)
+    m.fav_servers.AppendColumn(fav_ip_column)
 
     // VBox for some servers list controllers.
     tab_fav_srv_ctl_vbox := gtk.NewVBox(false, 0)
@@ -356,7 +538,8 @@ func (m *MainWindow) InitializeTabs() {
     // Add tab_widget widget to window.
     m.hpane.Add1(m.tab_widget)
 
-    ctx.Eventer.AddEventHandler("loadAllServers", m.loadServers)
+    ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
+    ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
 }
 
 func (m *MainWindow) InitializeToolbar() {
@@ -380,17 +563,26 @@ func (m *MainWindow) InitializeToolbar() {
     fav_button.SetTooltipText("Add selected server to favorites")
     fav_button.OnClicked(m.addToFavorites)
     m.toolbar.Insert(fav_button, 2)
+
+    // Remove server from favorites button.
+    fav_delete_button := gtk.NewToolButtonFromStock(gtk.STOCK_REMOVE)
+    fav_delete_button.SetLabel("Remove from favorites")
+    fav_delete_button.SetTooltipText("Remove selected server from favorites")
+    fav_delete_button.OnClicked(m.deleteFromFavorites)
+    m.toolbar.Insert(fav_delete_button, 3)
 }
 
 func (m *MainWindow) launchGame() error {
     fmt.Println("Launching Urban Terror...")
 
-    //var launch_params string = ""
-
     // Getting server's name from list.
-    // ToDo: detect on what tab we are and use approriate list.
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     sel := m.all_servers.GetSelection()
     model := m.all_servers.GetModel()
+    if strings.Contains(current_tab, "Favorites") {
+        sel = m.fav_servers.GetSelection()
+        model = m.fav_servers.GetModel()
+    }
     iter := new(gtk.TreeIter)
     _ = sel.GetSelected(iter)
 
@@ -411,7 +603,6 @@ func (m *MainWindow) launchGame() error {
     srv_game_ver_gval := glib.ValueFromNative(srv_game_ver_raw)
     model.GetValue(iter, 6, srv_game_ver_gval)
     srv_game_ver := srv_game_ver_gval.GetString()
-
 
     // Check for proper server name. If length == 0: server is offline,
     // we should show notification to user.
@@ -437,18 +628,32 @@ func (m *MainWindow) launchGame() error {
 
     // Getting selected profile's name.
     profile_name := m.profiles.GetActiveText()
-    // Checking profile name length. If 0 - then stop executing :)
-    if len(profile_name) == 0 {
-        mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
-        return errors.New("User didn't select valid profile.")
+    if strings.Contains(current_tab, "Servers") {
+        // Checking profile name length. If 0 - then stop executing :)
+        // This check only relevant to "Servers" tab, favorite servers
+        // have profiles defined (see next).
+        if len(profile_name) == 0 {
+            mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
+            m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+            return errors.New("User didn't select valid profile.")
+        }
+    } else if strings.Contains(current_tab, "Favorites") {
+        // For favorite servers profile specified in favorite server
+        // information have higher priority, so we just override it :)
+        server := []datamodels.Server{}
+        // All favorites servers should contain IP and Port :)
+        ip := strings.Split(srv_address, ":")[0]
+        port := strings.Split(srv_address, ":")[1]
+        err := ctx.Database.Db.Select(&server, ctx.Database.Db.Rebind("SELECT * FROM servers WHERE ip=? AND port=?"), ip, port)
+        if err != nil {
+            fmt.Println(err.Error())
+        }
+        profile_name = server[0].ProfileToUse
     }
-
-    fmt.Println("Connecting to " + server_name + " (" + srv_address + ") using profile " + profile_name + "...")
 
     // Getting profile data from database.
     // ToDo: cache profiles data in runtime.
@@ -478,28 +683,7 @@ func (m *MainWindow) launchGame() error {
     return nil
 }
 
-func (m *MainWindow) loadProfiles() {
-    fmt.Println("Loading profiles into combobox on MainWindow")
-    for i := 0; i < m.old_profiles_count; i++ {
-        // ComboBox indexes are shifting on element deletion, so we should
-        // detele very first element every time.
-        m.profiles.Remove(0)
-    }
-
-    profiles := []datamodels.Profile{}
-    err := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-    for p := range profiles {
-        m.profiles.AppendText(profiles[p].Name)
-    }
-
-    m.old_profiles_count = len(profiles)
-    fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
-}
-
-func (m *MainWindow) loadServers() {
+func (m *MainWindow) loadAllServers() {
     fmt.Println("Loading servers lists into widgets...")
     servers := []datamodels.Server{}
     err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers")
@@ -529,9 +713,80 @@ func (m *MainWindow) loadServers() {
     }
 }
 
+func (m *MainWindow) loadFavoriteServers() {
+    fmt.Println("Loading favorite servers...")
+    servers := []datamodels.Server{}
+    err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers WHERE favorite='1'")
+    if err != nil {
+        fmt.Println(err.Error())
+    }
+    // ToDo: do it without clearing.
+    m.fav_servers_store.Clear()
+    for _, srv := range servers {
+        if srv.Favorite != "1" {
+            continue
+        }
+        if m.fav_servers_hide_offline.GetActive() && srv.Name == "" && srv.Players == "" {
+            continue
+        }
+        var iter gtk.TreeIter
+        m.fav_servers_store.Append(&iter)
+        if srv.Name == "" && srv.Players == "" {
+            m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+        } else {
+            m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+        }
+        m.fav_servers_store.Set(&iter, 1, srv.Name)
+        m.fav_servers_store.Set(&iter, 2, m.gamemodes[srv.Gamemode])
+        m.fav_servers_store.Set(&iter, 3, srv.Map)
+        m.fav_servers_store.Set(&iter, 4, srv.Players + "/" + srv.Maxplayers)
+        m.fav_servers_store.Set(&iter, 5, srv.Ping)
+        m.fav_servers_store.Set(&iter, 6, srv.Version)
+        m.fav_servers_store.Set(&iter, 7, srv.Ip + ":" + srv.Port)
+    }
+}
+
+func (m *MainWindow) loadProfiles() {
+    fmt.Println("Loading profiles into combobox on MainWindow")
+    for i := 0; i < m.old_profiles_count; i++ {
+        // ComboBox indexes are shifting on element deletion, so we should
+        // detele very first element every time.
+        m.profiles.Remove(0)
+    }
+
+    profiles := []datamodels.Profile{}
+    err := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
+    if err != nil {
+        fmt.Println(err.Error())
+    }
+    for p := range profiles {
+        m.profiles.AppendText(profiles[p].Name)
+    }
+
+    m.old_profiles_count = len(profiles)
+    fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
+}
+
 func (m *MainWindow) unlockInterface() {
     m.launch_button.SetSensitive(true)
     m.statusbar.Push(m.statusbar_context_id, "URTrator is ready.")
+}
+
+func (m *MainWindow) updateFavorites(done_chan chan map[string]*datamodels.Server, error_chan chan bool) {
+    m.fav_servers_store.Clear()
+    servers := []datamodels.Server{}
+    err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers WHERE favorite='1'")
+    if err != nil {
+        fmt.Println(err.Error())
+    }
+
+    var servers_from_db [][]string
+
+    for s := range servers {
+        servers_from_db = append(servers_from_db, []string{servers[s].Ip, servers[s].Port})
+    }
+
+    go ctx.Requester.UpdateFavoriteServers(servers_from_db, done_chan, error_chan)
 }
 
 func (m *MainWindow) UpdateServers() {
@@ -540,17 +795,21 @@ func (m *MainWindow) UpdateServers() {
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
     done_chan := make(chan map[string]*datamodels.Server, 1)
     error_chan := make(chan bool, 1)
-    if current_tab == "Servers" {
+    if strings.Contains(current_tab, "Servers") {
         go ctx.Requester.UpdateAllServers(done_chan, error_chan)
-    } else if current_tab == "Favorites" {
-        fmt.Println("Favorites update stub")
+    } else if strings.Contains(current_tab, "Favorites") {
+        m.updateFavorites(done_chan, error_chan)
     }
 
     select {
     case data := <- done_chan:
         fmt.Println("Information about servers successfully gathered")
         ctx.Database.UpdateServers(data)
-        ctx.Eventer.LaunchEvent("loadAllServers")
+        if current_tab == "Servers" {
+            ctx.Eventer.LaunchEvent("loadAllServers")
+        } else {
+            ctx.Eventer.LaunchEvent("loadFavoriteServers")
+        }
     case <- error_chan:
         fmt.Println("Error occured")
     }
