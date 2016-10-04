@@ -56,6 +56,17 @@ go install github.com/pztrn/urtrator
 First command will get sources of URTrator and dependencies, second
 command will build executable for you and place it in ``$GOROOT/bin``.
 
+
+### Updating
+
+``go get`` will do initial repo clone for you, but flag ``-u`` is
+required to get updated URTrator source. So, for updating sources
+just issue:
+
+```
+go get -d -u github.com/pztrn/urtrator
+```
+
 # Important information
 
 ## GTK warnings in console
