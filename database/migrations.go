@@ -51,6 +51,10 @@ func migrate_full(db *Database, version int) {
         two_to_three(db)
         version = 3
     }
+    if version == 3 {
+        three_to_four(db)
+        version = 4
+    }
 }
 
 // Initial database structure.
@@ -74,4 +78,10 @@ func two_to_three(db *Database) {
     db.Db.MustExec("DROP TABLE IF EXISTS urt_profiles")
     db.Db.MustExec("CREATE TABLE urt_profiles (name VARCHAR(128) NOT NULL, version VARCHAR(5) NOT NULL DEFAULT '4.3', binary VARCHAR(1024) NOT NULL, second_x_session VARCHAR(1) NOT NULL DEFAULT '0', additional_parameters VARCHAR(1024) NOT NULL DEFAULT '')")
     db.Db.MustExec("UPDATE database SET version=3")
+}
+
+// UrT version inconsistency.
+func three_to_four(db *Database) {
+    fmt.Println("Upgrading database from 3 to 4...")
+    db.Db.MustExec("UPDATE urt_profiles SET version='4.3.0' WHERE version='4.3.000'")
 }

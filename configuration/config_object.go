@@ -22,6 +22,18 @@ type Config struct {
     TEMP map[string]string
 }
 
+func (c *Config) initializePathsMac() {
+    fmt.Println("Initializing configuration paths...")
+    home_path := os.Getenv("HOME")
+    data_path := path.Join(home_path, "Library", "Application Support", "URTrator")
+    fmt.Println("Will use data path: " + data_path)
+    c.TEMP["DATA"] = data_path
+
+    if _, err := os.Stat(data_path); os.IsNotExist(err) {
+        os.MkdirAll(data_path, 0755)
+    }
+}
+
 func (c *Config) initializePathsNix() {
     fmt.Println("Initializing configuration paths...")
 
@@ -47,6 +59,8 @@ func (c *Config) Initialize() {
 
     if runtime.GOOS == "linux" {
         c.initializePathsNix()
+    } else if runtime.GOOS == "darwin" {
+        c.initializePathsMac()
     } else {
         panic("We're not ready for other OSes yet!")
     }

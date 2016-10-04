@@ -131,7 +131,7 @@ func (op *OptionsProfile) Initialize(update bool, lp func()) {
     urt_version_sep := gtk.NewHSeparator()
     op.urt_version_combo = gtk.NewComboBoxText()
     op.urt_version_combo.AppendText("4.2.023")
-    op.urt_version_combo.AppendText("4.3.000")
+    op.urt_version_combo.AppendText("4.3.0")
     op.urt_version_combo.SetActive(1)
     urt_version_hbox.PackStart(urt_version_label, false, true, 5)
     urt_version_hbox.PackStart(urt_version_sep, true, true, 5)
@@ -212,7 +212,7 @@ func (op *OptionsProfile) InitializeUpdate(profile_name string, lp func()) {
         op.another_x_session.SetActive(true)
     }
 
-    if profile[0].Version == "4.3.000" {
+    if profile[0].Version == "4.3.0" {
         op.urt_version_combo.SetActive(1)
     } else {
         op.urt_version_combo.SetActive(0)
