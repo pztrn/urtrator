@@ -335,7 +335,6 @@ func (m *MainWindow) InitializeTabs() {
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 5))
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 6))
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 7))
-    m.fav_servers.SetHeadersClickable(true)
 
     // VBox for some servers list controllers.
     tab_fav_srv_ctl_vbox := gtk.NewVBox(false, 0)
