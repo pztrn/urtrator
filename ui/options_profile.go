@@ -83,6 +83,18 @@ func (op *OptionsProfile) browseForBinaryHelper() {
                 op.binary_path.SetText("")
             }
         }
+    } else if runtime.GOOS == "darwin" {
+        // No separate arch thing here, macOS now 64bit only.
+        if len(filename) > 0 && strings.Split(filename, ".")[1] != "app" && strings.Split(filename, ".")[0] != "Quake3-UrT" {
+            fmt.Println("Invalid binary selected!")
+            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app."
+            m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+            op.binary_path.SetText("")
+        }
     }
 }
 
@@ -154,6 +166,10 @@ func (op *OptionsProfile) Initialize(update bool, lp func()) {
     // Should we use additional X session?
     op.another_x_session = gtk.NewCheckButtonWithLabel("Start Urban Terror in another X session?")
     op.vbox.PackStart(op.another_x_session, false, true, 5)
+    // macOS can't do that :).
+    if runtime.GOOS == "darwin" {
+        op.another_x_session.SetSensitive(false)
+    }
 
     // Additional game parameters.
     params_hbox := gtk.NewHBox(false, 0)

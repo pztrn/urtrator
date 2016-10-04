@@ -59,3 +59,7 @@ command will build executable for you and place it in ``$GOROOT/bin``.
 Many GTK warnings in console may appear while using URTrator. Unfortunately,
 they are out of control, because they are related to Go GTK+2 bindings
 and nothing can be done on URTrator side.
+
+## About box cause app crash on macOS
+
+As previous, it is related to GTK+2, nothing I can do there.
