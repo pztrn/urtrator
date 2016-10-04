@@ -2,6 +2,8 @@
 
 [![Join the chat at https://gitter.im/urtrator/Lobby](https://badges.gitter.im/urtrator/Lobby.svg)](https://gitter.im/urtrator/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+![Main Window](/doc/screenshots/0.1-main_window.png)
+
 URTrator is a desktop application that should (eventually) replace
 Urban Terror's and IRC client interfaces for you, because they're
 pretty shitty :).
