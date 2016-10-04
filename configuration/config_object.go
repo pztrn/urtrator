@@ -18,6 +18,8 @@ import (
 )
 
 type Config struct {
+    // Configuration from database.
+    Cfg map[string]string
     // Temporary (or runtime) configuration things.
     TEMP map[string]string
 }
@@ -51,6 +53,7 @@ func (c *Config) initializePathsNix() {
 
 func (c *Config) initializeStorages() {
     c.TEMP = make(map[string]string)
+    c.Cfg = make(map[string]string)
 }
 
 func (c *Config) Initialize() {

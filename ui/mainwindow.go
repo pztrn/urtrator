@@ -66,6 +66,10 @@ type MainWindow struct {
     qc_server_address *gtk.Entry
     // Quick connect: password
     qc_password *gtk.Entry
+    // Tray icon.
+    tray_icon *gtk.StatusIcon
+    // Tray menu.
+    tray_menu *gtk.Menu
 
     // Storages.
     // All servers store.
@@ -83,6 +87,10 @@ type MainWindow struct {
     // Other
     // Old profiles count.
     old_profiles_count int
+
+    // Flags.
+    // Window is hidden?
+    hidden bool
 }
 
 func (m *MainWindow) addToFavorites() {
@@ -280,6 +288,11 @@ func (m *MainWindow) Initialize() {
     // Sidebar initialization.
     m.initializeSidebar()
 
+    // Tray icon.
+    if ctx.Cfg.Cfg["/general/show_tray_icon"] == "1" {
+        m.initializeTrayIcon()
+    }
+
     m.vbox.PackStart(m.hpane, true, true, 5)
 
     // Temporary hack.
@@ -445,6 +458,9 @@ func (m *MainWindow) initializeStorages() {
 
     // Profiles count after filling combobox. Defaulting to 0.
     m.old_profiles_count = 0
+
+    // Window hidden flag.
+    m.hidden = false
 }
 
 func (m *MainWindow) InitializeTabs() {
@@ -603,6 +619,41 @@ func (m *MainWindow) InitializeToolbar() {
     fav_delete_button.SetTooltipText("Remove selected server from favorites")
     fav_delete_button.OnClicked(m.deleteFromFavorites)
     m.toolbar.Insert(fav_delete_button, 4)
+}
+
+func (m *MainWindow) initializeTrayIcon() {
+    fmt.Println("Initializing tray icon...")
+
+    icon_bytes, _ := base64.StdEncoding.DecodeString(common.Logo)
+    icon_pixbuf := gdkpixbuf.NewLoader()
+    icon_pixbuf.Write(icon_bytes)
+    logo = icon_pixbuf.GetPixbuf()
+
+    m.tray_icon = gtk.NewStatusIconFromPixbuf(logo)
+    m.tray_icon.SetName("URTrator")
+    m.tray_icon.SetTitle("URTrator")
+    m.tray_icon.SetTooltipText("URTrator is ready")
+
+    m.tray_menu = gtk.NewMenu()
+
+    // Open/Close URTrator menu item.
+    open_close_item := gtk.NewMenuItemWithLabel("Show / Hide URTrator")
+    open_close_item.Connect("activate", m.showHide)
+    m.tray_menu.Append(open_close_item)
+
+    // Separator
+    sep1 := gtk.NewSeparatorMenuItem()
+    m.tray_menu.Append(sep1)
+
+    // Exit menu item.
+    exit_item := gtk.NewMenuItemWithLabel("Exit")
+    exit_item.Connect("activate", m.window.Destroy)
+    m.tray_menu.Append(exit_item)
+
+    // Connect things.
+    m.tray_icon.Connect("activate", m.showHide)
+    m.tray_icon.Connect("popup-menu", m.showTrayMenu)
+    m.tray_menu.ShowAll()
 }
 
 func (m *MainWindow) launchGame() error {
@@ -798,6 +849,22 @@ func (m *MainWindow) loadProfiles() {
 
     m.old_profiles_count = len(profiles)
     fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
+}
+
+func (m *MainWindow) showHide() {
+    // ToDo: set window position on restore. Window loosing it on
+    // multimonitor configurations.
+    if m.hidden {
+        m.window.Show()
+        m.hidden = false
+    } else {
+        m.window.Hide()
+        m.hidden = true
+    }
+}
+
+func (m *MainWindow) showTrayMenu(cbx *glib.CallbackContext) {
+    m.tray_menu.Popup(nil, nil, gtk.StatusIconPositionMenu, m.tray_icon,  uint(cbx.Args(0)), uint32(cbx.Args(1)))
 }
 
 func (m *MainWindow) unlockInterface() {

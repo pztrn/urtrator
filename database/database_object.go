@@ -17,6 +17,7 @@ import (
     "strconv"
 
     // local
+    "github.com/pztrn/urtrator/configuration"
     "github.com/pztrn/urtrator/datamodels"
 
     // Other
@@ -25,16 +26,31 @@ import (
 )
 
 type Database struct {
+    // Configuration.
+    cfg *configuration.Config
     // Pointer to initialized database connection.
     Db *sqlx.DB
 }
 
 func (d *Database) Close() {
     fmt.Println("Closing database...")
+
+    // Save configuration.
+    // Delete previous configuration.
+    d.Db.MustExec("DELETE FROM configuration")
+    tx := d.Db.MustBegin()
+    for k, v := range cfg.Cfg {
+        cfg_item := datamodels.Configuration{}
+        cfg_item.Key = k
+        cfg_item.Value = v
+        tx.NamedExec("INSERT INTO configuration (key, value) VALUES (:key, :value)", &cfg_item)
+    }
+    tx.Commit()
+
     d.Db.Close()
 }
 
-func (d *Database) Initialize() {
+func (d *Database) Initialize(cfg *configuration.Config) {
     fmt.Println("Initializing database...")
 
     // Connect to database.
@@ -45,6 +61,15 @@ func (d *Database) Initialize() {
         fmt.Println(err.Error())
     }
     d.Db = db
+
+    // Load configuration.
+    cfgs := []datamodels.Configuration{}
+    d.Db.Select(&cfgs, "SELECT * FROM configuration")
+    if len(cfgs) > 0 {
+        for i := range cfgs {
+            cfg.Cfg[cfgs[i].Key] = cfgs[i].Value
+        }
+    }
 }
 
 func (d *Database) Migrate() {

@@ -39,30 +39,13 @@ INSERT INTO database (version) VALUES (1);
 // Migrate database to latest version.
 // ToDo: make it more good :).
 func migrate_full(db *Database, version int) {
-    if version < 1 {
-        start_to_one(db)
-        version = 1
-    }
-    if version == 1 {
-        one_to_two(db)
-        version = 2
-    }
-    if version == 2 {
-        two_to_three(db)
-        version = 3
-    }
-    if version == 3 {
-        three_to_four(db)
-        version = 4
-    }
-    if version == 4 {
-        four_to_five(db)
-        version = 5
-    }
-    if version == 5 {
-        five_to_six(db)
-        version = 6
-    }
+    if version < 1 {start_to_one(db); version = 1}
+    if version == 1 {one_to_two(db); version = 2}
+    if version == 2 {two_to_three(db); version = 3}
+    if version == 3 {three_to_four(db); version = 4}
+    if version == 4 {four_to_five(db); version = 5}
+    if version == 5 {five_to_six(db); version = 6 }
+    if version == 6 {six_to_seven(db); version = 7}
 }
 
 // Initial database structure.
@@ -107,4 +90,11 @@ func five_to_six(db *Database) {
     fmt.Println("Upgrading database from 5 to 6...")
     db.Db.MustExec("ALTER TABLE servers ADD profile_to_use VARCHAR(128) DEFAULT ''")
     db.Db.MustExec("UPDATE database SET version=6")
+}
+
+// Configuration storage.
+func six_to_seven(db *Database) {
+    fmt.Println("Upgrading database from 6 to 7...")
+    db.Db.MustExec("CREATE TABLE configuration (key VARCHAR(128) NOT NULL, value VARCHAR(1024) NOT NULL)")
+    db.Db.MustExec("UPDATE database SET version=7")
 }

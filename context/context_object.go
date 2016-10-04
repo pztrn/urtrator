@@ -53,7 +53,7 @@ func (ctx *Context) initializeConfig() {
 
 func (ctx *Context) initializeDatabase() {
     ctx.Database = database.New(ctx.Cfg)
-    ctx.Database.Initialize()
+    ctx.Database.Initialize(ctx.Cfg)
     ctx.Database.Migrate()
 }
 

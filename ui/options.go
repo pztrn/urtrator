@@ -62,6 +62,15 @@ func (o *OptionsDialog) closeOptionsDialogWithDiscard() {
 func (o *OptionsDialog) closeOptionsDialogWithSaving() {
     fmt.Println("Saving changes to options...")
 
+    o.saveGeneral()
+
+    mbox_string := "Some options require application restart to be applied."
+    m := gtk.NewMessageDialog(o.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
+    m.Response(func() {
+        m.Destroy()
+    })
+    m.Run()
+
     ctx.Eventer.LaunchEvent("loadProfiles")
 
     o.window.Destroy()
@@ -103,6 +112,15 @@ func (o *OptionsDialog) editProfile() {
         op := OptionsProfile{}
         op.InitializeUpdate(profile_name, o.loadProfiles)
         ctx.Eventer.LaunchEvent("loadProfiles")
+    }
+}
+
+func (o *OptionsDialog) fill() {
+    if ctx.Cfg.Cfg["/general/show_tray_icon"] == "1" {
+        o.show_tray_icon.SetActive(true)
+    }
+    if ctx.Cfg.Cfg["/general/urtrator_autoupdate"] == "1" {
+        o.autoupdate.SetActive(true)
     }
 }
 
@@ -214,6 +232,22 @@ func (o *OptionsDialog) loadProfiles() {
     }
 }
 
+func (o *OptionsDialog) saveGeneral() {
+    if o.show_tray_icon.GetActive() {
+        ctx.Cfg.Cfg["/general/show_tray_icon"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/general/show_tray_icon"] = "0"
+    }
+
+    if o.autoupdate.GetActive() {
+        ctx.Cfg.Cfg["/general/urtrator_autoupdate"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/general/urtrator_autoupdate"] = "0"
+    }
+
+    fmt.Println(ctx.Cfg.Cfg)
+}
+
 func (o *OptionsDialog) ShowOptionsDialog() {
     o.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     o.window.SetTitle("URTrator - Options")
@@ -226,6 +260,7 @@ func (o *OptionsDialog) ShowOptionsDialog() {
     o.vbox = gtk.NewVBox(false, 0)
 
     o.initializeTabs()
+    o.fill()
 
     o.window.Add(o.vbox)
     o.window.ShowAll()
