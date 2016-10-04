@@ -206,6 +206,33 @@ func (m *MainWindow) dropDatabasesData() {
     }
 }
 
+func (m *MainWindow) editFavorite() {
+    fmt.Println("Editing favorite server...")
+
+    sel := m.fav_servers.GetSelection()
+    model := m.fav_servers.GetModel()
+    iter := new(gtk.TreeIter)
+    _ = sel.GetSelected(iter)
+
+    // Getting server address.
+    var srv_addr string
+    srv_addr_gval := glib.ValueFromNative(srv_addr)
+    model.GetValue(iter, 7, srv_addr_gval)
+    server_address := srv_addr_gval.GetString()
+
+    if len(server_address) > 0 {
+        address := strings.Split(server_address, ":")[0]
+        port := strings.Split(server_address, ":")[1]
+        srv := []datamodels.Server{}
+        err := ctx.Database.Db.Select(&srv, ctx.Database.Db.Rebind("SELECT * FROM servers WHERE ip=? AND port=?"), address, port)
+        if err != nil {
+            fmt.Println(err.Error())
+        }
+        m.favorite_dialog = &FavoriteDialog{}
+        m.favorite_dialog.InitializeUpdate(&srv[0])
+    }
+}
+
 func (m *MainWindow) hideOfflineAllServers() {
     fmt.Println("(Un)Hiding offline servers in 'Servers' tab...")
     ctx.Eventer.LaunchEvent("loadAllServers")
@@ -564,12 +591,18 @@ func (m *MainWindow) InitializeToolbar() {
     fav_button.OnClicked(m.addToFavorites)
     m.toolbar.Insert(fav_button, 2)
 
+    fav_edit_button := gtk.NewToolButtonFromStock(gtk.STOCK_EDIT)
+    fav_edit_button.SetLabel("Edit favorite")
+    fav_edit_button.SetTooltipText("Edit selected favorite server")
+    fav_edit_button.OnClicked(m.editFavorite)
+    m.toolbar.Insert(fav_edit_button, 3)
+
     // Remove server from favorites button.
     fav_delete_button := gtk.NewToolButtonFromStock(gtk.STOCK_REMOVE)
     fav_delete_button.SetLabel("Remove from favorites")
     fav_delete_button.SetTooltipText("Remove selected server from favorites")
     fav_delete_button.OnClicked(m.deleteFromFavorites)
-    m.toolbar.Insert(fav_delete_button, 3)
+    m.toolbar.Insert(fav_delete_button, 4)
 }
 
 func (m *MainWindow) launchGame() error {

@@ -66,33 +66,29 @@ func (f *FavoriteDialog) fill() {
     if err != nil {
         fmt.Println(err.Error())
     }
+    var idx_in_combobox int = 0
+    var idx_should_be_active int = 0
     for p := range profiles {
         if profiles[p].Version == f.server.Version {
             f.profile.AppendText(profiles[p].Name)
+            idx_should_be_active = idx_in_combobox
+            idx_in_combobox += 1
         }
     }
-}
 
-func (f *FavoriteDialog) Initialize() {
-    if f.update {
-        fmt.Println("Updating favorite server...")
-    } else {
-        fmt.Println("New favorite server")
-    }
-
-    f.initializeWindow()
+    f.profile.SetActive(idx_should_be_active)
 }
 
 func (f *FavoriteDialog) InitializeNew() {
     f.update = false
-    f.Initialize()
+    f.initializeWindow()
 }
 
 func (f *FavoriteDialog) InitializeUpdate(server *datamodels.Server) {
     fmt.Println("Favorites updating...")
     f.update = true
     f.server = server
-    f.Initialize()
+    f.initializeWindow()
     f.fill()
 }
 
@@ -218,6 +214,7 @@ func (f *FavoriteDialog) saveFavorite() error {
     }
 
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    f.window.Destroy()
 
     return nil
 }
