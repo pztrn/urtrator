@@ -111,10 +111,12 @@ func (o *OptionsDialog) initializeGeneralTab() {
 
     // Tray icon checkbox.
     o.show_tray_icon = gtk.NewCheckButtonWithLabel("Show tray icon?")
+    o.show_tray_icon.SetTooltipText("Show icon in tray")
     general_vbox.PackStart(o.show_tray_icon, false, true, 5)
 
     // Autoupdate checkbox.
     o.autoupdate = gtk.NewCheckButtonWithLabel("Automatically update URTrator?")
+    o.autoupdate.SetTooltipText("Should URTrator check for updates and update itself? Not working now.")
     general_vbox.PackStart(o.autoupdate, false, true, 5)
 
     o.tab_widget.AppendPage(general_vbox, gtk.NewLabel("General"))
@@ -156,6 +158,7 @@ func (o *OptionsDialog) initializeUrtTab() {
 
     // Profiles list.
     o.profiles_list = gtk.NewTreeView()
+    o.profiles_list.SetTooltipText("All available profiles")
     urt_hbox.Add(o.profiles_list)
     o.profiles_list.SetModel(o.profiles_list_store)
     o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Profile name", gtk.NewCellRendererText(), "text", 0))
@@ -167,10 +170,12 @@ func (o *OptionsDialog) initializeUrtTab() {
     urt_profiles_buttons_vbox := gtk.NewVBox(false, 0)
 
     button_add := gtk.NewButtonWithLabel("Add")
+    button_add.SetTooltipText("Add new profile")
     button_add.Clicked(o.addProfile)
     urt_profiles_buttons_vbox.PackStart(button_add, false, true, 5)
 
     button_edit := gtk.NewButtonWithLabel("Edit")
+    button_edit.SetTooltipText("Edit selected profile. Do nothing if no profile was selected.")
     button_edit.Clicked(o.editProfile)
     urt_profiles_buttons_vbox.PackStart(button_edit, false, true, 5)
 
@@ -179,6 +184,7 @@ func (o *OptionsDialog) initializeUrtTab() {
     urt_profiles_buttons_vbox.PackStart(sep, true, true, 5)
 
     button_delete := gtk.NewButtonWithLabel("Delete")
+    button_delete.SetTooltipText("Delete selected profile. Do nothing if no profile was selected.")
     button_delete.Clicked(o.deleteProfile)
     urt_profiles_buttons_vbox.PackStart(button_delete, false, true, 5)
 

@@ -150,6 +150,7 @@ func (m *MainWindow) Initialize() {
     // Profile selection.
     profiles_label := gtk.NewLabel("Game profile:")
     m.profiles = gtk.NewComboBoxText()
+    m.profiles.SetTooltipText("Profile which will be used for launching")
 
     profile_and_launch_hbox.PackStart(profiles_label, false, true, 5)
     profile_and_launch_hbox.PackStart(m.profiles, false, true, 5)
@@ -162,6 +163,7 @@ func (m *MainWindow) Initialize() {
 
     // Game launching button.
     m.launch_button = gtk.NewButtonWithLabel("Launch!")
+    m.launch_button.SetTooltipText("Launch Urban Terror")
     m.launch_button.Clicked(m.launchGame)
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
@@ -311,6 +313,7 @@ func (m *MainWindow) InitializeTabs() {
 
     // Checkbox for hiding offline servers.
     m.all_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
+    m.all_servers_hide_offline.SetTooltipText("Hide offline servers on Servers tab")
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_offline, false, true, 5)
     m.all_servers_hide_offline.Clicked(m.hideOfflineAllServers)
 
@@ -342,6 +345,7 @@ func (m *MainWindow) InitializeTabs() {
 
     // Checkbox for hiding offline servers.
     m.fav_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
+    m.fav_servers_hide_offline.SetTooltipText("Hide offline servers on Favorites tab")
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_offline, false, true, 5)
     m.fav_servers_hide_offline.Clicked(m.hideOfflineFavoriteServers)
 
@@ -362,6 +366,7 @@ func (m *MainWindow) InitializeToolbar() {
     // Update servers button.
     button_update_all_servers := gtk.NewToolButtonFromStock(gtk.STOCK_REFRESH)
     button_update_all_servers.SetLabel("Update all servers")
+    button_update_all_servers.SetTooltipText("Update all servers in all tabs")
     button_update_all_servers.OnClicked(m.UpdateServers)
     m.toolbar.Insert(button_update_all_servers, 0)
 
@@ -372,6 +377,7 @@ func (m *MainWindow) InitializeToolbar() {
     // Add server to favorites button.
     fav_button := gtk.NewToolButtonFromStock(gtk.STOCK_ADD)
     fav_button.SetLabel("Add to favorites")
+    fav_button.SetTooltipText("Add selected server to favorites")
     fav_button.OnClicked(m.addToFavorites)
     m.toolbar.Insert(fav_button, 2)
 }
