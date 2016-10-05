@@ -14,6 +14,7 @@ import (
     "fmt"
 
     // local
+    "github.com/pztrn/urtrator/colorizer"
     "github.com/pztrn/urtrator/configuration"
     "github.com/pztrn/urtrator/database"
     "github.com/pztrn/urtrator/eventer"
@@ -25,6 +26,8 @@ import (
 )
 
 type Context struct {
+    // Colors parser and prettifier.
+    Colorizer *colorizer.Colorizer
     // Configuration.
     Cfg *configuration.Config
     // Database.
@@ -44,6 +47,11 @@ func (ctx *Context) Close() {
 
     // At last, close main window.
     gtk.MainQuit()
+}
+
+func (ctx *Context) initializeColorizer() {
+    ctx.Colorizer = colorizer.New()
+    ctx.Colorizer.Initialize()
 }
 
 func (ctx *Context) initializeConfig() {
@@ -74,6 +82,7 @@ func (ctx *Context) initializeRequester() {
 
 func (ctx *Context) Initialize() {
     fmt.Println("Initializing application context...")
+    ctx.initializeColorizer()
     ctx.initializeConfig()
     ctx.initializeDatabase()
     ctx.initializeEventer()

@@ -14,6 +14,7 @@ import (
     "encoding/base64"
     "errors"
     "fmt"
+    "runtime"
     "strconv"
     "strings"
 
@@ -277,11 +278,21 @@ func (m *MainWindow) editFavorite() {
 
 func (m *MainWindow) hideOfflineAllServers() {
     fmt.Println("(Un)Hiding offline servers in 'Servers' tab...")
+    if m.all_servers_hide_offline.GetActive() {
+        ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] = "0"
+    }
     ctx.Eventer.LaunchEvent("loadAllServers")
 }
 
 func (m *MainWindow) hideOfflineFavoriteServers() {
     fmt.Println("(Un)Hiding offline servers in 'Favorite' tab...")
+    if m.fav_servers_hide_offline.GetActive() {
+        ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] = "0"
+    }
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
 }
 
@@ -548,7 +559,7 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers.SetModel(m.all_servers_store)
     m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
 
-    all_srv_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "text", 1)
+    all_srv_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 1)
     all_srv_name_column.SetSortColumnId(1)
     m.all_servers.AppendColumn(all_srv_name_column)
 
@@ -590,6 +601,9 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers_hide_offline.SetTooltipText("Hide offline servers on Servers tab")
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_offline, false, true, 5)
     m.all_servers_hide_offline.Clicked(m.hideOfflineAllServers)
+    if ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] == "1" {
+        m.all_servers_hide_offline.SetActive(true)
+    }
 
     // Final separator.
     ctl_sep := gtk.NewVSeparator()
@@ -606,7 +620,7 @@ func (m *MainWindow) InitializeTabs() {
     m.fav_servers.SetModel(m.fav_servers_store)
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
 
-    fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "text", 1)
+    fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 1)
     fav_name_column.SetSortColumnId(1)
     m.fav_servers.AppendColumn(fav_name_column)
 
@@ -643,6 +657,9 @@ func (m *MainWindow) InitializeTabs() {
     m.fav_servers_hide_offline.SetTooltipText("Hide offline servers on Favorites tab")
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_offline, false, true, 5)
     m.fav_servers_hide_offline.Clicked(m.hideOfflineFavoriteServers)
+    if ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] == "1" {
+        m.fav_servers_hide_offline.SetActive(true)
+    }
 
     // Final separator.
     ctl_fav_sep := gtk.NewVSeparator()
@@ -704,26 +721,30 @@ func (m *MainWindow) initializeTrayIcon() {
     m.tray_icon.SetTitle("URTrator")
     m.tray_icon.SetTooltipText("URTrator is ready")
 
-    m.tray_menu = gtk.NewMenu()
+    // Tray menu is still buggy on windows, so skipping initialization,
+    // if OS is Windows.
+    if runtime.GOOS != "windows" {
+        m.tray_menu = gtk.NewMenu()
 
-    // Open/Close URTrator menu item.
-    open_close_item := gtk.NewMenuItemWithLabel("Show / Hide URTrator")
-    open_close_item.Connect("activate", m.showHide)
-    m.tray_menu.Append(open_close_item)
+        // Open/Close URTrator menu item.
+        open_close_item := gtk.NewMenuItemWithLabel("Show / Hide URTrator")
+        open_close_item.Connect("activate", m.showHide)
+        m.tray_menu.Append(open_close_item)
 
-    // Separator
-    sep1 := gtk.NewSeparatorMenuItem()
-    m.tray_menu.Append(sep1)
+        // Separator
+        sep1 := gtk.NewSeparatorMenuItem()
+        m.tray_menu.Append(sep1)
 
-    // Exit menu item.
-    exit_item := gtk.NewMenuItemWithLabel("Exit")
-    exit_item.Connect("activate", m.window.Destroy)
-    m.tray_menu.Append(exit_item)
+        // Exit menu item.
+        exit_item := gtk.NewMenuItemWithLabel("Exit")
+        exit_item.Connect("activate", m.window.Destroy)
+        m.tray_menu.Append(exit_item)
 
-    // Connect things.
-    m.tray_icon.Connect("activate", m.showHide)
-    m.tray_icon.Connect("popup-menu", m.showTrayMenu)
-    m.tray_menu.ShowAll()
+        // Connect things.
+        m.tray_icon.Connect("activate", m.showHide)
+        m.tray_icon.Connect("popup-menu", m.showTrayMenu)
+        m.tray_menu.ShowAll()
+    }
 }
 
 func (m *MainWindow) launchGame() error {
@@ -857,7 +878,8 @@ func (m *MainWindow) loadAllServers() {
         } else {
             m.all_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         }
-        m.all_servers_store.Set(&iter, 1, srv.Name)
+        srv_name := ctx.Colorizer.Fix(srv.Name)
+        m.all_servers_store.Set(&iter, 1, srv_name)
         m.all_servers_store.Set(&iter, 2, m.gamemodes[srv.Gamemode])
         m.all_servers_store.Set(&iter, 3, srv.Map)
         m.all_servers_store.Set(&iter, 4, srv.Players + "/" + srv.Maxplayers)
@@ -890,7 +912,8 @@ func (m *MainWindow) loadFavoriteServers() {
         } else {
             m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         }
-        m.fav_servers_store.Set(&iter, 1, srv.Name)
+        srv_name := ctx.Colorizer.Fix(srv.Name)
+        m.fav_servers_store.Set(&iter, 1, srv_name)
         m.fav_servers_store.Set(&iter, 2, m.gamemodes[srv.Gamemode])
         m.fav_servers_store.Set(&iter, 3, srv.Map)
         m.fav_servers_store.Set(&iter, 4, srv.Players + "/" + srv.Maxplayers)
