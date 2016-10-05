@@ -70,6 +70,13 @@ just issue:
 go get -d -u github.com/pztrn/urtrator
 ```
 
+Again, this will only update sources. To build executable you have to
+issue:
+
+```
+go install github.com/pztrn/urtrator
+```
+
 # Important information
 
 ## GTK warnings in console
