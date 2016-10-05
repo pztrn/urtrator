@@ -51,6 +51,18 @@ func (c *Config) initializePathsNix() {
     }
 }
 
+func (c *Config) initializePathsWin() {
+    fmt.Println("Initializing configuration paths...")
+    homepath_without_drive := os.Getenv("HOMEPATH")
+    homedrive := os.Getenv("HOMEDRIVE")
+    data_path := path.Join(homedrive, homepath_without_drive, "AppData", "Roaming", "URTrator")
+    c.TEMP["DATA"] = data_path
+
+    if _, err := os.Stat(data_path); os.IsNotExist(err) {
+        os.MkdirAll(data_path, 0755)
+    }
+}
+
 func (c *Config) initializeStorages() {
     c.TEMP = make(map[string]string)
     c.Cfg = make(map[string]string)
@@ -64,6 +76,8 @@ func (c *Config) Initialize() {
         c.initializePathsNix()
     } else if runtime.GOOS == "darwin" {
         c.initializePathsMac()
+    } else if runtime.GOOS == "windows" {
+        c.initializePathsWin()
     } else {
         panic("We're not ready for other OSes yet!")
     }
