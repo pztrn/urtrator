@@ -20,7 +20,10 @@ import (
 type Server struct {
     Server *datamodels.Server
     AllServersIter *gtk.TreeIter
-    FavServersIter *gtk.TreeIter
     AllServersIterSet bool
+    AllServersIterInList bool
+
+    FavServersIter *gtk.TreeIter
     FavServersIterSet bool
+    FavServersIterInList bool
 }

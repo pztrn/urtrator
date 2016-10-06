@@ -951,31 +951,40 @@ func (m *MainWindow) loadAllServers() {
     fmt.Println("Loading all servers...")
     // ToDo: do it without clearing.
     for _, server := range ctx.Cache.Servers {
-        ping, _ := strconv.Atoi(server.Server.Ping)
-        if m.all_servers_hide_offline.GetActive() && ping > 9999 {
-            continue
-        }
-        iter := new (gtk.TreeIter)
+        iter := new(gtk.TreeIter)
+
         if !server.AllServersIterSet {
             server.AllServersIter = iter
-            m.all_servers_store.Append(iter)
             server.AllServersIterSet = true
         } else {
             iter = server.AllServersIter
         }
-        if server.Server.Name == "" && server.Server.Players == "" {
+
+        if !server.AllServersIterInList {
+            m.all_servers_store.Append(iter)
+            server.AllServersIterInList = true
+        }
+
+        if m.all_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+            m.all_servers_store.Remove(iter)
+            server.AllServersIterInList = false
+            continue
+        }
+
+        if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
             m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
         } else {
             m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            server_name := ctx.Colorizer.Fix(server.Server.Name)
+            m.all_servers_store.SetValue(iter, 1, server_name)
+            m.all_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
+            m.all_servers_store.SetValue(iter, 3, server.Server.Map)
+            m.all_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
+            m.all_servers_store.SetValue(iter, 5, server.Server.Ping)
+            m.all_servers_store.SetValue(iter, 6, server.Server.Version)
+            m.all_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
         }
-        server_name := ctx.Colorizer.Fix(server.Server.Name)
-        m.all_servers_store.SetValue(iter, 1, server_name)
-        m.all_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
-        m.all_servers_store.SetValue(iter, 3, server.Server.Map)
-        m.all_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
-        m.all_servers_store.SetValue(iter, 5, server.Server.Ping)
-        m.all_servers_store.SetValue(iter, 6, server.Server.Version)
-        m.all_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
     }
 }
 
@@ -985,23 +994,32 @@ func (m *MainWindow) loadFavoriteServers() {
         if server.Server.Favorite != "1" {
             continue
         }
-        if m.fav_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
-            continue
-        }
+
         iter := new(gtk.TreeIter)
+
         if !server.FavServersIterSet {
             server.FavServersIter = iter
-            m.fav_servers_store.Append(iter)
             server.FavServersIterSet = true
         } else {
             iter = server.FavServersIter
         }
-        if m.fav_servers_store.IterIsValid(iter) {
-            if server.Server.Name == "" && server.Server.Players == "" {
-                m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
-            } else {
-                m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
-            }
+
+        if !server.FavServersIterInList {
+            m.fav_servers_store.Append(iter)
+            server.FavServersIterInList = true
+        }
+
+        if m.fav_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+            m.fav_servers_store.Remove(iter)
+            server.FavServersIterInList = false
+            continue
+        }
+
+        if server.Server.Name == "" && server.Server.Players == "" {
+            m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.fav_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
+        } else {
+            m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             server_name := ctx.Colorizer.Fix(server.Server.Name)
             m.fav_servers_store.SetValue(iter, 1, server_name)
             m.fav_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
@@ -1010,8 +1028,6 @@ func (m *MainWindow) loadFavoriteServers() {
             m.fav_servers_store.SetValue(iter, 5, server.Server.Ping)
             m.fav_servers_store.SetValue(iter, 6, server.Server.Version)
             m.fav_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
-        } else {
-            fmt.Println("Invalid iter for server: " + server.Server.Ip + ":" + server.Server.Port)
         }
     }
 }
