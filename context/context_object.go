@@ -11,6 +11,7 @@ package context
 
 import (
     // stdlib
+    "errors"
     "fmt"
 
     // local
@@ -43,14 +44,19 @@ type Context struct {
     Requester *requester.Requester
 }
 
-func (ctx *Context) Close() {
+func (ctx *Context) Close() error {
     fmt.Println("Closing URTrator...")
 
+    launched := ctx.Launcher.CheckForLaunchedUrbanTerror()
+    if launched != nil {
+        return errors.New("Urban Terror is launched!")
+    }
     ctx.Cache.FlushServers()
     ctx.Database.Close()
 
     // At last, close main window.
     gtk.MainQuit()
+    return nil
 }
 
 func (ctx *Context) initializeCache() {

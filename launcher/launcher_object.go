@@ -11,6 +11,7 @@ package launcher
 
 import (
     // stdlib
+    "errors"
     "fmt"
     "os"
     "os/exec"
@@ -19,9 +20,30 @@ import (
 
     // local
     "github.com/pztrn/urtrator/datamodels"
+
+    // Github
+    "github.com/mattn/go-gtk/gtk"
 )
 
-type Launcher struct {}
+type Launcher struct {
+    // Flags.
+    // Is Urban Terror launched ATM?
+    launched bool
+}
+
+func (l *Launcher) CheckForLaunchedUrbanTerror() error {
+    if l.launched {
+        mbox_string := "Game is launched.\n\nCannot quit, because game is launched.\nQuit Urban Terror to exit URTrator!"
+        m := gtk.NewMessageDialog(nil, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+        m.Response(func() {
+            m.Destroy()
+        })
+        m.Run()
+        return errors.New("User didn't select valid profile, mismatch with server's version.")
+    }
+
+    return nil
+}
 
 func (l *Launcher) findFreeDisplay() string {
     current_display_raw := os.Getenv("DISPLAY")

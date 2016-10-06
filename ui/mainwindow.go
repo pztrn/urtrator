@@ -319,9 +319,10 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
 
 // Main window initialization.
 func (m *MainWindow) Initialize() {
+    gtk.Init(nil)
+
     m.initializeStorages()
 
-    gtk.Init(nil)
     m.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     m.window.SetTitle("URTrator")
     m.window.Connect("destroy", m.Close)
@@ -950,7 +951,8 @@ func (m *MainWindow) loadAllServers() {
     fmt.Println("Loading all servers...")
     // ToDo: do it without clearing.
     for _, server := range ctx.Cache.Servers {
-        if m.all_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
+        ping, _ := strconv.Atoi(server.Server.Ping)
+        if m.all_servers_hide_offline.GetActive() && ping > 9999 {
             continue
         }
         iter := new (gtk.TreeIter)
@@ -1076,8 +1078,15 @@ func (m *MainWindow) showShortServerInformation() {
     model.GetValue(iter, 7, srv_address_gval)
     srv_address := srv_address_gval.GetString()
 
+    var srv_ping_raw string
+    srv_ping_gval := glib.ValueFromNative(srv_ping_raw)
+    model.GetValue(iter, 7, srv_ping_gval)
+    srv_ping := srv_ping_gval.GetString()
+
+    ping, _ := strconv.Atoi(srv_ping)
+
     // Getting server information from cache.
-    if len(srv_address) > 0 {
+    if len(srv_address) > 0 && ping < 1000 {
         server_info := ctx.Cache.Servers[srv_address].Server
         parsed_general_data := ioq3dataparser.ParseInfoToMap(server_info.ExtendedConfig)
         parsed_players_info := ioq3dataparser.ParsePlayersInfoToMap(server_info.PlayersInfo)
