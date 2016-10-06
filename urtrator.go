@@ -11,6 +11,7 @@ package main
 
 import (
     // local
+    "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/context"
     "github.com/pztrn/urtrator/ui"
 
@@ -20,7 +21,7 @@ import (
 )
 
 func main() {
-    fmt.Println("This is URTrator, version 0.1")
+    fmt.Println("This is URTrator, version " + common.URTRATOR_VERSION)
 
     numCPUs := runtime.NumCPU()
     runtime.GOMAXPROCS(numCPUs)

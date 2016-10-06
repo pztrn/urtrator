@@ -10,6 +10,10 @@
 package ui
 
 import (
+    // local
+    "github.com/pztrn/urtrator/common"
+
+    // other
     "github.com/mattn/go-gtk/gtk"
 )
 
@@ -18,7 +22,7 @@ func ShowAboutDialog() {
 
     ad.SetProgramName("URTrator")
     ad.SetComments("Urban Terror servers browser and game launcher")
-    ad.SetVersion("0.1")
+    ad.SetVersion(common.URTRATOR_VERSION)
     ad.SetWebsite("http://urtrator.pztrn.name")
     ad.SetLogo(logo)
 
