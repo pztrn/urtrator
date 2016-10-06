@@ -91,3 +91,13 @@ and nothing can be done on URTrator side.
 ## About box cause app crash on macOS
 
 As previous, it is related to GTK+2, nothing I can do there.
+
+## Why GTK+2?
+
+Because GTK+3 going on "stable api nonsense" way. And also it have some
+troubles with integrating with current popular WM/DE (like XFCE4,
+Openbox, etc.). And also I already tired of that shitty Adwaita and
+Cantarella.
+
+If you want to use GTK+3, well, you can write UI for yourself, Go
+bindings exist.

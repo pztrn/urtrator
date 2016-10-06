@@ -324,7 +324,7 @@ func (op *OptionsProfile) saveProfile() {
             }
         }
 
-        if found {
+        if found && profile.Version == op.old_profile.Version && profile.Binary == op.old_profile.Binary && profile.Name == op.old_profile.Name && profile.Second_x_session == op.old_profile.Second_x_session {
             mbox_string := "Game profile with same name already exist.\nRename profile for saving."
             m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {

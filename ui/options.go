@@ -12,6 +12,7 @@ package ui
 import (
     // stdlib
     "fmt"
+    "strconv"
 
     // Local
     "github.com/pztrn/urtrator/datamodels"
@@ -181,8 +182,10 @@ func (o *OptionsDialog) initializeUrtTab() {
     o.profiles_list.SetModel(o.profiles_list_store)
     o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Profile name", gtk.NewCellRendererText(), "text", 0))
     o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Urban Terror version", gtk.NewCellRendererText(), "text", 1))
-    crt := gtk.NewCellRendererToggle()
-    o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Second X session", crt, "bool", 2))
+
+    //crt := gtk.NewCellRendererToggle()
+    //second_x_column := gtk.NewTreeViewColumnWithAttributes("Second X session", crt, "bool", 2)
+    //o.profiles_list.AppendColumn(second_x_column)
 
     // Profiles list buttons.
     urt_profiles_buttons_vbox := gtk.NewVBox(false, 0)
@@ -229,6 +232,8 @@ func (o *OptionsDialog) loadProfiles() {
         o.profiles_list_store.Append(&iter)
         o.profiles_list_store.Set(&iter, 0, profiles[p].Name)
         o.profiles_list_store.Set(&iter, 1, profiles[p].Version)
+        //state, _ := strconv.ParseBool(profiles[p].Second_x_session)
+        //o.profiles_list_store.Set(&iter, 2, state)
     }
 }
 
