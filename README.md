@@ -8,6 +8,9 @@ URTrator is a desktop application that should (eventually) replace
 Urban Terror's and IRC client interfaces for you, because they're
 pretty shitty :).
 
+*Disclaimer: This software isn't written nor supported (for now) by FrozenSand.
+All code is a community effort.*
+
 Right now it can:
 
 * Obtaining list of Urban Terror servers from master server and
