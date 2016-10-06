@@ -893,8 +893,12 @@ func (m *MainWindow) launchGame() error {
     }
 
     // Hey, we're ok here! :) Launch Urban Terror!
+    // Crear server name from "<markup></markup>" things.
+    srv_name_for_label := string([]byte(server_name)[8:len(server_name)-9])
+    fmt.Println(srv_name_for_label)
+    // Show great coloured label.
     m.statusbar.Push(m.statusbar_context_id, "Launching Urban Terror...")
-    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Urban Terror is launched with profile </span><span foreground=\"blue\">" + profile[0].Name + "</span> <span foreground=\"red\" font_weight=\"bold\">and connected to </span><span foreground=\"orange\" font_weight=\"bold\">" + srv_address + "</span></markup>")
+    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Urban Terror is launched with profile </span><span foreground=\"blue\">" + profile[0].Name + "</span> <span foreground=\"red\" font_weight=\"bold\">and connected to </span><span foreground=\"orange\" font_weight=\"bold\">" + srv_name_for_label + "</span></markup>")
     m.launch_button.SetSensitive(false)
     // ToDo: handling server passwords.
     ctx.Launcher.Launch(&profile[0], srv_address, "", m.unlockInterface)
