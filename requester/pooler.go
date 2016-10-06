@@ -197,8 +197,14 @@ func (p *Pooler) updateSpecificServer(server *datamodels.Server) error {
         if len(received_lines) >= 2 {
             // Here we go, players information.
             players := received_lines[2:]
-            server.Players = strconv.Itoa(len(players))
-            //server.PlayersInfo = received_lines[2:]
+            fmt.Println(players, len(players), len(players[0]))
+            // Calculate players!
+            if len(players) == 1 && len(players[0]) > 255 {
+                server.Players = "0"
+            } else {
+                server.Players = strconv.Itoa(len(players))
+            }
+            server.PlayersInfo = strings.Join(received_lines[2:], "\\")
         }
     }
 

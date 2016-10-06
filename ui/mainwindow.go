@@ -1079,23 +1079,35 @@ func (m *MainWindow) showShortServerInformation() {
     // Getting server information from cache.
     if len(srv_address) > 0 {
         server_info := ctx.Cache.Servers[srv_address].Server
-        parsed := ioq3dataparser.ParseInfoToMap(server_info.ExtendedConfig)
+        parsed_general_data := ioq3dataparser.ParseInfoToMap(server_info.ExtendedConfig)
+        parsed_players_info := ioq3dataparser.ParsePlayersInfoToMap(server_info.PlayersInfo)
         // Append to treeview generic info first. After appending it
         // will be deleted from map.
+
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">GENERAL INFO</span></markup>")
 
         // Server's name.
         iter := new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Server's name")
-        m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed["sv_hostname"]))
-        delete(parsed, "sv_hostname")
+        m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed_general_data["sv_hostname"]))
+        delete(parsed_general_data, "sv_hostname")
+
+        // Game version.
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Game version")
+        m.server_info_store.SetValue(iter, 1, parsed_general_data["g_modversion"])
+        delete(parsed_general_data, "g_modversion")
 
         // Players.
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Players")
-        m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed["sv_maxclients"])
-        delete(parsed, "sv_maxclients")
+        m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed_general_data["sv_maxclients"])
+        delete(parsed_general_data, "sv_maxclients")
 
         // Ping
         iter = new(gtk.TreeIter)
@@ -1120,11 +1132,27 @@ func (m *MainWindow) showShortServerInformation() {
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Passworded")
         passworded_status := "<markup><span foreground=\"green\">No</span></markup>"
-        if parsed["g_needpass"] == "1" {
+        if parsed_general_data["g_needpass"] == "1" {
             passworded_status = "<markup><span foreground=\"red\">Yes</span></markup>"
         }
         m.server_info_store.SetValue(iter, 1, passworded_status)
-        delete(parsed, "g_needpass")
+        delete(parsed_general_data, "g_needpass")
+
+        // Just a separator.
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+
+        // Players information
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">PLAYERS</span></markup>")
+
+        for _, value := range parsed_players_info {
+            iter = new(gtk.TreeIter)
+            m.server_info_store.Append(iter)
+            m.server_info_store.SetValue(iter, 0, value["nick"])
+            m.server_info_store.SetValue(iter, 1, "(frags: " + value["frags"] + " | ping: " + value["ping"] + ")")
+        }
 
         // Just a separator.
         iter = new(gtk.TreeIter)
@@ -1135,7 +1163,7 @@ func (m *MainWindow) showShortServerInformation() {
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">OTHER PARAMETERS</span></markup>")
 
-        for key, value := range parsed {
+        for key, value := range parsed_general_data {
             iter = new(gtk.TreeIter)
             m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, key)

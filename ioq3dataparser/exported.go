@@ -11,13 +11,10 @@ package ioq3dataparser
 
 import (
     // stdlib
-    "fmt"
     "strings"
 )
 
 func ParseInfoToMap(data string) map[string]string {
-    fmt.Println(data)
-
     parsed_data := make(map[string]string)
 
     srv_config := strings.Split(data, "\\")
@@ -25,10 +22,27 @@ func ParseInfoToMap(data string) map[string]string {
     // Parse server configuration into passed server's datamodel.
     for i := 0; i < len(srv_config[1:]); i = i + 2 {
         parsed_data[srv_config[i]] = srv_config[i + 1]
-        fmt.Println(srv_config[i] + " => " + srv_config[i + 1])
     }
 
-    fmt.Println(parsed_data)
+    return parsed_data
+}
+
+func ParsePlayersInfoToMap(data string) map[string]map[string]string {
+    parsed_data := make(map[string]map[string]string)
+
+    // Structure: frags|ping|nick
+    raw_data := strings.Split(data, "\\")
+    for i := range raw_data {
+        raw_player_data := strings.Split(raw_data[i], " ")
+        player_data := make(map[string]string)
+        if len(raw_player_data) > 1 {
+            nickname := strings.Join(raw_player_data[2:], " ")
+            player_data["nick"] = string([]byte(nickname)[1:len(nickname)-1])
+            player_data["ping"] = raw_player_data[1]
+            player_data["frags"] = raw_player_data[0]
+            parsed_data[player_data["nick"]] = player_data
+        }
+    }
 
     return parsed_data
 }
