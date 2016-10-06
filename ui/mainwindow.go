@@ -21,6 +21,7 @@ import (
     // Local
     "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/datamodels"
+    "github.com/pztrn/urtrator/ioq3dataparser"
 
     // Other
     "github.com/mattn/go-gtk/gdkpixbuf"
@@ -63,6 +64,8 @@ type MainWindow struct {
     fav_servers_hide_offline *gtk.CheckButton
     // Game launch button.
     launch_button *gtk.Button
+    // Server's information.
+    server_info *gtk.TreeView
     // Quick connect: server address
     qc_server_address *gtk.Entry
     // Quick connect: password
@@ -81,6 +84,8 @@ type MainWindow struct {
     all_servers_store_sortable *gtk.TreeSortable
     // Favorites
     fav_servers_store *gtk.ListStore
+    // Server's information store.
+    server_info_store *gtk.ListStore
 
     // Dialogs.
     options_dialog *OptionsDialog
@@ -508,9 +513,35 @@ func (m *MainWindow) InitializeMainMenu() {
 func (m *MainWindow) initializeSidebar() {
     sidebar_vbox := gtk.NewVBox(false, 0)
 
+    server_info_frame := gtk.NewFrame("Server information")
+    sidebar_vbox.PackStart(server_info_frame, true, true, 5)
+    si_vbox := gtk.NewVBox(false, 0)
+    server_info_frame.Add(si_vbox)
+
+    // Scrolled thing.
+    si_scroll := gtk.NewScrolledWindow(nil, nil)
+    si_vbox.PackStart(si_scroll, true, true, 5)
+
+    // Server's information.
+    m.server_info = gtk.NewTreeView()
+    m.server_info.SetModel(m.server_info_store)
+
+    key_column := gtk.NewTreeViewColumnWithAttributes("Key", gtk.NewCellRendererText(), "markup", 0)
+    m.server_info.AppendColumn(key_column)
+
+    value_column := gtk.NewTreeViewColumnWithAttributes("Value", gtk.NewCellRendererText(), "markup", 1)
+    m.server_info.AppendColumn(value_column)
+
+    si_scroll.Add(m.server_info)
+
+    // Button to view additional server info.
+    additional_srv_info_button := gtk.NewButtonWithLabel("Additional information")
+    additional_srv_info_button.Clicked(m.showServerInformation)
+    si_vbox.PackStart(additional_srv_info_button, false, true, 5)
+
     // Quick connect frame.
     quick_connect_frame := gtk.NewFrame("Quick connect")
-    sidebar_vbox.PackStart(quick_connect_frame, true, true, 5)
+    sidebar_vbox.PackStart(quick_connect_frame, false, true, 5)
     qc_vbox := gtk.NewVBox(false, 0)
     quick_connect_frame.Add(qc_vbox)
 
@@ -570,6 +601,9 @@ func (m *MainWindow) initializeStorages() {
     // Same as above, but for favorite servers.
     m.fav_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
 
+    // Server's information store. Used for quick preview in main window.
+    m.server_info_store = gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
+
     // Profiles count after filling combobox. Defaulting to 0.
     m.old_profiles_count = 0
 
@@ -626,6 +660,9 @@ func (m *MainWindow) InitializeTabs() {
     // ToDo: remembering it to configuration storage.
     m.all_servers_store_sortable.SetSortColumnId(1, gtk.SORT_ASCENDING)
 
+    // Selection changed signal, which will update server's short info pane.
+    m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
+
     // VBox for some servers list controllers.
     tab_all_srv_ctl_vbox := gtk.NewVBox(false, 0)
     tab_allsrv_hbox.PackStart(tab_all_srv_ctl_vbox, false, true, 5)
@@ -681,6 +718,9 @@ func (m *MainWindow) InitializeTabs() {
     fav_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 7)
     fav_ip_column.SetSortColumnId(7)
     m.fav_servers.AppendColumn(fav_ip_column)
+
+    // Selection changed signal, which will update server's short info pane.
+    m.fav_servers.Connect("cursor-changed", m.showShortServerInformation)
 
     // VBox for some servers list controllers.
     tab_fav_srv_ctl_vbox := gtk.NewVBox(false, 0)
@@ -1010,6 +1050,97 @@ func (m *MainWindow) showHide() {
     } else {
         m.window.Hide()
         m.hidden = true
+    }
+}
+
+func (m *MainWindow) showServerInformation() {
+    fmt.Println("Showing server's information...")
+}
+
+func (m *MainWindow) showShortServerInformation() {
+    fmt.Println("Server selection changed, updating server's information widget...")
+    m.server_info_store.Clear()
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+    sel := m.all_servers.GetSelection()
+    model := m.all_servers.GetModel()
+    if strings.Contains(current_tab, "Favorites") {
+        sel = m.fav_servers.GetSelection()
+        model = m.fav_servers.GetModel()
+    }
+    iter := new(gtk.TreeIter)
+    _ = sel.GetSelected(iter)
+
+    // Getting server address.
+    var srv_addr string
+    srv_address_gval := glib.ValueFromNative(srv_addr)
+    model.GetValue(iter, 7, srv_address_gval)
+    srv_address := srv_address_gval.GetString()
+
+    // Getting server information from cache.
+    if len(srv_address) > 0 {
+        server_info := ctx.Cache.Servers[srv_address].Server
+        parsed := ioq3dataparser.ParseInfoToMap(server_info.ExtendedConfig)
+        // Append to treeview generic info first. After appending it
+        // will be deleted from map.
+
+        // Server's name.
+        iter := new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Server's name")
+        m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed["sv_hostname"]))
+        delete(parsed, "sv_hostname")
+
+        // Players.
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Players")
+        m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed["sv_maxclients"])
+        delete(parsed, "sv_maxclients")
+
+        // Ping
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Ping")
+        m.server_info_store.SetValue(iter, 1, server_info.Ping + " ms")
+
+        // Game mode
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Game mode")
+        m.server_info_store.SetValue(iter, 1, m.gamemodes[server_info.Gamemode])
+
+        // Map name
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Current map")
+        m.server_info_store.SetValue(iter, 1, server_info.Map)
+
+        // Private or public?
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "Passworded")
+        passworded_status := "<markup><span foreground=\"green\">No</span></markup>"
+        if parsed["g_needpass"] == "1" {
+            passworded_status = "<markup><span foreground=\"red\">Yes</span></markup>"
+        }
+        m.server_info_store.SetValue(iter, 1, passworded_status)
+        delete(parsed, "g_needpass")
+
+        // Just a separator.
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+
+        // Other parameters :).
+        iter = new(gtk.TreeIter)
+        m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">OTHER PARAMETERS</span></markup>")
+
+        for key, value := range parsed {
+            iter = new(gtk.TreeIter)
+            m.server_info_store.Append(iter)
+        m.server_info_store.SetValue(iter, 0, key)
+        m.server_info_store.SetValue(iter, 1, value)
+        }
     }
 }
 
