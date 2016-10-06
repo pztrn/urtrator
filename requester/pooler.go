@@ -33,7 +33,8 @@ type Pooler struct {
 
 func (p *Pooler) Initialize() {
     fmt.Println("Initializing requester goroutine pooler...")
-    p.maxrequests = runtime.NumCPU() * 4
+    // ToDo: figure out how to make this work nice.
+    p.maxrequests = runtime.NumCPU() * 2000
     p.pp = "\377\377\377\377"
 }
 
@@ -99,7 +100,6 @@ func (p *Pooler) pingServersExecutor(server *datamodels.Server) error {
     conn_ping.Close()
 
     delta := strconv.Itoa(int(time.Since(start_p).Nanoseconds()) / 1000000)
-    fmt.Println(delta)
     server.Ping = delta
 
     return nil
@@ -202,8 +202,5 @@ func (p *Pooler) updateSpecificServer(server *datamodels.Server) error {
 
     // ToDo: Calculate ping. 0 for now.
     server.Ping = "0"
-
-    fmt.Println(server)
-
     return nil
 }

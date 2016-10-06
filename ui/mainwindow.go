@@ -14,7 +14,6 @@ import (
     "encoding/base64"
     "errors"
     "fmt"
-    "reflect"
     "runtime"
     "strconv"
     "strings"
@@ -891,33 +890,31 @@ func (m *MainWindow) launchGame() error {
 func (m *MainWindow) loadAllServers() {
     fmt.Println("Loading all servers...")
     // ToDo: do it without clearing.
-    srv_addrs := reflect.ValueOf(ctx.Cache.Servers).MapKeys()
-    fmt.Println(srv_addrs)
     for _, server := range ctx.Cache.Servers {
         if m.all_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
             continue
         }
-        var iter gtk.TreeIter
-        if !server.IterSet {
-            server.TreeIter = iter
-            m.all_servers_store.Append(&iter)
-            server.IterSet = true
+        iter := new (gtk.TreeIter)
+        if !server.AllServersIterSet {
+            server.AllServersIter = iter
+            m.all_servers_store.Append(iter)
+            server.AllServersIterSet = true
         } else {
-            iter = server.TreeIter
+            iter = server.AllServersIter
         }
         if server.Server.Name == "" && server.Server.Players == "" {
-            m.all_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         } else {
-            m.all_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         }
         server_name := ctx.Colorizer.Fix(server.Server.Name)
-        m.all_servers_store.Set(&iter, 1, server_name)
-        m.all_servers_store.Set(&iter, 2, m.gamemodes[server.Server.Gamemode])
-        m.all_servers_store.Set(&iter, 3, server.Server.Map)
-        m.all_servers_store.Set(&iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
-        m.all_servers_store.Set(&iter, 5, server.Server.Ping)
-        m.all_servers_store.Set(&iter, 6, server.Server.Version)
-        m.all_servers_store.Set(&iter, 7, server.Server.Ip + ":" + server.Server.Port)
+        m.all_servers_store.SetValue(iter, 1, server_name)
+        m.all_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
+        m.all_servers_store.SetValue(iter, 3, server.Server.Map)
+        m.all_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
+        m.all_servers_store.SetValue(iter, 5, server.Server.Ping)
+        m.all_servers_store.SetValue(iter, 6, server.Server.Version)
+        m.all_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
     }
 }
 
@@ -930,27 +927,31 @@ func (m *MainWindow) loadFavoriteServers() {
         if m.fav_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
             continue
         }
-        var iter gtk.TreeIter
-        if !server.IterSet {
-            server.TreeIter = iter
-            m.fav_servers_store.Append(&iter)
-            server.IterSet = true
+        iter := new(gtk.TreeIter)
+        if !server.FavServersIterSet {
+            server.FavServersIter = iter
+            m.fav_servers_store.Append(iter)
+            server.FavServersIterSet = true
         } else {
-            iter = server.TreeIter
+            iter = server.FavServersIter
         }
-        if server.Server.Name == "" && server.Server.Players == "" {
-            m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+        if m.fav_servers_store.IterIsValid(iter) {
+            if server.Server.Name == "" && server.Server.Players == "" {
+                m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            } else {
+                m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            }
+            server_name := ctx.Colorizer.Fix(server.Server.Name)
+            m.fav_servers_store.SetValue(iter, 1, server_name)
+            m.fav_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
+            m.fav_servers_store.SetValue(iter, 3, server.Server.Map)
+            m.fav_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
+            m.fav_servers_store.SetValue(iter, 5, server.Server.Ping)
+            m.fav_servers_store.SetValue(iter, 6, server.Server.Version)
+            m.fav_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            fmt.Println("Invalid iter for server: " + server.Server.Ip + ":" + server.Server.Port)
         }
-        server_name := ctx.Colorizer.Fix(server.Server.Name)
-        m.fav_servers_store.Set(&iter, 1, server_name)
-        m.fav_servers_store.Set(&iter, 2, m.gamemodes[server.Server.Gamemode])
-        m.fav_servers_store.Set(&iter, 3, server.Server.Map)
-        m.fav_servers_store.Set(&iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
-        m.fav_servers_store.Set(&iter, 5, server.Server.Ping)
-        m.fav_servers_store.Set(&iter, 6, server.Server.Version)
-        m.fav_servers_store.Set(&iter, 7, server.Server.Ip + ":" + server.Server.Port)
     }
 }
 
@@ -992,10 +993,12 @@ func (m *MainWindow) showHide() {
     }
 }
 
+// Show tray menu on right-click on tray icon.
 func (m *MainWindow) showTrayMenu(cbx *glib.CallbackContext) {
     m.tray_menu.Popup(nil, nil, gtk.StatusIconPositionMenu, m.tray_icon,  uint(cbx.Args(0)), uint32(cbx.Args(1)))
 }
 
+// Unlocking interface after game shut down.
 func (m *MainWindow) unlockInterface() {
     m.launch_button.SetSensitive(true)
     m.statusbar.Push(m.statusbar_context_id, "URTrator is ready.")

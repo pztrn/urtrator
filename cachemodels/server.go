@@ -19,6 +19,8 @@ import (
 
 type Server struct {
     Server *datamodels.Server
-    TreeIter gtk.TreeIter
-    IterSet bool
+    AllServersIter *gtk.TreeIter
+    FavServersIter *gtk.TreeIter
+    AllServersIterSet bool
+    FavServersIterSet bool
 }
