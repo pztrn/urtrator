@@ -12,7 +12,6 @@ package ui
 import (
     // stdlib
     "fmt"
-    "strconv"
 
     // Local
     "github.com/pztrn/urtrator/datamodels"
