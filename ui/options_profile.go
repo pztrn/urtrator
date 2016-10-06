@@ -152,6 +152,7 @@ func (op *OptionsProfile) Initialize(update bool, lp func()) {
     op.urt_version_combo.SetTooltipText(urt_version_tooltip)
     op.urt_version_combo.AppendText("4.2.023")
     op.urt_version_combo.AppendText("4.3.0")
+    op.urt_version_combo.AppendText("4.3.1")
     op.urt_version_combo.SetActive(1)
     urt_version_hbox.PackStart(urt_version_label, false, true, 5)
     urt_version_hbox.PackStart(urt_version_sep, true, true, 5)
