@@ -71,6 +71,8 @@ type MainWindow struct {
     tray_icon *gtk.StatusIcon
     // Tray menu.
     tray_menu *gtk.Menu
+    // Toolbar's label.
+    toolbar_label *gtk.Label
 
     // Storages.
     // All servers store.
@@ -425,6 +427,8 @@ func (m *MainWindow) Initialize() {
     m.launch_button = gtk.NewButtonWithLabel("Launch!")
     m.launch_button.SetTooltipText("Launch Urban Terror")
     m.launch_button.Clicked(m.launchGame)
+    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, 32)
+    m.launch_button.SetImage(launch_button_image)
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
     // Statusbar.
@@ -734,6 +738,16 @@ func (m *MainWindow) InitializeToolbar() {
     fav_delete_button.SetTooltipText("Remove selected server from favorites")
     fav_delete_button.OnClicked(m.deleteFromFavorites)
     m.toolbar.Insert(fav_delete_button, 4)
+
+    // Separator for toolbar's label and buttons.
+    toolbar_separator_toolitem := gtk.NewToolItem()
+    toolbar_separator_toolitem.SetExpand(true)
+    m.toolbar.Insert(toolbar_separator_toolitem, 5)
+    // Toolbar's label.
+    m.toolbar_label = gtk.NewLabel("URTrator is ready")
+    toolbar_label_toolitem := gtk.NewToolItem()
+    toolbar_label_toolitem.Add(m.toolbar_label)
+    m.toolbar.Insert(toolbar_label_toolitem, 6)
 }
 
 // Tray icon initialization.
@@ -880,6 +894,7 @@ func (m *MainWindow) launchGame() error {
 
     // Hey, we're ok here! :) Launch Urban Terror!
     m.statusbar.Push(m.statusbar_context_id, "Launching Urban Terror...")
+    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Urban Terror is launched with profile </span><span foreground=\"blue\">" + profile[0].Name + "</span> <span foreground=\"red\" font_weight=\"bold\">and connected to </span><span foreground=\"orange\" font_weight=\"bold\">" + srv_address + "</span></markup>")
     m.launch_button.SetSensitive(false)
     // ToDo: handling server passwords.
     ctx.Launcher.Launch(&profile[0], srv_address, "", m.unlockInterface)
@@ -978,6 +993,7 @@ func (m *MainWindow) loadProfiles() {
 
 func (m *MainWindow) serversUpdateCompleted() {
     m.statusbar.Push(m.statusbar_context_id, "Servers updated.")
+    m.toolbar_label.SetLabel("Servers updated.")
 }
 
 func (m *MainWindow) showHide() {
@@ -1002,11 +1018,13 @@ func (m *MainWindow) showTrayMenu(cbx *glib.CallbackContext) {
 func (m *MainWindow) unlockInterface() {
     m.launch_button.SetSensitive(true)
     m.statusbar.Push(m.statusbar_context_id, "URTrator is ready.")
+    m.toolbar_label.SetLabel("URTrator is ready.")
 }
 
 // Triggered when "Update all servers" button is clicked.
 func (m *MainWindow) UpdateServers() {
     m.statusbar.Push(m.statusbar_context_id, "Updating servers...")
+    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>")
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
 

@@ -124,8 +124,10 @@ func (p *Pooler) UpdateServers(servers_type string) {
 
     if servers_type == "all" {
         Eventer.LaunchEvent("loadAllServers")
+        Eventer.LaunchEvent("serversUpdateCompleted")
     } else if servers_type == "favorites" {
         Eventer.LaunchEvent("loadFavoriteServers")
+        Eventer.LaunchEvent("serversUpdateCompleted")
     }
 }
 
