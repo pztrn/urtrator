@@ -1094,15 +1094,8 @@ func (m *MainWindow) showShortServerInformation() {
     model.GetValue(iter, 7, srv_address_gval)
     srv_address := srv_address_gval.GetString()
 
-    var srv_ping_raw string
-    srv_ping_gval := glib.ValueFromNative(srv_ping_raw)
-    model.GetValue(iter, 7, srv_ping_gval)
-    srv_ping := srv_ping_gval.GetString()
-
-    ping, _ := strconv.Atoi(srv_ping)
-
     // Getting server information from cache.
-    if len(srv_address) > 0 && ping < 1000 {
+    if len(srv_address) > 0 && ctx.Cache.Servers[srv_address].Server.Players != "" {
         server_info := ctx.Cache.Servers[srv_address].Server
         parsed_general_data := ioq3dataparser.ParseInfoToMap(server_info.ExtendedConfig)
         parsed_players_info := ioq3dataparser.ParsePlayersInfoToMap(server_info.PlayersInfo)
