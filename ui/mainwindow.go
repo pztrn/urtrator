@@ -14,6 +14,7 @@ import (
     "encoding/base64"
     "errors"
     "fmt"
+    "reflect"
     "runtime"
     "strconv"
     "strings"
@@ -148,10 +149,15 @@ func (m *MainWindow) addToFavorites() {
     }
 }
 
+// Executes when delimiter for two panes is moved, to calculate VALID
+// position.
 func (m *MainWindow) checkMainPanePosition() {
     m.pane_negative_position = m.window_width - m.hpane.GetPosition()
 }
 
+// Executes when main window is moved or resized.
+// Also calculating pane delimiter position and set it to avoid
+// widgets hell :).
 func (m *MainWindow) checkPositionAndSize() {
     m.window.GetPosition(&m.window_pos_x, &m.window_pos_y)
     m.window.GetSize(&m.window_width, &m.window_height)
@@ -159,6 +165,7 @@ func (m *MainWindow) checkPositionAndSize() {
     m.hpane.SetPosition(m.window_width - m.pane_negative_position)
 }
 
+// Executes on URTrator shutdown.
 func (m *MainWindow) Close() {
     // Save window parameters.
     ctx.Cfg.Cfg["/mainwindow/width"] = strconv.Itoa(m.window_width)
@@ -170,6 +177,7 @@ func (m *MainWindow) Close() {
     ctx.Close()
 }
 
+// Deleting server from favorites.
 func (m *MainWindow) deleteFromFavorites() {
     fmt.Println("Removing server from favorites...")
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
@@ -221,6 +229,8 @@ func (m *MainWindow) deleteFromFavorites() {
     }
 }
 
+// Drop database data.
+// ToDo: extend so we should have an ability to decide what to drop.
 func (m *MainWindow) dropDatabasesData() {
     fmt.Println("Dropping database data...")
     var will_continue bool = false
@@ -249,6 +259,7 @@ func (m *MainWindow) dropDatabasesData() {
     }
 }
 
+// Executes on "Edit favorite server" click.
 func (m *MainWindow) editFavorite() {
     fmt.Println("Editing favorite server...")
 
@@ -276,6 +287,8 @@ func (m *MainWindow) editFavorite() {
     }
 }
 
+// Executes when "Hide offline servers" checkbox changed it's state on
+// "Servers" tab.
 func (m *MainWindow) hideOfflineAllServers() {
     fmt.Println("(Un)Hiding offline servers in 'Servers' tab...")
     if m.all_servers_hide_offline.GetActive() {
@@ -286,6 +299,8 @@ func (m *MainWindow) hideOfflineAllServers() {
     ctx.Eventer.LaunchEvent("loadAllServers")
 }
 
+// Executes when "Hide offline servers" checkbox changed it's state on
+// "Favorites" tab.
 func (m *MainWindow) hideOfflineFavoriteServers() {
     fmt.Println("(Un)Hiding offline servers in 'Favorite' tab...")
     if m.fav_servers_hide_offline.GetActive() {
@@ -296,6 +311,7 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
 }
 
+// Main window initialization.
 func (m *MainWindow) Initialize() {
     m.initializeStorages()
 
@@ -381,6 +397,9 @@ func (m *MainWindow) Initialize() {
         m.initializeTrayIcon()
     }
 
+    // Events.
+    m.initializeEvents()
+
     // Game profiles and launch button.
     profile_and_launch_hbox := gtk.NewHBox(false, 0)
     m.vbox.PackStart(profile_and_launch_hbox, false, true, 5)
@@ -421,12 +440,22 @@ func (m *MainWindow) Initialize() {
 
     // Launch events.
     ctx.Eventer.LaunchEvent("loadProfiles")
+    ctx.Eventer.LaunchEvent("loadServersIntoCache")
     ctx.Eventer.LaunchEvent("loadAllServers")
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
 
     gtk.Main()
 }
 
+// Events initialization.
+func (m *MainWindow) initializeEvents() {
+    fmt.Println("Initializing events...")
+    ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
+    ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
+    ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
+}
+
+// Main menu initialization.
 func (m *MainWindow) InitializeMainMenu() {
     m.menubar = gtk.NewMenuBar()
     m.vbox.PackStart(m.menubar, false, false, 0)
@@ -472,6 +501,7 @@ func (m *MainWindow) InitializeMainMenu() {
     about_menu_drop_database_data_item.Connect("activate", m.dropDatabasesData)
 }
 
+// Sidebar (with quick connect and server's information) initialization.
 func (m *MainWindow) initializeSidebar() {
     sidebar_vbox := gtk.NewVBox(false, 0)
 
@@ -544,6 +574,7 @@ func (m *MainWindow) initializeStorages() {
     m.hidden = false
 }
 
+// Tabs widget initialization, including all child widgets.
 func (m *MainWindow) InitializeTabs() {
     // Create tabs widget.
     m.tab_widget = gtk.NewNotebook()
@@ -667,11 +698,9 @@ func (m *MainWindow) InitializeTabs() {
 
     // Add tab_widget widget to window.
     m.hpane.Add1(m.tab_widget)
-
-    ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
-    ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
 }
 
+// Toolbar initialization.
 func (m *MainWindow) InitializeToolbar() {
     m.toolbar = gtk.NewToolbar()
     m.vbox.PackStart(m.toolbar, false, false, 5)
@@ -708,6 +737,7 @@ func (m *MainWindow) InitializeToolbar() {
     m.toolbar.Insert(fav_delete_button, 4)
 }
 
+// Tray icon initialization.
 func (m *MainWindow) initializeTrayIcon() {
     fmt.Println("Initializing tray icon...")
 
@@ -859,67 +889,68 @@ func (m *MainWindow) launchGame() error {
 }
 
 func (m *MainWindow) loadAllServers() {
-    fmt.Println("Loading servers lists into widgets...")
-    servers := []datamodels.Server{}
-    err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
+    fmt.Println("Loading all servers...")
     // ToDo: do it without clearing.
-    m.all_servers_store.Clear()
-    for _, srv := range servers {
-        if m.all_servers_hide_offline.GetActive() && srv.Name == "" && srv.Players == "" {
+    srv_addrs := reflect.ValueOf(ctx.Cache.Servers).MapKeys()
+    fmt.Println(srv_addrs)
+    for _, server := range ctx.Cache.Servers {
+        if m.all_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
             continue
         }
         var iter gtk.TreeIter
-        m.all_servers_store.Append(&iter)
-        if srv.Name == "" && srv.Players == "" {
+        if !server.IterSet {
+            server.TreeIter = iter
+            m.all_servers_store.Append(&iter)
+            server.IterSet = true
+        } else {
+            iter = server.TreeIter
+        }
+        if server.Server.Name == "" && server.Server.Players == "" {
             m.all_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         } else {
             m.all_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         }
-        srv_name := ctx.Colorizer.Fix(srv.Name)
-        m.all_servers_store.Set(&iter, 1, srv_name)
-        m.all_servers_store.Set(&iter, 2, m.gamemodes[srv.Gamemode])
-        m.all_servers_store.Set(&iter, 3, srv.Map)
-        m.all_servers_store.Set(&iter, 4, srv.Players + "/" + srv.Maxplayers)
-        m.all_servers_store.Set(&iter, 5, srv.Ping)
-        m.all_servers_store.Set(&iter, 6, srv.Version)
-        m.all_servers_store.Set(&iter, 7, srv.Ip + ":" + srv.Port)
+        server_name := ctx.Colorizer.Fix(server.Server.Name)
+        m.all_servers_store.Set(&iter, 1, server_name)
+        m.all_servers_store.Set(&iter, 2, m.gamemodes[server.Server.Gamemode])
+        m.all_servers_store.Set(&iter, 3, server.Server.Map)
+        m.all_servers_store.Set(&iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
+        m.all_servers_store.Set(&iter, 5, server.Server.Ping)
+        m.all_servers_store.Set(&iter, 6, server.Server.Version)
+        m.all_servers_store.Set(&iter, 7, server.Server.Ip + ":" + server.Server.Port)
     }
 }
 
 func (m *MainWindow) loadFavoriteServers() {
     fmt.Println("Loading favorite servers...")
-    servers := []datamodels.Server{}
-    err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers WHERE favorite='1'")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-    // ToDo: do it without clearing.
-    m.fav_servers_store.Clear()
-    for _, srv := range servers {
-        if srv.Favorite != "1" {
+    for _, server := range ctx.Cache.Servers {
+        if server.Server.Favorite != "1" {
             continue
         }
-        if m.fav_servers_hide_offline.GetActive() && srv.Name == "" && srv.Players == "" {
+        if m.fav_servers_hide_offline.GetActive() && server.Server.Name == "" && server.Server.Players == "" {
             continue
         }
         var iter gtk.TreeIter
-        m.fav_servers_store.Append(&iter)
-        if srv.Name == "" && srv.Players == "" {
+        if !server.IterSet {
+            server.TreeIter = iter
+            m.fav_servers_store.Append(&iter)
+            server.IterSet = true
+        } else {
+            iter = server.TreeIter
+        }
+        if server.Server.Name == "" && server.Server.Players == "" {
             m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         } else {
             m.fav_servers_store.Set(&iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
         }
-        srv_name := ctx.Colorizer.Fix(srv.Name)
-        m.fav_servers_store.Set(&iter, 1, srv_name)
-        m.fav_servers_store.Set(&iter, 2, m.gamemodes[srv.Gamemode])
-        m.fav_servers_store.Set(&iter, 3, srv.Map)
-        m.fav_servers_store.Set(&iter, 4, srv.Players + "/" + srv.Maxplayers)
-        m.fav_servers_store.Set(&iter, 5, srv.Ping)
-        m.fav_servers_store.Set(&iter, 6, srv.Version)
-        m.fav_servers_store.Set(&iter, 7, srv.Ip + ":" + srv.Port)
+        server_name := ctx.Colorizer.Fix(server.Server.Name)
+        m.fav_servers_store.Set(&iter, 1, server_name)
+        m.fav_servers_store.Set(&iter, 2, m.gamemodes[server.Server.Gamemode])
+        m.fav_servers_store.Set(&iter, 3, server.Server.Map)
+        m.fav_servers_store.Set(&iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
+        m.fav_servers_store.Set(&iter, 5, server.Server.Ping)
+        m.fav_servers_store.Set(&iter, 6, server.Server.Version)
+        m.fav_servers_store.Set(&iter, 7, server.Server.Ip + ":" + server.Server.Port)
     }
 }
 
@@ -944,6 +975,10 @@ func (m *MainWindow) loadProfiles() {
     fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
 }
 
+func (m *MainWindow) serversUpdateCompleted() {
+    m.statusbar.Push(m.statusbar_context_id, "Servers updated.")
+}
+
 func (m *MainWindow) showHide() {
     if m.hidden {
         m.window.Show()
@@ -966,47 +1001,15 @@ func (m *MainWindow) unlockInterface() {
     m.statusbar.Push(m.statusbar_context_id, "URTrator is ready.")
 }
 
-func (m *MainWindow) updateFavorites(done_chan chan map[string]*datamodels.Server, error_chan chan bool) {
-    m.fav_servers_store.Clear()
-    servers := []datamodels.Server{}
-    err := ctx.Database.Db.Select(&servers, "SELECT * FROM servers WHERE favorite='1'")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-
-    var servers_from_db [][]string
-
-    for s := range servers {
-        servers_from_db = append(servers_from_db, []string{servers[s].Ip, servers[s].Port})
-    }
-
-    go ctx.Requester.UpdateFavoriteServers(servers_from_db, done_chan, error_chan)
-}
-
+// Triggered when "Update all servers" button is clicked.
 func (m *MainWindow) UpdateServers() {
     m.statusbar.Push(m.statusbar_context_id, "Updating servers...")
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
-    done_chan := make(chan map[string]*datamodels.Server, 1)
-    error_chan := make(chan bool, 1)
+
     if strings.Contains(current_tab, "Servers") {
-        go ctx.Requester.UpdateAllServers(done_chan, error_chan)
+        go ctx.Requester.UpdateAllServers()
     } else if strings.Contains(current_tab, "Favorites") {
-        m.updateFavorites(done_chan, error_chan)
+        go ctx.Requester.UpdateFavoriteServers()
     }
-
-    select {
-    case data := <- done_chan:
-        fmt.Println("Information about servers successfully gathered")
-        ctx.Database.UpdateServers(data)
-        if strings.Contains(current_tab, "Servers") {
-            ctx.Eventer.LaunchEvent("loadAllServers")
-        } else if strings.Contains(current_tab, "Favorites") {
-            ctx.Eventer.LaunchEvent("loadFavoriteServers")
-        }
-    case <- error_chan:
-        fmt.Println("Error occured")
-    }
-
-    m.statusbar.Push(m.statusbar_context_id, "Servers updated.")
 }

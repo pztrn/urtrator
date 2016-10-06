@@ -14,6 +14,7 @@ import (
     "fmt"
 
     // local
+    "github.com/pztrn/urtrator/cache"
     "github.com/pztrn/urtrator/colorizer"
     "github.com/pztrn/urtrator/configuration"
     "github.com/pztrn/urtrator/database"
@@ -26,6 +27,8 @@ import (
 )
 
 type Context struct {
+    // Caching.
+    Cache *cache.Cache
     // Colors parser and prettifier.
     Colorizer *colorizer.Colorizer
     // Configuration.
@@ -43,10 +46,16 @@ type Context struct {
 func (ctx *Context) Close() {
     fmt.Println("Closing URTrator...")
 
+    ctx.Cache.FlushServers()
     ctx.Database.Close()
 
     // At last, close main window.
     gtk.MainQuit()
+}
+
+func (ctx *Context) initializeCache() {
+    ctx.Cache = cache.New(ctx.Database, ctx.Eventer)
+    ctx.Cache.Initialize()
 }
 
 func (ctx *Context) initializeColorizer() {
@@ -76,7 +85,7 @@ func (ctx *Context) initializeLauncher() {
 }
 
 func (ctx *Context) initializeRequester() {
-    ctx.Requester = requester.New()
+    ctx.Requester = requester.New(ctx.Cache, ctx.Eventer)
     ctx.Requester.Initialize()
 }
 
@@ -86,6 +95,7 @@ func (ctx *Context) Initialize() {
     ctx.initializeConfig()
     ctx.initializeDatabase()
     ctx.initializeEventer()
+    ctx.initializeCache()
     ctx.initializeLauncher()
     ctx.initializeRequester()
 }

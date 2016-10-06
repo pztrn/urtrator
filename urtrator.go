@@ -16,10 +16,14 @@ import (
 
     // stdlib
     "fmt"
+    "runtime"
 )
 
 func main() {
     fmt.Println("This is URTrator, version 0.1")
+
+    numCPUs := runtime.NumCPU()
+    runtime.GOMAXPROCS(numCPUs)
 
     ctx := context.New()
     ctx.Initialize()

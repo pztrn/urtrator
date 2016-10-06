@@ -12,19 +12,15 @@ package requester
 import (
     // stdlib
     "bytes"
-    "errors"
     "fmt"
     "net"
     "strconv"
-    "strings"
-    "sync"
     "time"
-
-    // local
-    "github.com/pztrn/urtrator/datamodels"
 )
 
 type Requester struct {
+    // Pooler.
+    pooler *Pooler
     // Master server address
     master_server string
     // Master server port
@@ -44,12 +40,14 @@ func (r *Requester) Initialize() {
     r.master_server_port = "27900"
     r.pp = "\377\377\377\377"
     r.ip_delimiter = 92
+    r.pooler = &Pooler{}
+    r.pooler.Initialize()
 }
 
 // Gets all available servers from master server.
-func (r *Requester) getServers(callback chan [][]string) {
+// This isn't in pooler, because it have no need to be pooled.
+func (r *Requester) getServers() {
     // IP addresses we will compose to return.
-    var received_ips [][]string
     conn, err1 := net.Dial("udp", r.master_server + ":" + r.master_server_port)
     if err1 != nil {
         fmt.Println("Error dialing to master server!")
@@ -109,146 +107,29 @@ func (r *Requester) getServers(callback chan [][]string) {
         // second byte.
         p1 := int(slice[4]) * 256
         port := strconv.Itoa(p1 + int(slice[5]))
+        addr := ip + ":" + port
 
-        // Create a slice with IP and port.
-        ip_and_port := []string{ip, port}
-        // Add it to received_ips.
-        received_ips = append(received_ips, ip_and_port)
+        // Check if we already have this server added previously. If so - do nothing.
+        _, ok := Cache.Servers[addr]
+        if !ok {
+            // Create cached server.
+            Cache.CreateServer(addr)
+            Cache.Servers[addr].Server.Ip = ip
+            Cache.Servers[addr].Server.Port = port
+        }
     }
-
-    fmt.Println("Parsed " + strconv.Itoa(len(received_ips)) + " addresses")
-    callback <- received_ips
 }
 
 // Updates information about all available servers from master server and
 // parses it to usable format.
-func (r *Requester) UpdateAllServers(done_chan chan map[string]*datamodels.Server, error_chan chan bool) {
+func (r *Requester) UpdateAllServers() {
     fmt.Println("Starting all servers updating procedure...")
-
-    callback := make(chan [][]string)
-    go r.getServers(callback)
-
-    servers := make(map[string]*datamodels.Server)
-
-    select {
-    case data := <- callback:
-        // Yay, we got data! :)
-        fmt.Println("Received " + strconv.Itoa(len(data)) + " servers")
-        servers = r.updateServerGoroutineDispatcher(data)
-        break
-    case <- time.After(time.Second * 10):
-        // Timeouted? Okay, push error back.
-        error_chan <- true
-    }
-
-    done_chan <- servers
+    r.getServers()
+    r.pooler.UpdateServers("all")
 }
 
-func (r *Requester) UpdateFavoriteServers(servers [][]string, done_chan chan map[string]*datamodels.Server, error_chan chan bool) {
+func (r *Requester) UpdateFavoriteServers() {
     fmt.Println("Updating favorites servers...")
-    updated_servers := r.updateServerGoroutineDispatcher(servers)
-    done_chan <- updated_servers
+    r.pooler.UpdateServers("favorites")
 }
 
-func (r *Requester) updateServerGoroutineDispatcher(data [][]string) map[string]*datamodels.Server {
-    var wait sync.WaitGroup
-    var lock = sync.RWMutex{}
-    done_updating := 0
-    servers := make(map[string]*datamodels.Server)
-
-    for _, s := range data {
-        s := datamodels.Server{
-            Ip: s[0],
-            Port: s[1],
-        }
-        go func(s *datamodels.Server, servers map[string]*datamodels.Server) {
-            wait.Add(1)
-            defer wait.Done()
-            r.UpdateServer(s)
-            done_updating = done_updating + 1
-            lock.Lock()
-            servers[s.Ip + ":" + s.Port] = s
-            lock.Unlock()
-        }(&s, servers)
-    }
-    wait.Wait()
-    return servers
-}
-
-// Updates information about specific server.
-func (r *Requester) UpdateServer(server *datamodels.Server) error {
-    srv := server.Ip + ":" + server.Port
-    fmt.Println("Updating server: " + srv)
-
-    // Dial to server.
-    conn, err1 := net.Dial("udp", srv)
-    if err1 != nil {
-        fmt.Println("Error dialing to server " + srv + "!")
-        return errors.New("Error dialing to server " + srv + "!")
-    }
-    defer conn.Close()
-
-    // Set deadline, so we won't wait forever.
-    ddl := time.Now()
-    // This should be enough. Maybe, you should'n run URTrator on modem
-    // connections? :)
-    ddl = ddl.Add(time.Second * 2)
-    conn.SetDeadline(ddl)
-
-    msg := []byte(r.pp + "getstatus")
-    conn.Write(msg)
-
-    // UDP Buffer.
-    var received_buf []byte = make([]byte, 4096)
-    // Received buffer.
-    var raw_received []byte
-    for {
-        _, err := conn.Read(received_buf)
-        if err != nil {
-            break
-        }
-        raw_received = append(raw_received, received_buf...)
-    }
-
-    // First line is "infoResponse" string, which we should skip by
-    // splitting response by "\n".
-    received_lines := strings.Split(string(raw_received), "\n")
-    // We have server's data!
-    if len(received_lines) > 1 {
-        srv_config := strings.Split(received_lines[1], "\\")
-        // Parse server configuration into passed server's datamodel.
-        for i := 0; i < len(srv_config); i = i + 1 {
-            if srv_config[i] == "g_modversion" {
-                server.Version = srv_config[i + 1]
-            }
-            if srv_config[i] == "g_gametype" {
-                server.Gamemode = srv_config[i + 1]
-            }
-            if srv_config[i] == "sv_maxclients" {
-                server.Maxplayers = srv_config[i + 1]
-            }
-            if srv_config[i] == "clients" {
-                server.Players = srv_config[i + 1]
-            }
-            if srv_config[i] == "mapname" {
-                server.Map = srv_config[i + 1]
-            }
-            if srv_config[i] == "sv_hostname" {
-                server.Name = srv_config[i + 1]
-            }
-        }
-        if len(received_lines) >= 2 {
-            // Here we go, players information.
-            players := received_lines[2:]
-            server.Players = strconv.Itoa(len(players))
-        }
-    }
-
-    // ToDo: Calculate ping. 0 for now.
-    server.Ping = "0"
-    // ToDo: put this info.
-    server.ExtendedConfig = ""
-    server.PlayersInfo = ""
-
-    return nil
-}

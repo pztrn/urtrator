@@ -7,26 +7,22 @@
 // Licensed under Terms and Conditions of GNU General Public License
 // version 3 or any higher.
 // ToDo: put full text of license here.
-package requester
+package cache
 
 import (
-    // stdlib
-    "fmt"
-
     // local
-    "github.com/pztrn/urtrator/cache"
-    "github.com/pztrn/urtrator/eventer"
+    event "github.com/pztrn/urtrator/eventer"
+    "github.com/pztrn/urtrator/database"
 )
 
 var (
-    Cache *cache.Cache
-    Eventer *eventer.Eventer
+    Database *database.Database
+    Eventer *event.Eventer
 )
 
-func New(c *cache.Cache, e *eventer.Eventer) *Requester {
-    Cache = c
+func New(d *database.Database, e *event.Eventer) *Cache {
+    Database = d
     Eventer = e
-    fmt.Println("Creating Requester object...")
-    r := Requester{}
-    return &r
+    c := Cache{}
+    return &c
 }
