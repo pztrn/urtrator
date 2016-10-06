@@ -23,6 +23,9 @@ type Colorizer struct {
 
 func (c *Colorizer) Fix(data string) string {
     result := ""
+
+    data = html.EscapeString(data)
+
     data_splitted := strings.Split(data, "^")
     if len(data_splitted) > 1 {
         for item := range data_splitted {
@@ -32,7 +35,7 @@ func (c *Colorizer) Fix(data string) string {
                 if !ok {
                     colorcode = "#000000"
                 }
-                result += "<span foreground=\"" + colorcode + "\">" + html.EscapeString(string([]rune(data_splitted[item])[1:])) + "</span>"
+                result += "<span foreground=\"" + colorcode + "\">" + string([]rune(data_splitted[item])[1:]) + "</span>"
             } else {
                 result += data_splitted[item]
             }

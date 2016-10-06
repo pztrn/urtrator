@@ -293,6 +293,16 @@ func (m *MainWindow) editFavorite() {
     }
 }
 
+func (m *MainWindow) getGameModeName(name string) string {
+    val, ok := m.gamemodes[name]
+
+    if !ok {
+        return "Unknown or custom"
+    }
+
+    return val
+}
+
 // Executes when "Hide offline servers" checkbox changed it's state on
 // "Servers" tab.
 func (m *MainWindow) hideOfflineAllServers() {
@@ -423,8 +433,6 @@ func (m *MainWindow) Initialize() {
     profile_and_launch_hbox.PackStart(profiles_label, false, true, 5)
     profile_and_launch_hbox.PackStart(m.profiles, false, true, 5)
 
-    ctx.Eventer.AddEventHandler("loadProfiles", m.loadProfiles)
-
     // One more separator.
     sepp := gtk.NewVSeparator()
     profile_and_launch_hbox.PackStart(sepp, false, true, 5)
@@ -433,7 +441,7 @@ func (m *MainWindow) Initialize() {
     m.launch_button = gtk.NewButtonWithLabel("Launch!")
     m.launch_button.SetTooltipText("Launch Urban Terror")
     m.launch_button.Clicked(m.launchGame)
-    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, 32)
+    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, 24)
     m.launch_button.SetImage(launch_button_image)
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
@@ -461,6 +469,7 @@ func (m *MainWindow) initializeEvents() {
     fmt.Println("Initializing events...")
     ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
     ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
+    ctx.Eventer.AddEventHandler("loadProfiles", m.loadProfiles)
     ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
 }
 
@@ -596,11 +605,11 @@ func (m *MainWindow) initializeStorages() {
     // Servers tab list view storage.
     // Structure:
     // Server status icon|Server name|Mode|Map|Players|Ping|Version
-    m.all_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
+    m.all_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
     m.all_servers_store_sortable = gtk.NewTreeSortable(m.all_servers_store)
 
     // Same as above, but for favorite servers.
-    m.fav_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
+    m.fav_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
 
     // Server's information store. Used for quick preview in main window.
     m.server_info_store = gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
@@ -972,13 +981,13 @@ func (m *MainWindow) loadAllServers() {
         }
 
         if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
-            m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             m.all_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.all_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             server_name := ctx.Colorizer.Fix(server.Server.Name)
             m.all_servers_store.SetValue(iter, 1, server_name)
-            m.all_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
+            m.all_servers_store.SetValue(iter, 2, m.getGameModeName(server.Server.Gamemode))
             m.all_servers_store.SetValue(iter, 3, server.Server.Map)
             m.all_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
             m.all_servers_store.SetValue(iter, 5, server.Server.Ping)
@@ -1016,13 +1025,13 @@ func (m *MainWindow) loadFavoriteServers() {
         }
 
         if server.Server.Name == "" && server.Server.Players == "" {
-            m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             m.fav_servers_store.SetValue(iter, 7, server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.fav_servers_store.Set(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             server_name := ctx.Colorizer.Fix(server.Server.Name)
             m.fav_servers_store.SetValue(iter, 1, server_name)
-            m.fav_servers_store.SetValue(iter, 2, m.gamemodes[server.Server.Gamemode])
+            m.fav_servers_store.SetValue(iter, 2, m.getGameModeName(server.Server.Gamemode))
             m.fav_servers_store.SetValue(iter, 3, server.Server.Map)
             m.fav_servers_store.SetValue(iter, 4, server.Server.Players + "/" + server.Server.Maxplayers)
             m.fav_servers_store.SetValue(iter, 5, server.Server.Ping)
@@ -1167,8 +1176,9 @@ func (m *MainWindow) showShortServerInformation() {
 
         for _, value := range parsed_players_info {
             iter = new(gtk.TreeIter)
+            nick := ctx.Colorizer.Fix(value["nick"])
             m.server_info_store.Append(iter)
-            m.server_info_store.SetValue(iter, 0, value["nick"])
+            m.server_info_store.SetValue(iter, 0, nick)
             m.server_info_store.SetValue(iter, 1, "(frags: " + value["frags"] + " | ping: " + value["ping"] + ")")
         }
 

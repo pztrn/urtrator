@@ -101,6 +101,7 @@ func (c *Cache) initializeStorages() {
 }
 
 func (c *Cache) LoadServers() {
+    fmt.Println("Loading servers into cache...")
     c.Servers = make(map[string]*cachemodels.Server)
     // Getting servers from database.
     raw_servers := []datamodels.Server{}
@@ -129,4 +130,5 @@ func (c *Cache) LoadServers() {
         c.Servers[key].Server.ExtendedConfig = server.ExtendedConfig
         c.Servers[key].Server.PlayersInfo = server.PlayersInfo
     }
+    fmt.Println("Load completed.")
 }

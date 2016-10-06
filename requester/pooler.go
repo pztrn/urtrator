@@ -14,7 +14,7 @@ import (
     "errors"
     "fmt"
     "net"
-    "runtime"
+    //"runtime"
     "strconv"
     "strings"
     "sync"
@@ -34,8 +34,9 @@ type Pooler struct {
 func (p *Pooler) Initialize() {
     fmt.Println("Initializing requester goroutine pooler...")
     // ToDo: figure out how to make this work nice.
-    p.maxrequests = runtime.NumCPU() * 2000
+    p.maxrequests = 500
     p.pp = "\377\377\377\377"
+    fmt.Println("Pooler initialized")
 }
 
 // Servers pinging pooler. Should be started as goroutine to prevent
@@ -119,16 +120,12 @@ func (p *Pooler) UpdateServers(servers_type string) {
         }(server.Server)
     }
     wait.Wait()
-    Eventer.LaunchEvent("flushServers")
     p.PingServers(servers_type)
+    Eventer.LaunchEvent("flushServers")
 
-    if servers_type == "all" {
-        Eventer.LaunchEvent("loadAllServers")
-        Eventer.LaunchEvent("serversUpdateCompleted")
-    } else if servers_type == "favorites" {
-        Eventer.LaunchEvent("loadFavoriteServers")
-        Eventer.LaunchEvent("serversUpdateCompleted")
-    }
+    Eventer.LaunchEvent("loadAllServers")
+    Eventer.LaunchEvent("loadFavoriteServers")
+    Eventer.LaunchEvent("serversUpdateCompleted")
 }
 
 // Updates information about specific server.
