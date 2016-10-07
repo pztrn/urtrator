@@ -21,6 +21,7 @@ import (
     "github.com/pztrn/urtrator/ioq3dataparser"
 
     // Other
+    "github.com/mattn/go-gtk/gdkpixbuf"
     "github.com/mattn/go-gtk/glib"
     "github.com/mattn/go-gtk/gtk"
 )
@@ -110,6 +111,17 @@ type MainWindow struct {
     column_names map[string]string
     // Real columns positions on servers tabs.
     column_pos map[string]map[string]int
+
+    // Resources.
+    // Pixbufs.
+    // For unavailable (e.g. offline) server.
+    server_offline_pic *gdkpixbuf.Pixbuf
+    // For online server.
+    server_online_pic *gdkpixbuf.Pixbuf
+    // For private (passworded) server.
+    server_passworded_pic *gdkpixbuf.Pixbuf
+    // For public server
+    server_public_pic *gdkpixbuf.Pixbuf
 
 
     // Flags.
@@ -250,16 +262,6 @@ func (m *MainWindow) editFavorite() {
         srv := ctx.Cache.Servers[server_address].Server
         m.favorite_dialog.InitializeUpdate(srv)
     }
-}
-
-func (m *MainWindow) getGameModeName(name string) string {
-    val, ok := m.gamemodes[name]
-
-    if !ok {
-        return "Unknown or custom"
-    }
-
-    return val
 }
 
 // Executes when "Hide offline servers" checkbox changed it's state on
@@ -439,14 +441,14 @@ func (m *MainWindow) loadAllServers() {
         }
 
         if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
-            m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.all_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
             if server.Server.IsPrivate == "1" {
-                m.all_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+                m.all_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
             } else {
-                m.all_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+                m.all_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Name"], server_name)
@@ -493,14 +495,14 @@ func (m *MainWindow) loadFavoriteServers() {
         }
 
         if server.Server.Name == "" && server.Server.Players == "" {
-            m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.fav_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+            m.fav_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
             if server.Server.IsPrivate == "1" {
-                m.fav_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+                m.fav_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
             } else {
-                m.fav_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
+                m.fav_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Name"], server_name)
@@ -673,22 +675,7 @@ func (m *MainWindow) unlockInterface() {
 
 func (m *MainWindow) updateOneServer() {
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    sel := m.all_servers.GetSelection()
-    model := m.all_servers.GetModel()
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server address.
-    var srv_addr string
-    srv_address_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, m.column_pos["Servers"]["IP"], srv_address_gval)
-    if strings.Contains(current_tab, "Favorites") {
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-        model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_address_gval)
-    }
-
-    srv_address := srv_address_gval.GetString()
+    srv_address := m.getIpFromServersList(current_tab)
 
     if len(srv_address) > 0 {
         go ctx.Requester.UpdateOneServer(srv_address)

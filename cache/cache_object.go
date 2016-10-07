@@ -84,17 +84,24 @@ func (c *Cache) FlushServers() {
         }
     }
 
+    Database.Unlock()
     tx := Database.Db.MustBegin()
     fmt.Println("Adding new servers...")
-    for _, srv := range new_servers {
-        tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private)", srv)
+    if len(new_servers) > 0 {
+        for _, srv := range new_servers {
+            tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private)", srv)
+        }
     }
     fmt.Println("Updating cached servers...")
     for _, srv := range cached_servers {
-        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info is_private=:is_private WHERE ip=:ip AND port=:port", &srv)
+        _, err := tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info, is_private=:is_private WHERE ip=:ip AND port=:port", &srv)
+        if err != nil {
+            fmt.Println(err.Error())
+        }
     }
 
     tx.Commit()
+    Database.Lock()
     fmt.Println("Done")
 }
 

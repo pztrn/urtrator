@@ -324,6 +324,16 @@ func (m *MainWindow) initializeStorages() {
 
     // Window hidden flag.
     m.hidden = false
+
+    // Pixbufs.
+    // Offline server.
+    m.server_offline_pic = gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    // Online server.
+    m.server_online_pic = gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    // Passworded server.
+    m.server_passworded_pic = gtk.NewImage().RenderIcon(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    // Public server.
+    m.server_public_pic = gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
 }
 
 // Tabs widget initialization, including all child widgets.
@@ -348,7 +358,6 @@ func (m *MainWindow) InitializeTabs() {
     // +2 because we have 2 static columns.
     all_servers_columns_to_append := make([]*gtk.TreeViewColumn, len(m.column_names) + 2)
     for pos, name := range m.column_names {
-        fmt.Println(pos, name)
         // Check if we have column position saved. If so - use it.
         // Otherwise use default position.
         // Should be actual only for first launch.
@@ -424,7 +433,6 @@ func (m *MainWindow) InitializeTabs() {
     // +2 because we have 2 static columns.
     fav_servers_columns_to_append := make([]*gtk.TreeViewColumn, len(m.column_names) + 2)
     for pos, name := range m.column_names {
-        fmt.Println(pos, name)
         // Check if we have column position saved. If so - use it.
         // Otherwise use default position.
         // Should be actual only for first launch.

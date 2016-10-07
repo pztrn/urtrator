@@ -9,6 +9,16 @@ import (
     "github.com/mattn/go-gtk/gtk"
 )
 
+func (m *MainWindow) getGameModeName(name string) string {
+    val, ok := m.gamemodes[name]
+
+    if !ok {
+        return "Unknown or custom"
+    }
+
+    return val
+}
+
 func (m *MainWindow) getIpFromServersList(current_tab string) string {
     // Getting server's address from list.
     sel := m.all_servers.GetSelection()

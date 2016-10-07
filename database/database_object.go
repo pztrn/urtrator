@@ -75,6 +75,10 @@ func (d *Database) Initialize(cfg *configuration.Config) {
     }
 }
 
+func (d *Database) Lock() {
+    runtime.LockOSThread()
+}
+
 func (d *Database) Migrate() {
     // Getting current database version.
     dbver := 0
@@ -91,3 +95,6 @@ func (d *Database) Migrate() {
     migrate_full(d, dbver)
 }
 
+func (d *Database) Unlock() {
+    runtime.UnlockOSThread()
+}
