@@ -429,15 +429,17 @@ func (m *MainWindow) loadAllServers() {
             iter = server.AllServersIter
         }
 
-        if !server.AllServersIterInList {
-            m.all_servers_store.Append(iter)
-            server.AllServersIterInList = true
+        if m.all_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+            if server.AllServersIterInList {
+                m.all_servers_store.Remove(iter)
+                server.AllServersIterInList = false
+            }
+            continue
         }
 
-        if m.all_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" && server.AllServersIterInList {
-            m.all_servers_store.Remove(iter)
-            server.AllServersIterInList = false
-            continue
+        if !server.AllServersIterInList && server.AllServersIterSet {
+            m.all_servers_store.Append(iter)
+            server.AllServersIterInList = true
         }
 
         if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
@@ -465,15 +467,6 @@ func (m *MainWindow) loadAllServers() {
 func (m *MainWindow) loadFavoriteServers() {
     fmt.Println("Loading favorite servers...")
     for _, server := range ctx.Cache.Servers {
-        if server.Server.Favorite != "1" && server.FavServersIterSet && server.FavServersIterInList {
-            m.fav_servers_store.Remove(server.FavServersIter)
-            server.FavServersIterInList = false
-        }
-
-        if server.Server.Favorite != "1" {
-            continue
-        }
-
         iter := new(gtk.TreeIter)
 
         if !server.FavServersIterSet {
@@ -483,15 +476,30 @@ func (m *MainWindow) loadFavoriteServers() {
             iter = server.FavServersIter
         }
 
-        if !server.FavServersIterInList {
-            m.fav_servers_store.Append(iter)
-            server.FavServersIterInList = true
+        if m.fav_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+            if server.FavServersIterInList {
+                m.fav_servers_store.Remove(iter)
+                server.FavServersIterInList = false
+            }
+            continue
         }
 
-        if m.fav_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" && server.FavServersIterInList {
-            m.fav_servers_store.Remove(iter)
+        // If server on favorites widget, but not favorited (e.g. just
+        // removed from favorites) - remove it from list.
+        if server.Server.Favorite != "1" && server.FavServersIterSet && server.FavServersIterInList {
+            m.fav_servers_store.Remove(server.FavServersIter)
             server.FavServersIterInList = false
+            server.FavServersIterSet = false
+        }
+
+        // Server isn't in favorites and wasn't previously added to widget.
+        if server.Server.Favorite != "1" {
             continue
+        }
+
+        if !server.FavServersIterInList && server.FavServersIterSet {
+            m.fav_servers_store.Append(iter)
+            server.FavServersIterInList = true
         }
 
         if server.Server.Name == "" && server.Server.Players == "" {
