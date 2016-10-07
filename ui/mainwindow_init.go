@@ -497,7 +497,7 @@ func (m *MainWindow) InitializeToolbar() {
     m.toolbar.Insert(button_update_all_servers, 0)
 
     button_update_one_server := gtk.NewToolButtonFromStock(gtk.STOCK_UNDO)
-    button_update_one_server.SetLabel("Update all servers")
+    button_update_one_server.SetLabel("Update selected server")
     button_update_one_server.SetTooltipText("Update only selected server")
     button_update_one_server.OnClicked(m.updateOneServer)
     m.toolbar.Insert(button_update_one_server, 1)
