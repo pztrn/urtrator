@@ -623,7 +623,7 @@ func (m *MainWindow) InitializeTabs() {
 
     m.all_servers.SetModel(m.all_servers_store)
     m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-        m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Private", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
+        m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
 
     all_srv_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
     all_srv_name_column.SetSortColumnId(2)
@@ -688,7 +688,7 @@ func (m *MainWindow) InitializeTabs() {
     m.tab_widget.AppendPage(tab_fav_srv_hbox, gtk.NewLabel("Favorites"))
     m.fav_servers.SetModel(m.fav_servers_store)
     m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Private", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
+    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
 
     fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
     fav_name_column.SetSortColumnId(2)
