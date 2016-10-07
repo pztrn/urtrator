@@ -627,31 +627,45 @@ func (m *MainWindow) InitializeTabs() {
 
     all_srv_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
     all_srv_name_column.SetSortColumnId(2)
+    all_srv_name_column.SetReorderable(true)
+    all_srv_name_column.SetResizable(true)
     m.all_servers.AppendColumn(all_srv_name_column)
 
     all_gamemode_column := gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 3)
     all_gamemode_column.SetSortColumnId(3)
+    all_gamemode_column.SetReorderable(true)
+    all_gamemode_column.SetResizable(true)
     m.all_servers.AppendColumn(all_gamemode_column)
 
     all_map_column := gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 4)
     all_map_column.SetSortColumnId(4)
+    all_map_column.SetReorderable(true)
+    all_map_column.SetResizable(true)
     m.all_servers.AppendColumn(all_map_column)
 
     // ToDo: custom sorting function.
     all_players_column := gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 5)
     all_players_column.SetSortColumnId(5)
+    all_players_column.SetReorderable(true)
+    all_players_column.SetResizable(true)
     m.all_servers.AppendColumn(all_players_column)
 
     all_ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 6)
     all_ping_column.SetSortColumnId(6)
+    all_ping_column.SetReorderable(true)
+    all_ping_column.SetResizable(true)
     m.all_servers.AppendColumn(all_ping_column)
 
     all_version_column := gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 7)
     all_version_column.SetSortColumnId(7)
+    all_version_column.SetReorderable(true)
+    all_version_column.SetResizable(true)
     m.all_servers.AppendColumn(all_version_column)
 
     all_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 8)
     all_ip_column.SetSortColumnId(8)
+    all_ip_column.SetReorderable(true)
+    all_ip_column.SetResizable(true)
     m.all_servers.AppendColumn(all_ip_column)
     // Sorting.
     // By default we are sorting by server name.
@@ -692,30 +706,44 @@ func (m *MainWindow) InitializeTabs() {
 
     fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
     fav_name_column.SetSortColumnId(2)
+    fav_name_column.SetReorderable(true)
+    fav_name_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_name_column)
 
     fav_mode_column := gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 3)
     fav_mode_column.SetSortColumnId(3)
+    fav_mode_column.SetReorderable(true)
+    fav_mode_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_mode_column)
 
     fav_map_column := gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 4)
     fav_map_column.SetSortColumnId(4)
+    fav_map_column.SetReorderable(true)
+    fav_map_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_map_column)
 
     fav_players_column := gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 5)
     fav_players_column.SetSortColumnId(5)
+    fav_players_column.SetReorderable(true)
+    fav_players_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_players_column)
 
     fav_ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 6)
     fav_ping_column.SetSortColumnId(6)
+    fav_ping_column.SetReorderable(true)
+    fav_ping_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_ping_column)
 
     fav_version_column := gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 7)
     fav_version_column.SetSortColumnId(7)
+    fav_version_column.SetReorderable(true)
+    fav_version_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_version_column)
 
     fav_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 8)
     fav_ip_column.SetSortColumnId(8)
+    fav_ip_column.SetReorderable(true)
+    fav_ip_column.SetResizable(true)
     m.fav_servers.AppendColumn(fav_ip_column)
 
     // Selection changed signal, which will update server's short info pane.

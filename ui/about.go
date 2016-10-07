@@ -35,6 +35,10 @@ func ShowAboutDialog() {
     artists = append(artists, "UrTConnector team, for great icons and allowing to use them.")
     ad.SetArtists(artists)
 
+    var documenters []string
+    documenters = append(documenters, "No one at this moment")
+    ad.SetDocumenters(documenters)
+
     ad.SetCopyright("Stanislav N. aka pztrn")
     ad.SetLicense(GPL_LICENSE)
 
