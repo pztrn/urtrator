@@ -23,11 +23,11 @@ When you're launching Urban Terror URTrator will check profile you're
 trying to use and, if version incompatability found, will not launch
 the game.
 * Favorites servers.
+* Updating single server.
+* Showing information about servers (like in UrT Connector).
 
 Planning:
 
-* Updating single server.
-* Showing information about servers (like in UrT Connector).
 * Friends searching.
 * RCON console.
 * Game updating (not from official servers yet, sorry).
@@ -42,10 +42,10 @@ files, etc.
 
 ## Release
 
-You don't need to install anything, thanks to Go's static linking.
+You don't need to install anything, thanks to Go's.
 URTrator executable contains everything we need. Just download
 approriate binary and launch it! :) The only thing is to make
-sure you have GTK2 installed.
+sure you have GTK2 and sqlite3 installed.
 
 ## Development version
 
@@ -87,10 +87,6 @@ go install github.com/pztrn/urtrator
 Many GTK warnings in console may appear while using URTrator. Unfortunately,
 they are out of control, because they are related to Go GTK+2 bindings
 and nothing can be done on URTrator side.
-
-## About box cause app crash on macOS
-
-As previous, it is related to GTK+2, nothing I can do there.
 
 ## Why GTK+2?
 
