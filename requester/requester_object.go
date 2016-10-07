@@ -20,7 +20,7 @@ import (
 
 type Requester struct {
     // Pooler.
-    pooler *Pooler
+    Pooler *Pooler
     // Master server address
     master_server string
     // Master server port
@@ -40,8 +40,8 @@ func (r *Requester) Initialize() {
     r.master_server_port = "27900"
     r.pp = "\377\377\377\377"
     r.ip_delimiter = 92
-    r.pooler = &Pooler{}
-    r.pooler.Initialize()
+    r.Pooler = &Pooler{}
+    r.Pooler.Initialize()
 }
 
 // Gets all available servers from master server.
@@ -125,15 +125,15 @@ func (r *Requester) getServers() {
 func (r *Requester) UpdateAllServers() {
     fmt.Println("Starting all servers updating procedure...")
     r.getServers()
-    r.pooler.UpdateServers("all")
+    r.Pooler.UpdateServers("all")
 }
 
 func (r *Requester) UpdateFavoriteServers() {
     fmt.Println("Updating favorites servers...")
-    r.pooler.UpdateServers("favorites")
+    r.Pooler.UpdateServers("favorites")
 }
 
 func (r *Requester) UpdateOneServer(server_address string) {
     fmt.Println("Updating server " + server_address)
-    r.pooler.UpdateOneServer(server_address)
+    r.Pooler.UpdateOneServer(server_address)
 }

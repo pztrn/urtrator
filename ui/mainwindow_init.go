@@ -67,6 +67,11 @@ func (m *MainWindow) Initialize() {
     m.window_height, _ = strconv.Atoi(win_size_height_str)
     m.window.SetDefaultSize(m.window_width, m.window_height)
 
+    // Set some GTK options for this window.
+    gtk_opts_raw := gtk.SettingsGetDefault()
+    gtk_opts := gtk_opts_raw.ToGObject()
+    gtk_opts.Set("gtk-button-images", true)
+
     // Dialogs initialization.
     m.options_dialog = &OptionsDialog{}
 
@@ -504,7 +509,7 @@ func (m *MainWindow) InitializeToolbar() {
     button_update_all_servers.OnClicked(m.UpdateServers)
     m.toolbar.Insert(button_update_all_servers, 0)
 
-    button_update_one_server := gtk.NewToolButtonFromStock(gtk.STOCK_UNDO)
+    button_update_one_server := gtk.NewToolButtonFromStock(gtk.STOCK_REDO)
     button_update_one_server.SetLabel("Update selected server")
     button_update_one_server.SetTooltipText("Update only selected server")
     button_update_one_server.OnClicked(m.updateOneServer)

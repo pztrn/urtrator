@@ -34,7 +34,7 @@ type Pooler struct {
 func (p *Pooler) Initialize() {
     fmt.Println("Initializing requester goroutine pooler...")
     // ToDo: figure out how to make this work nice.
-    p.maxrequests = 500
+    p.maxrequests = 100
     p.pp = "\377\377\377\377"
     fmt.Println("Pooler initialized")
 }
@@ -127,7 +127,7 @@ func (p *Pooler) UpdateOneServer(server_address string) {
     wait.Add(1)
     go func(server *datamodels.Server) {
         defer wait.Done()
-        p.updateSpecificServer(server)
+        p.UpdateSpecificServer(server)
     }(server)
     wait.Wait()
     p.PingOneServer(server_address)
@@ -148,7 +148,7 @@ func (p *Pooler) UpdateServers(servers_type string) {
         wait.Add(1)
         go func(server *datamodels.Server) {
             defer wait.Done()
-            p.updateSpecificServer(server)
+            p.UpdateSpecificServer(server)
         }(server.Server)
     }
     wait.Wait()
@@ -161,7 +161,7 @@ func (p *Pooler) UpdateServers(servers_type string) {
 }
 
 // Updates information about specific server.
-func (p *Pooler) updateSpecificServer(server *datamodels.Server) error {
+func (p *Pooler) UpdateSpecificServer(server *datamodels.Server) error {
     server_addr := server.Ip + ":" + server.Port
     fmt.Println("Updating server: " + server_addr)
 

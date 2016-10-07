@@ -45,8 +45,10 @@ type FavoriteDialog struct {
     update bool
 
     // Data.
-    // If known server is used - here server's datamodel is.
+    // Server's we're working with.
     server *datamodels.Server
+    // Profiles count that was added to profiles combobox.
+    profiles int
 }
 
 func (f *FavoriteDialog) Close() {}
@@ -61,6 +63,13 @@ func (f *FavoriteDialog) fill() {
     f.server_password.SetText(f.server.Password)
 
     // Profiles.
+    // Remove old profiles.
+    if f.profiles > 0 {
+        for i := 0; i <= f.profiles; i++ {
+            f.profile.RemoveText(0)
+        }
+    }
+
     profiles := []datamodels.Profile{}
     err := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
     if err != nil {
@@ -73,6 +82,7 @@ func (f *FavoriteDialog) fill() {
             f.profile.AppendText(profiles[p].Name)
             idx_should_be_active = idx_in_combobox
             idx_in_combobox += 1
+            f.profiles += 1
         }
     }
 
@@ -81,6 +91,8 @@ func (f *FavoriteDialog) fill() {
 
 func (f *FavoriteDialog) InitializeNew() {
     f.update = false
+    f.server = &datamodels.Server{}
+    f.profiles = 0
     f.initializeWindow()
 }
 
@@ -88,6 +100,7 @@ func (f *FavoriteDialog) InitializeUpdate(server *datamodels.Server) {
     fmt.Println("Favorites updating...")
     f.update = true
     f.server = server
+    f.profiles = 0
     f.initializeWindow()
     f.fill()
 }
@@ -113,6 +126,11 @@ func (f *FavoriteDialog) initializeWindow() {
     logo = icon_pixbuf.GetPixbuf()
     f.window.SetIcon(logo)
 
+    // Set some GTK options for this window.
+    gtk_opts_raw := gtk.SettingsGetDefault()
+    gtk_opts := gtk_opts_raw.ToGObject()
+    gtk_opts.Set("gtk-button-images", true)
+
     // Server name.
     srv_name_hbox := gtk.NewHBox(false, 0)
     f.vbox.PackStart(srv_name_hbox, false, true, 5)
@@ -132,6 +150,12 @@ func (f *FavoriteDialog) initializeWindow() {
     srv_addr_hbox.PackStart(srv_addr_sep, true, true, 5)
     f.server_address = gtk.NewEntry()
     srv_addr_hbox.PackStart(f.server_address, true, true, 5)
+    srv_addr_update_btn := gtk.NewButton()
+    srv_addr_update_btn.SetTooltipText("Update server information")
+    srv_addr_update_btn_image := gtk.NewImageFromStock(gtk.STOCK_REDO, 24)
+    srv_addr_update_btn.SetImage(srv_addr_update_btn_image)
+    srv_addr_update_btn.Clicked(f.updateServerInfo)
+    srv_addr_hbox.PackStart(srv_addr_update_btn, false, true, 5)
     if f.update {
         f.server_address.SetSensitive(false)
     }
@@ -176,6 +200,10 @@ func (f *FavoriteDialog) initializeWindow() {
 }
 
 func (f *FavoriteDialog) saveFavorite() error {
+    // Update server's information.
+    f.server.Name = f.server_name.GetText()
+    //ctx.Requester.Pooler.UpdateSpecificServer(f.server)
+
     if len(f.server_address.GetText()) == 0 {
         mbox_string := "Server address is empty.\n\nServers without address cannot be added."
         m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
@@ -185,6 +213,15 @@ func (f *FavoriteDialog) saveFavorite() error {
         m.Run()
         return errors.New("No server address specified")
     }
+
+    var port string = ""
+    if strings.Contains(f.server_address.GetText(), ":") {
+        port = strings.Split(f.server_address.GetText(), ":")[1]
+    } else {
+        port = "27960"
+    }
+    f.server.Ip = strings.Split(f.server_address.GetText(), ":")[0]
+    f.server.Port = port
 
     if len(f.profile.GetActiveText()) == 0 {
         mbox_string := "Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab."
@@ -196,25 +233,36 @@ func (f *FavoriteDialog) saveFavorite() error {
         return errors.New("No game profile specified")
     }
 
+    fmt.Println("Saving favorite server...")
+
+    key := strings.Split(f.server_address.GetText(), ":")[0] + ":" + port
+    ctx.Cache.Servers[key].Server.Ip = f.server.Ip
+    ctx.Cache.Servers[key].Server.Port = f.server.Port
+    ctx.Cache.Servers[key].Server.Name = f.server.Name
+    ctx.Cache.Servers[key].Server.Password = f.server_password.GetText()
+    ctx.Cache.Servers[key].Server.ProfileToUse = f.profile.GetActiveText()
+    ctx.Cache.Servers[key].Server.Favorite = "1"
+    ctx.Cache.Servers[key].Server.ExtendedConfig = f.server.ExtendedConfig
+    ctx.Cache.Servers[key].Server.PlayersInfo = f.server.PlayersInfo
+
+    ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    f.window.Destroy()
+
+    return nil
+}
+
+func (f *FavoriteDialog) updateServerInfo() {
+    fmt.Println("Updating server information...")
     var port string = ""
     if strings.Contains(f.server_address.GetText(), ":") {
         port = strings.Split(f.server_address.GetText(), ":")[1]
     } else {
         port = "27960"
     }
+    f.server.Ip = strings.Split(f.server_address.GetText(), ":")[0]
+    f.server.Port = port
 
-    fmt.Println("Saving favorite server...")
+    ctx.Requester.Pooler.UpdateSpecificServer(f.server)
 
-    key := strings.Split(f.server_address.GetText(), ":")[0] + ":" + port
-    ctx.Cache.Servers[key].Server.Ip = strings.Split(f.server_address.GetText(), ":")[0]
-    ctx.Cache.Servers[key].Server.Port = port
-    ctx.Cache.Servers[key].Server.Name = f.server_name.GetText()
-    ctx.Cache.Servers[key].Server.Password = f.server_password.GetText()
-    ctx.Cache.Servers[key].Server.ProfileToUse = f.profile.GetActiveText()
-    ctx.Cache.Servers[key].Server.Favorite = "1"
-
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
-    f.window.Destroy()
-
-    return nil
+    f.fill()
 }
