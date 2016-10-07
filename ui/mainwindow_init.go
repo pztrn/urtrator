@@ -368,8 +368,11 @@ func (m *MainWindow) InitializeTabs() {
         col.SetSortColumnId(position_int)
         col.SetReorderable(true)
         col.SetResizable(true)
-        col.SetSizing(gtk.TREE_VIEW_COLUMN_FIXED)
-        col.SetFixedWidth(width_int)
+        // GtkTreeViewColumn.SetFixedWidth() accepts only positive integers.
+        if width_int > 1 {
+            col.SetSizing(gtk.TREE_VIEW_COLUMN_FIXED)
+            col.SetFixedWidth(width_int)
+        }
         m.column_pos["Servers"][name] = position_int
         all_servers_columns_to_append[position_int] = col
     }
@@ -441,8 +444,11 @@ func (m *MainWindow) InitializeTabs() {
         col.SetSortColumnId(position_int)
         col.SetReorderable(true)
         col.SetResizable(true)
-        col.SetSizing(gtk.TREE_VIEW_COLUMN_FIXED)
-        col.SetFixedWidth(width_int)
+        // GtkTreeViewColumn.SetFixedWidth() accepts only positive integers.
+        if width_int > 1 {
+            col.SetSizing(gtk.TREE_VIEW_COLUMN_FIXED)
+            col.SetFixedWidth(width_int)
+        }
         m.column_pos["Favorites"][name] = position_int
         fav_servers_columns_to_append[position_int] = col
     }
