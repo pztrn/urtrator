@@ -11,20 +11,16 @@ package ui
 
 import (
     // stdlib
-    "encoding/base64"
     "errors"
     "fmt"
-    "runtime"
     "strconv"
     "strings"
 
     // Local
-    "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/datamodels"
     "github.com/pztrn/urtrator/ioq3dataparser"
 
     // Other
-    "github.com/mattn/go-gtk/gdkpixbuf"
     "github.com/mattn/go-gtk/glib"
     "github.com/mattn/go-gtk/gtk"
 )
@@ -110,6 +106,10 @@ type MainWindow struct {
     //
     //     window_width - m.pane_negative_position
     pane_negative_position int
+    // Columns names for servers tabs.
+    column_names map[string]string
+    // Real columns positions on servers tabs.
+    column_pos map[string]map[string]int
 
 
     // Flags.
@@ -122,22 +122,7 @@ func (m *MainWindow) addToFavorites() {
 
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
 
-    // Getting server's address from list.
-    sel := m.all_servers.GetSelection()
-    model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
-        // Getting server's address from list.
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-    }
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server address.
-    var srv_addr string
-    srv_addr_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_addr_gval)
-    server_address := srv_addr_gval.GetString()
+    server_address := m.getIpFromServersList(current_tab)
 
     // Getting server from database.
     m.favorite_dialog = &FavoriteDialog{}
@@ -180,6 +165,18 @@ func (m *MainWindow) Close() {
     ctx.Cfg.Cfg["/mainwindow/position_y"] = strconv.Itoa(m.window_pos_y)
     ctx.Cfg.Cfg["/mainwindow/pane_negative_position"] = strconv.Itoa(m.pane_negative_position)
 
+    // Saving columns sizes and positions.
+    all_servers_columns := m.all_servers.GetColumns()
+    for i := range all_servers_columns {
+        ctx.Cfg.Cfg["/mainwindow/all_servers/" + all_servers_columns[i].GetTitle() + "_position"] = strconv.Itoa(i)
+        ctx.Cfg.Cfg["/mainwindow/all_servers/" + all_servers_columns[i].GetTitle() + "_width"] = strconv.Itoa(all_servers_columns[i].GetWidth())
+    }
+    fav_servers_columns := m.fav_servers.GetColumns()
+    for i := range fav_servers_columns {
+        ctx.Cfg.Cfg["/mainwindow/fav_servers/" + fav_servers_columns[i].GetTitle() + "_position"] = strconv.Itoa(i)
+        ctx.Cfg.Cfg["/mainwindow/fav_servers/" + fav_servers_columns[i].GetTitle() + "_width"] = strconv.Itoa(fav_servers_columns[i].GetWidth())
+    }
+
     ctx.Close()
 }
 
@@ -188,23 +185,7 @@ func (m *MainWindow) deleteFromFavorites() {
     fmt.Println("Removing server from favorites...")
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
 
-    // Assuming that deletion was called from "Servers" tab by default.
-    sel := m.all_servers.GetSelection()
-    model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
-        // Getting server's address from list.
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-    }
-
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server address.
-    var srv_addr string
-    srv_addr_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_addr_gval)
-    server_address := srv_addr_gval.GetString()
+    server_address := m.getIpFromServersList(current_tab)
 
     var not_favorited bool = false
     if len(server_address) > 0 {
@@ -263,16 +244,7 @@ func (m *MainWindow) dropDatabasesData() {
 func (m *MainWindow) editFavorite() {
     fmt.Println("Editing favorite server...")
 
-    sel := m.fav_servers.GetSelection()
-    model := m.fav_servers.GetModel()
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server address.
-    var srv_addr string
-    srv_addr_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_addr_gval)
-    server_address := srv_addr_gval.GetString()
+    server_address := m.getIpFromServersList("Favorites")
 
     if len(server_address) > 0 {
         srv := ctx.Cache.Servers[server_address].Server
@@ -314,555 +286,6 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
 }
 
-// Main window initialization.
-func (m *MainWindow) Initialize() {
-    gtk.Init(nil)
-
-    m.initializeStorages()
-
-    m.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
-    m.window.SetTitle("URTrator")
-    m.window.Connect("destroy", m.Close)
-    m.vbox = gtk.NewVBox(false, 0)
-
-    // Load program icon from base64.
-    icon_bytes, _ := base64.StdEncoding.DecodeString(common.Logo)
-    icon_pixbuf := gdkpixbuf.NewLoader()
-    icon_pixbuf.Write(icon_bytes)
-    logo = icon_pixbuf.GetPixbuf()
-    m.window.SetIcon(logo)
-
-    m.window.Connect("configure-event", m.checkPositionAndSize)
-
-    // Restoring window position.
-    var win_pos_x_str string = "0"
-    var win_pos_y_str string = "0"
-    saved_win_pos_x_str, ok := ctx.Cfg.Cfg["/mainwindow/position_x"]
-    if ok {
-        win_pos_x_str = saved_win_pos_x_str
-    }
-    saved_win_pos_y_str, ok := ctx.Cfg.Cfg["/mainwindow/position_y"]
-    if ok {
-        win_pos_y_str = saved_win_pos_y_str
-    }
-    win_pos_x, _ := strconv.Atoi(win_pos_x_str)
-    win_pos_y, _ := strconv.Atoi(win_pos_y_str)
-    m.window.Move(win_pos_x, win_pos_y)
-
-    // Restoring window size.
-    var win_size_width_str string = "1000"
-    var win_size_height_str string = "600"
-    saved_win_size_width_str, ok := ctx.Cfg.Cfg["/mainwindow/width"]
-    if ok {
-        win_size_width_str = saved_win_size_width_str
-    }
-    saved_win_size_height_str, ok := ctx.Cfg.Cfg["/mainwindow/height"]
-    if ok {
-        win_size_height_str = saved_win_size_height_str
-    }
-
-    m.window_width, _ = strconv.Atoi(win_size_width_str)
-    m.window_height, _ = strconv.Atoi(win_size_height_str)
-    m.window.SetDefaultSize(m.window_width, m.window_height)
-
-    // Dialogs initialization.
-    m.options_dialog = &OptionsDialog{}
-
-    // Main menu.
-    m.InitializeMainMenu()
-
-    // Toolbar.
-    m.InitializeToolbar()
-
-    m.hpane = gtk.NewHPaned()
-    m.vbox.PackStart(m.hpane, true, true, 5)
-    m.hpane.Connect("event", m.checkMainPanePosition)
-
-    // Restore pane position.
-    // We will restore saved thing, or will use "window_width - 150".
-    saved_pane_pos, ok := ctx.Cfg.Cfg["/mainwindow/pane_negative_position"]
-    if ok {
-        pane_negative_pos, _ := strconv.Atoi(saved_pane_pos)
-        m.hpane.SetPosition(m.window_width - pane_negative_pos)
-    } else {
-        var w, h int = 0, 0
-        m.window.GetSize(&w, &h)
-        m.hpane.SetPosition(w - 150)
-    }
-
-    // Tabs initialization.
-    m.InitializeTabs()
-
-    // Sidebar initialization.
-    m.initializeSidebar()
-
-    // Tray icon.
-    if ctx.Cfg.Cfg["/general/show_tray_icon"] == "1" {
-        m.initializeTrayIcon()
-    }
-
-    // Events.
-    m.initializeEvents()
-
-    // Game profiles and launch button.
-    profile_and_launch_hbox := gtk.NewHBox(false, 0)
-    m.vbox.PackStart(profile_and_launch_hbox, false, true, 5)
-
-    // Separator
-    sep := gtk.NewHSeparator()
-    profile_and_launch_hbox.PackStart(sep, true, true, 5)
-
-    // Profile selection.
-    profiles_label := gtk.NewLabel("Game profile:")
-    m.profiles = gtk.NewComboBoxText()
-    m.profiles.SetTooltipText("Profile which will be used for launching")
-
-    profile_and_launch_hbox.PackStart(profiles_label, false, true, 5)
-    profile_and_launch_hbox.PackStart(m.profiles, false, true, 5)
-
-    // One more separator.
-    sepp := gtk.NewVSeparator()
-    profile_and_launch_hbox.PackStart(sepp, false, true, 5)
-
-    // Game launching button.
-    m.launch_button = gtk.NewButtonWithLabel("Launch!")
-    m.launch_button.SetTooltipText("Launch Urban Terror")
-    m.launch_button.Clicked(m.launchGame)
-    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, 24)
-    m.launch_button.SetImage(launch_button_image)
-    profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
-
-    // Statusbar.
-    m.statusbar = gtk.NewStatusbar()
-    m.vbox.PackStart(m.statusbar, false, true, 0)
-
-    m.statusbar_context_id = m.statusbar.GetContextId("Status Bar")
-    m.statusbar.Push(m.statusbar_context_id, "URTrator is ready")
-
-    m.window.Add(m.vbox)
-    m.window.ShowAll()
-
-    // Launch events.
-    ctx.Eventer.LaunchEvent("loadProfiles")
-    ctx.Eventer.LaunchEvent("loadServersIntoCache")
-    ctx.Eventer.LaunchEvent("loadAllServers")
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
-
-    gtk.Main()
-}
-
-// Events initialization.
-func (m *MainWindow) initializeEvents() {
-    fmt.Println("Initializing events...")
-    ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
-    ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
-    ctx.Eventer.AddEventHandler("loadProfiles", m.loadProfiles)
-    ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
-}
-
-// Main menu initialization.
-func (m *MainWindow) InitializeMainMenu() {
-    m.menubar = gtk.NewMenuBar()
-    m.vbox.PackStart(m.menubar, false, false, 0)
-
-    // File menu.
-    fm := gtk.NewMenuItemWithMnemonic("File")
-    m.menubar.Append(fm)
-    file_menu := gtk.NewMenu()
-    fm.SetSubmenu(file_menu)
-
-    // Options.
-    options_menu_item := gtk.NewMenuItemWithMnemonic("_Options")
-    file_menu.Append(options_menu_item)
-    options_menu_item.Connect("activate", m.options_dialog.ShowOptionsDialog)
-
-    // Separator.
-    file_menu_sep1 := gtk.NewSeparatorMenuItem()
-    file_menu.Append(file_menu_sep1)
-
-    // Exit.
-    exit_menu_item := gtk.NewMenuItemWithMnemonic("E_xit")
-    file_menu.Append(exit_menu_item)
-    exit_menu_item.Connect("activate", m.Close)
-
-    // About menu.
-    am := gtk.NewMenuItemWithMnemonic("_About")
-    m.menubar.Append(am)
-    about_menu := gtk.NewMenu()
-    am.SetSubmenu(about_menu)
-
-    // About app item.
-    about_app_item := gtk.NewMenuItemWithMnemonic("About _URTrator...")
-    about_menu.Append(about_app_item)
-    about_app_item.Connect("activate", ShowAboutDialog)
-
-    // Separator.
-    about_menu_sep1 := gtk.NewSeparatorMenuItem()
-    about_menu.Append(about_menu_sep1)
-
-    // Drop databases thing.
-    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic("Drop database data...")
-    about_menu.Append(about_menu_drop_database_data_item)
-    about_menu_drop_database_data_item.Connect("activate", m.dropDatabasesData)
-}
-
-// Sidebar (with quick connect and server's information) initialization.
-func (m *MainWindow) initializeSidebar() {
-    sidebar_vbox := gtk.NewVBox(false, 0)
-
-    server_info_frame := gtk.NewFrame("Server information")
-    sidebar_vbox.PackStart(server_info_frame, true, true, 5)
-    si_vbox := gtk.NewVBox(false, 0)
-    server_info_frame.Add(si_vbox)
-
-    // Scrolled thing.
-    si_scroll := gtk.NewScrolledWindow(nil, nil)
-    si_vbox.PackStart(si_scroll, true, true, 5)
-
-    // Server's information.
-    m.server_info = gtk.NewTreeView()
-    m.server_info.SetModel(m.server_info_store)
-
-    key_column := gtk.NewTreeViewColumnWithAttributes("Key", gtk.NewCellRendererText(), "markup", 0)
-    m.server_info.AppendColumn(key_column)
-
-    value_column := gtk.NewTreeViewColumnWithAttributes("Value", gtk.NewCellRendererText(), "markup", 1)
-    m.server_info.AppendColumn(value_column)
-
-    si_scroll.Add(m.server_info)
-
-    // Button to view additional server info.
-    additional_srv_info_button := gtk.NewButtonWithLabel("Additional information")
-    additional_srv_info_button.Clicked(m.showServerInformation)
-    si_vbox.PackStart(additional_srv_info_button, false, true, 5)
-
-    // Quick connect frame.
-    quick_connect_frame := gtk.NewFrame("Quick connect")
-    sidebar_vbox.PackStart(quick_connect_frame, false, true, 5)
-    qc_vbox := gtk.NewVBox(false, 0)
-    quick_connect_frame.Add(qc_vbox)
-
-    // Server address.
-    srv_tooltip := "Server address we will connect to"
-    srv_label := gtk.NewLabel("Server address:")
-    srv_label.SetTooltipText(srv_tooltip)
-    qc_vbox.PackStart(srv_label, false, true, 5)
-
-    m.qc_server_address = gtk.NewEntry()
-    m.qc_server_address.SetTooltipText(srv_tooltip)
-    qc_vbox.PackStart(m.qc_server_address, false, true, 5)
-
-    // Password.
-    pass_tooltip := "Password we will use for server"
-    pass_label := gtk.NewLabel("Password:")
-    pass_label.SetTooltipText(pass_tooltip)
-    qc_vbox.PackStart(pass_label, false, true, 5)
-
-    m.qc_password = gtk.NewEntry()
-    m.qc_password.SetTooltipText(pass_tooltip)
-    qc_vbox.PackStart(m.qc_password, false, true, 5)
-
-    m.hpane.Add2(sidebar_vbox)
-}
-
-// Initializes internal storages.
-func (m *MainWindow) initializeStorages() {
-    // Gamemodes.
-    m.gamemodes = make(map[string]string)
-    m.gamemodes = map[string]string{
-        "1": "Last Man Standing",
-        "2": "Free For All",
-        "3": "Team DM",
-        "4": "Team Survivor",
-        "5": "Follow The Leader",
-        "6": "Cap'n'Hold",
-        "7": "Capture The Flag",
-        "8": "Bomb",
-        "9": "Jump",
-        "10": "Freeze Tag",
-        "11": "Gun Game",
-        "12": "Instagib",
-    }
-
-    // Frames storage.
-    m.tabs = make(map[string]*gtk.Frame)
-    m.tabs["dummy"] = gtk.NewFrame("dummy")
-    delete(m.tabs, "dummy")
-
-    // Servers tab list view storage.
-    // Structure:
-    // Server status icon|Server name|Mode|Map|Players|Ping|Version
-    m.all_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
-    m.all_servers_store_sortable = gtk.NewTreeSortable(m.all_servers_store)
-
-    // Same as above, but for favorite servers.
-    m.fav_servers_store = gtk.NewListStore(gdkpixbuf.GetType(), gdkpixbuf.GetType(), glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
-
-    // Server's information store. Used for quick preview in main window.
-    m.server_info_store = gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
-
-    // Profiles count after filling combobox. Defaulting to 0.
-    m.old_profiles_count = 0
-
-    // Window hidden flag.
-    m.hidden = false
-}
-
-// Tabs widget initialization, including all child widgets.
-func (m *MainWindow) InitializeTabs() {
-    // Create tabs widget.
-    m.tab_widget = gtk.NewNotebook()
-
-    tab_allsrv_hbox := gtk.NewHBox(false, 0)
-    swin1 := gtk.NewScrolledWindow(nil, nil)
-
-    m.all_servers = gtk.NewTreeView()
-    swin1.Add(m.all_servers)
-    tab_allsrv_hbox.PackStart(swin1, true, true, 5)
-    m.tab_widget.AppendPage(tab_allsrv_hbox, gtk.NewLabel("Servers"))
-
-    m.all_servers.SetModel(m.all_servers_store)
-    m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-        m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
-
-    all_srv_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
-    all_srv_name_column.SetSortColumnId(2)
-    all_srv_name_column.SetReorderable(true)
-    all_srv_name_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_srv_name_column)
-
-    all_gamemode_column := gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 3)
-    all_gamemode_column.SetSortColumnId(3)
-    all_gamemode_column.SetReorderable(true)
-    all_gamemode_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_gamemode_column)
-
-    all_map_column := gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 4)
-    all_map_column.SetSortColumnId(4)
-    all_map_column.SetReorderable(true)
-    all_map_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_map_column)
-
-    // ToDo: custom sorting function.
-    all_players_column := gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 5)
-    all_players_column.SetSortColumnId(5)
-    all_players_column.SetReorderable(true)
-    all_players_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_players_column)
-
-    all_ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 6)
-    all_ping_column.SetSortColumnId(6)
-    all_ping_column.SetReorderable(true)
-    all_ping_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_ping_column)
-
-    all_version_column := gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 7)
-    all_version_column.SetSortColumnId(7)
-    all_version_column.SetReorderable(true)
-    all_version_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_version_column)
-
-    all_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 8)
-    all_ip_column.SetSortColumnId(8)
-    all_ip_column.SetReorderable(true)
-    all_ip_column.SetResizable(true)
-    m.all_servers.AppendColumn(all_ip_column)
-    // Sorting.
-    // By default we are sorting by server name.
-    // ToDo: remembering it to configuration storage.
-    m.all_servers_store_sortable.SetSortColumnId(2, gtk.SORT_ASCENDING)
-
-    // Selection changed signal, which will update server's short info pane.
-    m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
-
-    // VBox for some servers list controllers.
-    tab_all_srv_ctl_vbox := gtk.NewVBox(false, 0)
-    tab_allsrv_hbox.PackStart(tab_all_srv_ctl_vbox, false, true, 5)
-
-    // Checkbox for hiding offline servers.
-    m.all_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
-    m.all_servers_hide_offline.SetTooltipText("Hide offline servers on Servers tab")
-    tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_offline, false, true, 5)
-    m.all_servers_hide_offline.Clicked(m.hideOfflineAllServers)
-    if ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] == "1" {
-        m.all_servers_hide_offline.SetActive(true)
-    }
-
-    // Final separator.
-    ctl_sep := gtk.NewVSeparator()
-    tab_all_srv_ctl_vbox.PackStart(ctl_sep, true, true, 5)
-
-    // Favorites servers
-    // ToDo: sorting as in all servers list.
-    tab_fav_srv_hbox := gtk.NewHBox(false, 0)
-    m.fav_servers = gtk.NewTreeView()
-    swin2 := gtk.NewScrolledWindow(nil, nil)
-    swin2.Add(m.fav_servers)
-    tab_fav_srv_hbox.PackStart(swin2, true, true, 5)
-    m.tab_widget.AppendPage(tab_fav_srv_hbox, gtk.NewLabel("Favorites"))
-    m.fav_servers.SetModel(m.fav_servers_store)
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
-
-    fav_name_column := gtk.NewTreeViewColumnWithAttributes("Name", gtk.NewCellRendererText(), "markup", 2)
-    fav_name_column.SetSortColumnId(2)
-    fav_name_column.SetReorderable(true)
-    fav_name_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_name_column)
-
-    fav_mode_column := gtk.NewTreeViewColumnWithAttributes("Mode", gtk.NewCellRendererText(), "text", 3)
-    fav_mode_column.SetSortColumnId(3)
-    fav_mode_column.SetReorderable(true)
-    fav_mode_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_mode_column)
-
-    fav_map_column := gtk.NewTreeViewColumnWithAttributes("Map", gtk.NewCellRendererText(), "text", 4)
-    fav_map_column.SetSortColumnId(4)
-    fav_map_column.SetReorderable(true)
-    fav_map_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_map_column)
-
-    fav_players_column := gtk.NewTreeViewColumnWithAttributes("Players", gtk.NewCellRendererText(), "text", 5)
-    fav_players_column.SetSortColumnId(5)
-    fav_players_column.SetReorderable(true)
-    fav_players_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_players_column)
-
-    fav_ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "text", 6)
-    fav_ping_column.SetSortColumnId(6)
-    fav_ping_column.SetReorderable(true)
-    fav_ping_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_ping_column)
-
-    fav_version_column := gtk.NewTreeViewColumnWithAttributes("Version", gtk.NewCellRendererText(), "text", 7)
-    fav_version_column.SetSortColumnId(7)
-    fav_version_column.SetReorderable(true)
-    fav_version_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_version_column)
-
-    fav_ip_column := gtk.NewTreeViewColumnWithAttributes("IP", gtk.NewCellRendererText(), "text", 8)
-    fav_ip_column.SetSortColumnId(8)
-    fav_ip_column.SetReorderable(true)
-    fav_ip_column.SetResizable(true)
-    m.fav_servers.AppendColumn(fav_ip_column)
-
-    // Selection changed signal, which will update server's short info pane.
-    m.fav_servers.Connect("cursor-changed", m.showShortServerInformation)
-
-    // VBox for some servers list controllers.
-    tab_fav_srv_ctl_vbox := gtk.NewVBox(false, 0)
-    tab_fav_srv_hbox.PackStart(tab_fav_srv_ctl_vbox, false, true, 5)
-
-    // Checkbox for hiding offline servers.
-    m.fav_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
-    m.fav_servers_hide_offline.SetTooltipText("Hide offline servers on Favorites tab")
-    tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_offline, false, true, 5)
-    m.fav_servers_hide_offline.Clicked(m.hideOfflineFavoriteServers)
-    if ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] == "1" {
-        m.fav_servers_hide_offline.SetActive(true)
-    }
-
-    // Final separator.
-    ctl_fav_sep := gtk.NewVSeparator()
-    tab_fav_srv_ctl_vbox.PackStart(ctl_fav_sep, true, true, 5)
-
-    // Add tab_widget widget to window.
-    m.hpane.Add1(m.tab_widget)
-}
-
-// Toolbar initialization.
-func (m *MainWindow) InitializeToolbar() {
-    m.toolbar = gtk.NewToolbar()
-    m.vbox.PackStart(m.toolbar, false, false, 5)
-
-    // Update servers button.
-    button_update_all_servers := gtk.NewToolButtonFromStock(gtk.STOCK_REFRESH)
-    button_update_all_servers.SetLabel("Update all servers")
-    button_update_all_servers.SetTooltipText("Update all servers in all tabs")
-    button_update_all_servers.OnClicked(m.UpdateServers)
-    m.toolbar.Insert(button_update_all_servers, 0)
-
-    button_update_one_server := gtk.NewToolButtonFromStock(gtk.STOCK_UNDO)
-    button_update_one_server.SetLabel("Update all servers")
-    button_update_one_server.SetTooltipText("Update only selected server")
-    button_update_one_server.OnClicked(m.updateOneServer)
-    m.toolbar.Insert(button_update_one_server, 1)
-
-    // Separator.
-    separator := gtk.NewSeparatorToolItem()
-    m.toolbar.Insert(separator, 2)
-
-    // Add server to favorites button.
-    fav_button := gtk.NewToolButtonFromStock(gtk.STOCK_ADD)
-    fav_button.SetLabel("Add to favorites")
-    fav_button.SetTooltipText("Add selected server to favorites")
-    fav_button.OnClicked(m.addToFavorites)
-    m.toolbar.Insert(fav_button, 3)
-
-    fav_edit_button := gtk.NewToolButtonFromStock(gtk.STOCK_EDIT)
-    fav_edit_button.SetLabel("Edit favorite")
-    fav_edit_button.SetTooltipText("Edit selected favorite server")
-    fav_edit_button.OnClicked(m.editFavorite)
-    m.toolbar.Insert(fav_edit_button, 4)
-
-    // Remove server from favorites button.
-    fav_delete_button := gtk.NewToolButtonFromStock(gtk.STOCK_REMOVE)
-    fav_delete_button.SetLabel("Remove from favorites")
-    fav_delete_button.SetTooltipText("Remove selected server from favorites")
-    fav_delete_button.OnClicked(m.deleteFromFavorites)
-    m.toolbar.Insert(fav_delete_button, 5)
-
-    // Separator for toolbar's label and buttons.
-    toolbar_separator_toolitem := gtk.NewToolItem()
-    toolbar_separator_toolitem.SetExpand(true)
-    m.toolbar.Insert(toolbar_separator_toolitem, 6)
-    // Toolbar's label.
-    m.toolbar_label = gtk.NewLabel("URTrator is ready")
-    toolbar_label_toolitem := gtk.NewToolItem()
-    toolbar_label_toolitem.Add(m.toolbar_label)
-    m.toolbar.Insert(toolbar_label_toolitem, 7)
-}
-
-// Tray icon initialization.
-func (m *MainWindow) initializeTrayIcon() {
-    fmt.Println("Initializing tray icon...")
-
-    icon_bytes, _ := base64.StdEncoding.DecodeString(common.Logo)
-    icon_pixbuf := gdkpixbuf.NewLoader()
-    icon_pixbuf.Write(icon_bytes)
-    logo = icon_pixbuf.GetPixbuf()
-
-    m.tray_icon = gtk.NewStatusIconFromPixbuf(logo)
-    m.tray_icon.SetName("URTrator")
-    m.tray_icon.SetTitle("URTrator")
-    m.tray_icon.SetTooltipText("URTrator is ready")
-
-    // Tray menu is still buggy on windows, so skipping initialization,
-    // if OS is Windows.
-    if runtime.GOOS != "windows" {
-        m.tray_menu = gtk.NewMenu()
-
-        // Open/Close URTrator menu item.
-        open_close_item := gtk.NewMenuItemWithLabel("Show / Hide URTrator")
-        open_close_item.Connect("activate", m.showHide)
-        m.tray_menu.Append(open_close_item)
-
-        // Separator
-        sep1 := gtk.NewSeparatorMenuItem()
-        m.tray_menu.Append(sep1)
-
-        // Exit menu item.
-        exit_item := gtk.NewMenuItemWithLabel("Exit")
-        exit_item.Connect("activate", m.window.Destroy)
-        m.tray_menu.Append(exit_item)
-
-        // Connect things.
-        m.tray_icon.Connect("activate", m.showHide)
-        m.tray_icon.Connect("popup-menu", m.showTrayMenu)
-        m.tray_menu.ShowAll()
-    }
-}
-
 func (m *MainWindow) launchGame() error {
     fmt.Println("Launching Urban Terror...")
 
@@ -880,19 +303,31 @@ func (m *MainWindow) launchGame() error {
     // Getting server name.
     var srv_name string
     srv_name_gval := glib.ValueFromNative(srv_name)
-    model.GetValue(iter, 2, srv_name_gval)
+    if strings.Contains(current_tab, "Servers") {
+        model.GetValue(iter, m.column_pos["Servers"]["Name"], srv_name_gval)
+    } else if strings.Contains(current_tab, "Favorites") {
+        model.GetValue(iter, m.column_pos["Favorites"]["Name"], srv_name_gval)
+    }
     server_name := srv_name_gval.GetString()
 
     // Getting server address.
     var srv_addr string
     srv_address_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_address_gval)
+    if strings.Contains(current_tab, "Servers") {
+        model.GetValue(iter, m.column_pos["Servers"]["IP"], srv_address_gval)
+    } else if strings.Contains(current_tab, "Favorites") {
+        model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_address_gval)
+    }
     srv_address := srv_address_gval.GetString()
 
     // Getting server's game version.
     var srv_game_ver_raw string
     srv_game_ver_gval := glib.ValueFromNative(srv_game_ver_raw)
-    model.GetValue(iter, 7, srv_game_ver_gval)
+    if strings.Contains(current_tab, "Servers") {
+        model.GetValue(iter, m.column_pos["Servers"]["Version"], srv_game_ver_gval)
+    } else if strings.Contains(current_tab, "Favorites") {
+        model.GetValue(iter, m.column_pos["Favorites"]["Version"], srv_game_ver_gval)
+    }
     srv_game_ver := srv_game_ver_gval.GetString()
 
     // Check for proper server name. If length == 0: server is offline,
@@ -1005,7 +440,7 @@ func (m *MainWindow) loadAllServers() {
 
         if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
             m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
-            m.all_servers_store.SetValue(iter, 8, server.Server.Ip + ":" + server.Server.Port)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
             m.all_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             if server.Server.IsPrivate == "1" {
@@ -1014,13 +449,13 @@ func (m *MainWindow) loadAllServers() {
                 m.all_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
-            m.all_servers_store.SetValue(iter, 2, server_name)
-            m.all_servers_store.SetValue(iter, 3, m.getGameModeName(server.Server.Gamemode))
-            m.all_servers_store.SetValue(iter, 4, server.Server.Map)
-            m.all_servers_store.SetValue(iter, 5, server.Server.Players + "/" + server.Server.Maxplayers)
-            m.all_servers_store.SetValue(iter, 6, server.Server.Ping)
-            m.all_servers_store.SetValue(iter, 7, server.Server.Version)
-            m.all_servers_store.SetValue(iter, 8, server.Server.Ip + ":" + server.Server.Port)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Name"], server_name)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Mode"], m.getGameModeName(server.Server.Gamemode))
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Map"], server.Server.Map)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Players"], server.Server.Players + "/" + server.Server.Maxplayers)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Ping"], server.Server.Ping)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Version"], server.Server.Version)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         }
     }
 }
@@ -1059,7 +494,7 @@ func (m *MainWindow) loadFavoriteServers() {
 
         if server.Server.Name == "" && server.Server.Players == "" {
             m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
-            m.fav_servers_store.SetValue(iter, 8, server.Server.Ip + ":" + server.Server.Port)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
             m.fav_servers_store.SetValue(iter, 0, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             if server.Server.IsPrivate == "1" {
@@ -1068,13 +503,13 @@ func (m *MainWindow) loadFavoriteServers() {
                 m.fav_servers_store.SetValue(iter, 1, gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "").GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
-            m.fav_servers_store.SetValue(iter, 2, server_name)
-            m.fav_servers_store.SetValue(iter, 3, m.getGameModeName(server.Server.Gamemode))
-            m.fav_servers_store.SetValue(iter, 4, server.Server.Map)
-            m.fav_servers_store.SetValue(iter, 5, server.Server.Players + "/" + server.Server.Maxplayers)
-            m.fav_servers_store.SetValue(iter, 6, server.Server.Ping)
-            m.fav_servers_store.SetValue(iter, 7, server.Server.Version)
-            m.fav_servers_store.SetValue(iter, 8, server.Server.Ip + ":" + server.Server.Port)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Name"], server_name)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Mode"], m.getGameModeName(server.Server.Gamemode))
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Map"], server.Server.Map)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Players"], server.Server.Players + "/" + server.Server.Maxplayers)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Ping"], server.Server.Ping)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Version"], server.Server.Version)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         }
     }
 }
@@ -1126,20 +561,7 @@ func (m *MainWindow) showShortServerInformation() {
     fmt.Println("Server selection changed, updating server's information widget...")
     m.server_info_store.Clear()
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    sel := m.all_servers.GetSelection()
-    model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-    }
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server address.
-    var srv_addr string
-    srv_address_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_address_gval)
-    srv_address := srv_address_gval.GetString()
+    srv_address := m.getIpFromServersList(current_tab)
 
     // Getting server information from cache.
     if len(srv_address) > 0 && ctx.Cache.Servers[srv_address].Server.Players != "" {
@@ -1149,12 +571,12 @@ func (m *MainWindow) showShortServerInformation() {
         // Append to treeview generic info first. After appending it
         // will be deleted from map.
 
-        iter = new(gtk.TreeIter)
+        iter := new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">GENERAL INFO</span></markup>")
 
         // Server's name.
-        iter := new(gtk.TreeIter)
+        iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Server's name")
         m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed_general_data["sv_hostname"]))
@@ -1253,17 +675,19 @@ func (m *MainWindow) updateOneServer() {
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     sel := m.all_servers.GetSelection()
     model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-    }
     iter := new(gtk.TreeIter)
     _ = sel.GetSelected(iter)
 
     // Getting server address.
     var srv_addr string
     srv_address_gval := glib.ValueFromNative(srv_addr)
-    model.GetValue(iter, 8, srv_address_gval)
+    model.GetValue(iter, m.column_pos["Servers"]["IP"], srv_address_gval)
+    if strings.Contains(current_tab, "Favorites") {
+        sel = m.fav_servers.GetSelection()
+        model = m.fav_servers.GetModel()
+        model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_address_gval)
+    }
+
     srv_address := srv_address_gval.GetString()
 
     if len(srv_address) > 0 {
