@@ -39,6 +39,19 @@ func (p *Pooler) Initialize() {
     fmt.Println("Pooler initialized")
 }
 
+func (p *Pooler) PingOneServer(server_address string) {
+    var wait sync.WaitGroup
+
+    server := Cache.Servers[server_address].Server
+
+    wait.Add(1)
+    go func(srv *datamodels.Server) {
+        defer wait.Done()
+        p.pingServersExecutor(srv)
+    }(server)
+    wait.Wait()
+}
+
 // Servers pinging pooler. Should be started as goroutine to prevent
 // UI blocking.
 func (p *Pooler) PingServers(servers_type string) {
@@ -104,6 +117,25 @@ func (p *Pooler) pingServersExecutor(server *datamodels.Server) error {
     server.Ping = delta
 
     return nil
+}
+
+func (p *Pooler) UpdateOneServer(server_address string) {
+    var wait sync.WaitGroup
+
+    server := Cache.Servers[server_address].Server
+
+    wait.Add(1)
+    go func(server *datamodels.Server) {
+        defer wait.Done()
+        p.updateSpecificServer(server)
+    }(server)
+    wait.Wait()
+    p.PingOneServer(server_address)
+    Eventer.LaunchEvent("flushServers")
+
+    Eventer.LaunchEvent("loadAllServers")
+    Eventer.LaunchEvent("loadFavoriteServers")
+    Eventer.LaunchEvent("serversUpdateCompleted")
 }
 
 func (p *Pooler) UpdateServers(servers_type string) {
@@ -188,6 +220,13 @@ func (p *Pooler) updateSpecificServer(server *datamodels.Server) error {
             }
             if srv_config[i] == "sv_hostname" {
                 server.Name = srv_config[i + 1]
+            }
+            if srv_config[i] == "g_needpass" {
+                if srv_config[i + 1] == "0" {
+                    server.IsPrivate = "0"
+                } else {
+                    server.IsPrivate = "1"
+                }
             }
             server.ExtendedConfig = received_lines[1]
         }

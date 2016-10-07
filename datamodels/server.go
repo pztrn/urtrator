@@ -38,4 +38,6 @@ type Server struct {
     ExtendedConfig      string          `db:"extended_config"`
     // Players information.
     PlayersInfo         string          `db:"players_info"`
+    // Is server private?
+    IsPrivate           string          `db:"is_private"`
 }

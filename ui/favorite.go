@@ -205,23 +205,13 @@ func (f *FavoriteDialog) saveFavorite() error {
 
     fmt.Println("Saving favorite server...")
 
-    server := datamodels.Server{}
-    server.Ip = strings.Split(f.server_address.GetText(), ":")[0]
-    server.Port = port
-    server.Name = f.server_name.GetText()
-    server.Password = f.server_password.GetText()
-    server.ProfileToUse = f.profile.GetActiveText()
-    server.Favorite = "1"
-
-    if f.update {
-        q := "UPDATE servers SET name=:name, ip=:ip, port=:port, password=:password, favorite=:favorite, profile_to_use=:profile_to_use WHERE ip='" + f.server.Ip + "' AND port='" + f.server.Port + "'"
-        fmt.Println("Query: " + q)
-        ctx.Database.Db.NamedExec(q, &server)
-    } else {
-        q := "INSERT INTO servers (name, ip, port, password, favorite, profile_to_use) VALUES (:name, :ip, :port, :password, \"1\", :profile_to_use)"
-        fmt.Println(q)
-        ctx.Database.Db.NamedExec(q, &server)
-    }
+    key := strings.Split(f.server_address.GetText(), ":")[0] + ":" + port
+    ctx.Cache.Servers[key].Server.Ip = strings.Split(f.server_address.GetText(), ":")[0]
+    ctx.Cache.Servers[key].Server.Port = port
+    ctx.Cache.Servers[key].Server.Name = f.server_name.GetText()
+    ctx.Cache.Servers[key].Server.Password = f.server_password.GetText()
+    ctx.Cache.Servers[key].Server.ProfileToUse = f.profile.GetActiveText()
+    ctx.Cache.Servers[key].Server.Favorite = "1"
 
     ctx.Eventer.LaunchEvent("loadFavoriteServers")
     f.window.Destroy()

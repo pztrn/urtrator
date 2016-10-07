@@ -47,6 +47,7 @@ func migrate_full(db *Database, version int) {
     if version == 5 {five_to_six(db); version = 6 }
     if version == 6 {six_to_seven(db); version = 7}
     if version == 7 {seven_to_eight(db); version = 8}
+    if version == 8 {eight_to_nine(db); version = 9}
 }
 
 // Initial database structure.
@@ -106,4 +107,11 @@ func seven_to_eight(db *Database) {
     db.Db.MustExec("ALTER TABLE servers ADD extended_config VARCHAR(4096) NOT NULL DEFAULT ''")
     db.Db.MustExec("ALTER TABLE servers ADD players_info VARCHAR(8192) NOT NULL DEFAULT ''")
     db.Db.MustExec("UPDATE database SET version=8")
+}
+
+// Is server private flag.
+func eight_to_nine(db *Database) {
+    fmt.Println("Upgrading database from 8 to 9...")
+    db.Db.MustExec("ALTER TABLE servers ADD is_private VARCHAR(1) NOT NULL DEFAULT '0'")
+    db.Db.MustExec("UPDATE database SET version=9")
 }

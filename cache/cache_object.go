@@ -26,7 +26,6 @@ type Cache struct {
 func (c *Cache) CreateServer(addr string) {
     _, ok := c.Servers[addr]
     if !ok {
-        fmt.Println("Creating cached server " + addr)
         c.Servers[addr] = &cachemodels.Server{}
         c.Servers[addr].Server = &datamodels.Server{}
     } else {
@@ -56,7 +55,19 @@ func (c *Cache) FlushServers() {
         _, ok := cached_servers[mapping_item_name]
         if !ok {
             fmt.Println(mapping_item_name + " not found!")
-            new_servers[mapping_item_name] = s.Server
+            new_servers[mapping_item_name] = &datamodels.Server{}
+            new_servers[mapping_item_name].Ip = s.Server.Ip
+            new_servers[mapping_item_name].Port = s.Server.Port
+            new_servers[mapping_item_name].Name = s.Server.Name
+            new_servers[mapping_item_name].Players = s.Server.Players
+            new_servers[mapping_item_name].Maxplayers = s.Server.Maxplayers
+            new_servers[mapping_item_name].Ping = s.Server.Ping
+            new_servers[mapping_item_name].Map = s.Server.Map
+            new_servers[mapping_item_name].Gamemode = s.Server.Gamemode
+            new_servers[mapping_item_name].Version = s.Server.Version
+            new_servers[mapping_item_name].ExtendedConfig = s.Server.ExtendedConfig
+            new_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
+            new_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
         } else {
             cached_servers[mapping_item_name].Ip = s.Server.Ip
             cached_servers[mapping_item_name].Port = s.Server.Port
@@ -69,17 +80,18 @@ func (c *Cache) FlushServers() {
             cached_servers[mapping_item_name].Version = s.Server.Version
             cached_servers[mapping_item_name].ExtendedConfig = s.Server.ExtendedConfig
             cached_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
+            cached_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
         }
     }
 
     tx := Database.Db.MustBegin()
     fmt.Println("Adding new servers...")
     for _, srv := range new_servers {
-        tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info)", srv)
+        tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private)", srv)
     }
     fmt.Println("Updating cached servers...")
     for _, srv := range cached_servers {
-        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info WHERE ip=:ip AND port=:port", &srv)
+        tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info is_private=:is_private WHERE ip=:ip AND port=:port", &srv)
     }
 
     tx.Commit()
@@ -129,6 +141,7 @@ func (c *Cache) LoadServers() {
         c.Servers[key].Server.ProfileToUse = server.ProfileToUse
         c.Servers[key].Server.ExtendedConfig = server.ExtendedConfig
         c.Servers[key].Server.PlayersInfo = server.PlayersInfo
+        c.Servers[key].Server.IsPrivate = server.IsPrivate
     }
     fmt.Println("Load completed.")
 }

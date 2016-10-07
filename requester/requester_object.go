@@ -133,3 +133,7 @@ func (r *Requester) UpdateFavoriteServers() {
     r.pooler.UpdateServers("favorites")
 }
 
+func (r *Requester) UpdateOneServer(server_address string) {
+    fmt.Println("Updating server " + server_address)
+    r.pooler.UpdateOneServer(server_address)
+}
