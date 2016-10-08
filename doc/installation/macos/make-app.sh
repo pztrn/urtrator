@@ -39,9 +39,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Creating app bundle..."
-mkdir -p /Applications/URTrator.app/Contents/{MacOS,Library,Resources}
-cp $GOPATH/bin/urtrator /Applications/URTrator.app/Contents/MacOS/
-cp $GOPATH/src/github.com/pztrn/urtrator/artwork/urtrator.icns /Applications/URTrator.app/Contents/Resources/
+mkdir -p URTrator.app/Contents/{MacOS,Framework,Resources}
+cp $GOPATH/bin/urtrator URTrator.app/Contents/MacOS/
+cp $GOPATH/src/github.com/pztrn/urtrator/artwork/urtrator.icns URTrator.app/Contents/Resources/
 
 #####################################################################
 # APP BUNDLE INFO.PLIST
@@ -53,7 +53,7 @@ INFOPLIST='<?xml version="1.0" encoding="UTF-8"?>
   <key>CFBundleGetInfoString</key>
   <string>URTrator</string>
   <key>CFBundleExecutable</key>
-  <string>urtrator</string>
+  <string>urtrator.sh</string>
   <key>CFBundleIdentifier</key>
   <string>name.pztrn.urtrator</string>
   <key>CFBundleName</key>
@@ -73,20 +73,28 @@ INFOPLIST='<?xml version="1.0" encoding="UTF-8"?>
 </dict>
 </plist>'
 
-echo ${INFOPLIST} > /Applications/URTrator.app/Contents/Info.plist
+echo ${INFOPLIST} > URTrator.app/Contents/Info.plist
 
+echo -e '#!/bin/bash\ncd "${0%/*}"\n./urtrator' > ./URTrator.app/Contents/MacOS/urtrator.sh
+chmod +x ./URTrator.app/Contents/MacOS/urtrator.sh
 #####################################################################
 
 # Libraries works.
+# First iteration - main libraries.
 echo "Copying libraries..."
-LIBS_TO_COPY=$(otool -L urtrator | awk {' print $1 '} | grep "/usr/local")
+dylibbundler -of -b -x ./URTrator.app/Contents/MacOS/urtrator -d ./URTrator.app/Contents/Framework/ -p @executable_path/../Framework/
 
-for lib in ${LIBS_TO_COPY[@]}; do
-    cp ${lib} /Applications/URTrator.app/Contents/Library
+# Fix shit for dylibbundler. By this moment we should have everything
+# we needed in Framework directory.
+for lib in $(ls ./URTrator.app/Contents/Framework); do
     libname=$(echo ${lib} | awk -F"/" {' print $NF '})
-    install_name_tool -change ${lib} @executable_path/../Library/${libname} /Applications/URTrator.app/Contents/MacOS/urtrator
+    DEPS=$(otool -L ./URTrator.app/Contents/Framework/${lib} | grep "/usr/local")
+    for dep in ${DEPS[@]}; do
+        dep_name=$(echo ${dep} | awk -F"/" {' print $NF '})
+        install_name_tool -change ${dep} @executable_path/../Framework/${dep_name} ./URTrator.app/Contents/Framework/${libname}
+    done
 done
 
 echo "Finishing..."
 
-echo "URTrator is ready! Launch from Applications!"
+echo "URTrator is ready! Copy URTrator.app bundle to Applications and launch it!"

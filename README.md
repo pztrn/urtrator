@@ -47,6 +47,12 @@ URTrator executable contains everything we need. Just download
 approriate binary and launch it! :) The only thing is to make
 sure you have GTK2 and sqlite3 installed.
 
+## Distro-and-OS specific instructions
+
+* [MacOS](/doc/installation/macos/)
+* Windows (to be written)
+* Nixes: read below.
+
 ## Development version
 
 URTrator written in Go and GTK2, so you should have them installed.
