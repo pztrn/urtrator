@@ -421,6 +421,7 @@ func (m *MainWindow) loadAllServers() {
     // ToDo: do it without clearing.
     for _, server := range ctx.Cache.Servers {
         iter := new(gtk.TreeIter)
+        ping, _ := strconv.Atoi(server.Server.Ping)
 
         if !server.AllServersIterSet {
             server.AllServersIter = iter
@@ -429,7 +430,7 @@ func (m *MainWindow) loadAllServers() {
             iter = server.AllServersIter
         }
 
-        if m.all_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+        if m.all_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
             if server.AllServersIterInList {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -442,11 +443,15 @@ func (m *MainWindow) loadAllServers() {
             server.AllServersIterInList = true
         }
 
-        if server.Server.Name == "" && server.Server.Players == "" && server.Server.Maxplayers == "" {
+        if server.Server.Name == "" && server.Server.Players == "" {
             m.all_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.all_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
+            if ping > 9000 {
+                m.all_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
+            } else {
+                m.all_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
+            }
             if server.Server.IsPrivate == "1" {
                 m.all_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
             } else {
@@ -468,6 +473,7 @@ func (m *MainWindow) loadFavoriteServers() {
     fmt.Println("Loading favorite servers...")
     for _, server := range ctx.Cache.Servers {
         iter := new(gtk.TreeIter)
+        ping, _ := strconv.Atoi(server.Server.Ping)
 
         if !server.FavServersIterSet {
             server.FavServersIter = iter
@@ -476,7 +482,7 @@ func (m *MainWindow) loadFavoriteServers() {
             iter = server.FavServersIter
         }
 
-        if m.fav_servers_hide_offline.GetActive() && server.Server.Players == "" && server.Server.Maxplayers == "" {
+        if m.fav_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
             if server.FavServersIterInList {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false
@@ -506,7 +512,11 @@ func (m *MainWindow) loadFavoriteServers() {
             m.fav_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
         } else {
-            m.fav_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
+            if ping > 9000 {
+                m.fav_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
+            } else {
+                m.fav_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
+            }
             if server.Server.IsPrivate == "1" {
                 m.fav_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
             } else {
