@@ -135,7 +135,10 @@ func (m *MainWindow) addToFavorites() {
 
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
 
-    server_address := m.getIpFromServersList(current_tab)
+    server_address := ""
+    if !strings.Contains(current_tab, "Favorites") {
+        server_address = m.getIpFromServersList(current_tab)
+    }
 
     // Getting server from database.
     m.favorite_dialog = &FavoriteDialog{}

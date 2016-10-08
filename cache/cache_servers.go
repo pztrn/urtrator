@@ -63,6 +63,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             new_servers[mapping_item_name].ExtendedConfig = s.Server.ExtendedConfig
             new_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
             new_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
+            new_servers[mapping_item_name].Favorite = s.Server.Favorite
         } else {
             cached_servers[mapping_item_name].Ip = s.Server.Ip
             cached_servers[mapping_item_name].Port = s.Server.Port
@@ -76,6 +77,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             cached_servers[mapping_item_name].ExtendedConfig = s.Server.ExtendedConfig
             cached_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
             cached_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
+            cached_servers[mapping_item_name].Favorite = s.Server.Favorite
         }
     }
 
@@ -84,12 +86,12 @@ func (c *Cache) FlushServers(data map[string]string) {
     fmt.Println("Adding new servers...")
     if len(new_servers) > 0 {
         for _, srv := range new_servers {
-            tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private)", srv)
+            tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private, favorite) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private, :favorite)", srv)
         }
     }
     fmt.Println("Updating cached servers...")
     for _, srv := range cached_servers {
-        _, err := tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, players_info=:players_info, is_private=:is_private WHERE ip=:ip AND port=:port", &srv)
+        _, err := tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, favorite=:favorite, password=:password, players_info=:players_info, is_private=:is_private WHERE ip=:ip AND port=:port", &srv)
         if err != nil {
             fmt.Println(err.Error())
         }
