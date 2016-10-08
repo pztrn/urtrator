@@ -18,6 +18,9 @@ import (
     // stdlib
     "fmt"
     "runtime"
+
+    // other
+    "github.com/couchbase/goutils/platform"
 )
 
 func main() {
@@ -25,6 +28,11 @@ func main() {
 
     numCPUs := runtime.NumCPU()
     runtime.GOMAXPROCS(numCPUs)
+
+    if runtime.GOOS == "windows" {
+        platform.HideConsole(true)
+        defer platform.HideConsole(false)
+    }
 
     ctx := context.New()
     ctx.Initialize()
