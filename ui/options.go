@@ -48,8 +48,10 @@ func (o *OptionsDialog) addProfile() {
     fmt.Println("Adding profile...")
 
     op := OptionsProfile{}
-    op.Initialize(false, o.loadProfiles)
-    ctx.Eventer.LaunchEvent("loadProfiles")
+    op.Initialize(false)
+    ctx.Eventer.LaunchEvent("flushProfiles", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
 }
 
 func (o *OptionsDialog) closeOptionsDialogByCancel() {
@@ -71,8 +73,6 @@ func (o *OptionsDialog) closeOptionsDialogWithSaving() {
     })
     m.Run()
 
-    ctx.Eventer.LaunchEvent("loadProfiles")
-
     o.window.Destroy()
 }
 
@@ -92,8 +92,10 @@ func (o *OptionsDialog) deleteProfile() {
 
         profile := datamodels.Profile{}
         profile.Name = profile_name
-        ctx.Database.Db.NamedExec("DELETE FROM urt_profiles WHERE name=:name", &profile)
-        ctx.Eventer.LaunchEvent("loadProfiles")
+        ctx.Eventer.LaunchEvent("deleteProfile", map[string]string{"profile_name": profile_name})
+        ctx.Eventer.LaunchEvent("flushProfiles", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
     }
 }
 
@@ -110,8 +112,10 @@ func (o *OptionsDialog) editProfile() {
 
     if len(profile_name) > 0 {
         op := OptionsProfile{}
-        op.InitializeUpdate(profile_name, o.loadProfiles)
-        ctx.Eventer.LaunchEvent("loadProfiles")
+        op.InitializeUpdate(profile_name)
+        ctx.Eventer.LaunchEvent("flushProfiles", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
     }
 }
 
@@ -169,6 +173,8 @@ func (o *OptionsDialog) initializeTabs() {
 
     o.vbox.PackStart(o.tab_widget, true, true, 5)
     o.vbox.PackStart(buttons_hbox, false, true, 5)
+
+    ctx.Eventer.AddEventHandler("loadProfilesIntoOptionsWindow", o.loadProfiles)
 }
 
 func (o *OptionsDialog) initializeUrtTab() {
@@ -213,26 +219,18 @@ func (o *OptionsDialog) initializeUrtTab() {
     o.tab_widget.AppendPage(urt_hbox, gtk.NewLabel("Urban Terror"))
 
     // Load Profiles.
-    o.loadProfiles()
+    ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
 }
 
-func (o *OptionsDialog) loadProfiles() {
+func (o *OptionsDialog) loadProfiles(data map[string]string) {
     fmt.Println("Loading profiles...")
     o.profiles_list_store.Clear()
-    // Get profiles from database.
-    profiles := []datamodels.Profile{}
-    err := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
 
-    for p := range profiles {
+    for _, p := range ctx.Cache.Profiles {
         var iter gtk.TreeIter
         o.profiles_list_store.Append(&iter)
-        o.profiles_list_store.Set(&iter, 0, profiles[p].Name)
-        o.profiles_list_store.Set(&iter, 1, profiles[p].Version)
-        //state, _ := strconv.ParseBool(profiles[p].Second_x_session)
-        //o.profiles_list_store.Set(&iter, 2, state)
+        o.profiles_list_store.Set(&iter, 0, p.Profile.Name)
+        o.profiles_list_store.Set(&iter, 1, p.Profile.Version)
     }
 }
 
@@ -267,5 +265,8 @@ func (o *OptionsDialog) ShowOptionsDialog() {
     o.fill()
 
     o.window.Add(o.vbox)
+
+    ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
+
     o.window.ShowAll()
 }

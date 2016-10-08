@@ -131,11 +131,11 @@ func (p *Pooler) UpdateOneServer(server_address string) {
     }(server)
     wait.Wait()
     p.PingOneServer(server_address)
-    Eventer.LaunchEvent("flushServers")
+    Eventer.LaunchEvent("flushServers", map[string]string{})
 
-    Eventer.LaunchEvent("loadAllServers")
-    Eventer.LaunchEvent("loadFavoriteServers")
-    Eventer.LaunchEvent("serversUpdateCompleted")
+    Eventer.LaunchEvent("loadAllServers", map[string]string{})
+    Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
+    Eventer.LaunchEvent("serversUpdateCompleted", map[string]string{})
 }
 
 func (p *Pooler) UpdateServers(servers_type string) {
@@ -153,11 +153,11 @@ func (p *Pooler) UpdateServers(servers_type string) {
     }
     wait.Wait()
     p.PingServers(servers_type)
-    Eventer.LaunchEvent("flushServers")
+    Eventer.LaunchEvent("flushServers", map[string]string{})
 
-    Eventer.LaunchEvent("loadAllServers")
-    Eventer.LaunchEvent("loadFavoriteServers")
-    Eventer.LaunchEvent("serversUpdateCompleted")
+    Eventer.LaunchEvent("loadAllServers", map[string]string{})
+    Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
+    Eventer.LaunchEvent("serversUpdateCompleted", map[string]string{})
 }
 
 // Updates information about specific server.

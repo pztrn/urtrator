@@ -56,7 +56,7 @@ func (l *Launcher) Initialize() {
     fmt.Println("Initializing game launcher...")
 }
 
-func (l *Launcher) Launch(profile *datamodels.Profile, server string, password string, callback func()) {
+func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datamodels.Profile, password string, additional_parameters []string, callback func()) {
     // ToDo: only one instance of Urban Terror should be launched, so button
     // should be disabled.
     fmt.Println("Launching Urban Terror...")
@@ -65,23 +65,30 @@ func (l *Launcher) Launch(profile *datamodels.Profile, server string, password s
 
     // Create launch string.
     var launch_bin string = ""
-    launch_bin, err := exec.LookPath(profile.Binary)
+    launch_bin, err := exec.LookPath(user_profile.Binary)
     if err != nil {
         fmt.Println(err.Error())
     }
 
+    server_address := server_profile.Ip + ":" + server_profile.Port
+
     var launch_params []string
-    if len(server) > 0 {
-        launch_params = append(launch_params, "+connect", server)
+    if len(server_address) > 0 {
+        launch_params = append(launch_params, "+connect", server_address)
     }
     if len(password) > 0 {
         launch_params = append(launch_params, "+password", password)
     }
-    if len(profile.Additional_params) > 0 {
-        additional_params := strings.Split(profile.Additional_params, " ")
+    if len(user_profile.Additional_params) > 0 {
+        additional_params := strings.Split(user_profile.Additional_params, " ")
         launch_params = append(launch_params, additional_params...)
     }
-    if profile.Second_x_session == "1" {
+    if len(additional_parameters) > 0 {
+        for i := range additional_parameters {
+            launch_params = append(launch_params, additional_parameters[i])
+        }
+    }
+    if user_profile.Second_x_session == "1" {
         fmt.Println(launch_params)
         launch_params = append([]string{launch_bin}, launch_params...)
         display := l.findFreeDisplay()

@@ -11,7 +11,6 @@ package ui
 
 import (
     // stdlib
-    "errors"
     "fmt"
     "strconv"
     "strings"
@@ -67,6 +66,8 @@ type MainWindow struct {
     qc_server_address *gtk.Entry
     // Quick connect: password
     qc_password *gtk.Entry
+    // Quick connect: nickname
+    qc_nickname *gtk.Entry
     // Tray icon.
     tray_icon *gtk.StatusIcon
     // Tray menu.
@@ -219,7 +220,7 @@ func (m *MainWindow) deleteFromFavorites() {
         d.Run()
     }
 
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
 }
 
 // Drop database data.
@@ -246,9 +247,9 @@ func (m *MainWindow) dropDatabasesData() {
         ctx.Database.Db.MustExec("DELETE FROM settings")
         ctx.Database.Db.MustExec("DELETE FROM urt_profiles")
 
-        ctx.Eventer.LaunchEvent("loadProfiles")
-        ctx.Eventer.LaunchEvent("loadAllServers")
-        ctx.Eventer.LaunchEvent("loadFavoriteServers")
+        ctx.Eventer.LaunchEvent("loadProfiles", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
+        ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
     }
 }
 
@@ -273,7 +274,7 @@ func (m *MainWindow) hideOfflineAllServers() {
     } else {
         ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] = "0"
     }
-    ctx.Eventer.LaunchEvent("loadAllServers")
+    ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
 }
 
 // Executes when "Hide offline servers" checkbox changed it's state on
@@ -285,138 +286,10 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
     } else {
         ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] = "0"
     }
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
 }
 
-func (m *MainWindow) launchGame() error {
-    fmt.Println("Launching Urban Terror...")
-
-    // Getting server's name from list.
-    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    sel := m.all_servers.GetSelection()
-    model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
-        sel = m.fav_servers.GetSelection()
-        model = m.fav_servers.GetModel()
-    }
-    iter := new(gtk.TreeIter)
-    _ = sel.GetSelected(iter)
-
-    // Getting server name.
-    var srv_name string
-    srv_name_gval := glib.ValueFromNative(srv_name)
-    if strings.Contains(current_tab, "Servers") {
-        model.GetValue(iter, m.column_pos["Servers"]["Name"], srv_name_gval)
-    } else if strings.Contains(current_tab, "Favorites") {
-        model.GetValue(iter, m.column_pos["Favorites"]["Name"], srv_name_gval)
-    }
-    server_name := srv_name_gval.GetString()
-
-    // Getting server address.
-    var srv_addr string
-    srv_address_gval := glib.ValueFromNative(srv_addr)
-    if strings.Contains(current_tab, "Servers") {
-        model.GetValue(iter, m.column_pos["Servers"]["IP"], srv_address_gval)
-    } else if strings.Contains(current_tab, "Favorites") {
-        model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_address_gval)
-    }
-    srv_address := srv_address_gval.GetString()
-
-    // Getting server's game version.
-    var srv_game_ver_raw string
-    srv_game_ver_gval := glib.ValueFromNative(srv_game_ver_raw)
-    if strings.Contains(current_tab, "Servers") {
-        model.GetValue(iter, m.column_pos["Servers"]["Version"], srv_game_ver_gval)
-    } else if strings.Contains(current_tab, "Favorites") {
-        model.GetValue(iter, m.column_pos["Favorites"]["Version"], srv_game_ver_gval)
-    }
-    srv_game_ver := srv_game_ver_gval.GetString()
-
-    // Check for proper server name. If length == 0: server is offline,
-    // we should show notification to user.
-    if len(server_name) == 0 {
-        var will_continue bool = false
-        mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
-        m.Connect("response", func(resp *glib.CallbackContext) {
-            if resp.Args(0) == 4294967287 {
-                will_continue = false
-            } else {
-                will_continue = true
-            }
-        })
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
-        if !will_continue {
-            return errors.New("User declined to connect to offline server")
-        }
-    }
-
-    // Getting selected profile's name.
-    profile_name := m.profiles.GetActiveText()
-    if strings.Contains(current_tab, "Servers") {
-        // Checking profile name length. If 0 - then stop executing :)
-        // This check only relevant to "Servers" tab, favorite servers
-        // have profiles defined (see next).
-        if len(profile_name) == 0 {
-            mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
-            m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            m.Response(func() {
-                m.Destroy()
-            })
-            m.Run()
-            return errors.New("User didn't select valid profile.")
-        }
-    } else if strings.Contains(current_tab, "Favorites") {
-        // For favorite servers profile specified in favorite server
-        // information have higher priority, so we just override it :)
-        server := []datamodels.Server{}
-        // All favorites servers should contain IP and Port :)
-        ip := strings.Split(srv_address, ":")[0]
-        port := strings.Split(srv_address, ":")[1]
-        err := ctx.Database.Db.Select(&server, ctx.Database.Db.Rebind("SELECT * FROM servers WHERE ip=? AND port=?"), ip, port)
-        if err != nil {
-            fmt.Println(err.Error())
-        }
-        profile_name = server[0].ProfileToUse
-    }
-
-    // Getting profile data from database.
-    // ToDo: cache profiles data in runtime.
-    profile := []datamodels.Profile{}
-    err := ctx.Database.Db.Select(&profile, ctx.Database.Db.Rebind("SELECT * FROM urt_profiles WHERE name=?"), profile_name)
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-
-    // Check if profile version is valid for selected game server.
-    if profile[0].Version != srv_game_ver {
-        mbox_string := "Invalid game profile selected.\n\nSelected profile have different game version than server.\nPlease, select valid profile and retry."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
-        return errors.New("User didn't select valid profile, mismatch with server's version.")
-    }
-
-    // Hey, we're ok here! :) Launch Urban Terror!
-    // Crear server name from "<markup></markup>" things.
-    srv_name_for_label := string([]byte(server_name)[8:len(server_name)-9])
-    fmt.Println(srv_name_for_label)
-    // Show great coloured label.
-    m.statusbar.Push(m.statusbar_context_id, "Launching Urban Terror...")
-    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Urban Terror is launched with profile </span><span foreground=\"blue\">" + profile[0].Name + "</span> <span foreground=\"red\" font_weight=\"bold\">and connected to </span><span foreground=\"orange\" font_weight=\"bold\">" + srv_name_for_label + "</span></markup>")
-    m.launch_button.SetSensitive(false)
-    // ToDo: handling server passwords.
-    ctx.Launcher.Launch(&profile[0], srv_address, "", m.unlockInterface)
-
-    return nil
-}
-
-func (m *MainWindow) loadAllServers() {
+func (m *MainWindow) loadAllServers(data map[string]string) {
     fmt.Println("Loading all servers...")
     // ToDo: do it without clearing.
     for _, server := range ctx.Cache.Servers {
@@ -469,7 +342,7 @@ func (m *MainWindow) loadAllServers() {
     }
 }
 
-func (m *MainWindow) loadFavoriteServers() {
+func (m *MainWindow) loadFavoriteServers(data map[string]string) {
     fmt.Println("Loading favorite servers...")
     for _, server := range ctx.Cache.Servers {
         iter := new(gtk.TreeIter)
@@ -534,7 +407,7 @@ func (m *MainWindow) loadFavoriteServers() {
     }
 }
 
-func (m *MainWindow) loadProfiles() {
+func (m *MainWindow) loadProfiles(data map[string]string) {
     fmt.Println("Loading profiles into combobox on MainWindow")
     for i := 0; i < m.old_profiles_count; i++ {
         // ComboBox indexes are shifting on element deletion, so we should
@@ -542,22 +415,25 @@ func (m *MainWindow) loadProfiles() {
         m.profiles.Remove(0)
     }
 
-    profiles := []datamodels.Profile{}
-    err := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-    for p := range profiles {
-        m.profiles.AppendText(profiles[p].Name)
+    for _, profile := range ctx.Cache.Profiles {
+        m.profiles.AppendText(profile.Profile.Name)
     }
 
-    m.old_profiles_count = len(profiles)
+    m.old_profiles_count = len(ctx.Cache.Profiles)
     fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
 }
 
-func (m *MainWindow) serversUpdateCompleted() {
-    m.statusbar.Push(m.statusbar_context_id, "Servers updated.")
-    m.toolbar_label.SetLabel("Servers updated.")
+func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Servers updated."})
+}
+
+func (m *MainWindow) setToolbarLabelText(data map[string]string) {
+    fmt.Println("Setting toolbar's label text...")
+    if strings.Contains(data["text"], "<markup>") {
+        m.toolbar_label.SetMarkup(data["text"])
+    } else {
+        m.toolbar_label.SetLabel(data["text"])
+    }
 }
 
 func (m *MainWindow) showHide() {
@@ -687,8 +563,7 @@ func (m *MainWindow) showTrayMenu(cbx *glib.CallbackContext) {
 // Unlocking interface after game shut down.
 func (m *MainWindow) unlockInterface() {
     m.launch_button.SetSensitive(true)
-    m.statusbar.Push(m.statusbar_context_id, "URTrator is ready.")
-    m.toolbar_label.SetLabel("URTrator is ready.")
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
 }
 
 func (m *MainWindow) updateOneServer() {
@@ -702,8 +577,7 @@ func (m *MainWindow) updateOneServer() {
 
 // Triggered when "Update all servers" button is clicked.
 func (m *MainWindow) UpdateServers() {
-    m.statusbar.Push(m.statusbar_context_id, "Updating servers...")
-    m.toolbar_label.SetMarkup("<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>")
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
 

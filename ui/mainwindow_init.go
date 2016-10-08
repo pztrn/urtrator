@@ -139,21 +139,16 @@ func (m *MainWindow) Initialize() {
     m.launch_button.SetImage(launch_button_image)
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
-    // Statusbar.
-    m.statusbar = gtk.NewStatusbar()
-    m.vbox.PackStart(m.statusbar, false, true, 0)
-
-    m.statusbar_context_id = m.statusbar.GetContextId("Status Bar")
-    m.statusbar.Push(m.statusbar_context_id, "URTrator is ready")
-
     m.window.Add(m.vbox)
     m.window.ShowAll()
 
     // Launch events.
-    ctx.Eventer.LaunchEvent("loadProfiles")
-    ctx.Eventer.LaunchEvent("loadServersIntoCache")
-    ctx.Eventer.LaunchEvent("loadAllServers")
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    ctx.Eventer.LaunchEvent("loadProfiles", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadServersIntoCache", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
 
     gtk.Main()
 }
@@ -163,8 +158,9 @@ func (m *MainWindow) initializeEvents() {
     fmt.Println("Initializing events...")
     ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
     ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
-    ctx.Eventer.AddEventHandler("loadProfiles", m.loadProfiles)
+    ctx.Eventer.AddEventHandler("loadProfilesIntoMainWindow", m.loadProfiles)
     ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
+    ctx.Eventer.AddEventHandler("setToolbarLabelText", m.setToolbarLabelText)
 }
 
 // Main menu initialization.
@@ -268,6 +264,16 @@ func (m *MainWindow) initializeSidebar() {
     m.qc_password = gtk.NewEntry()
     m.qc_password.SetTooltipText(pass_tooltip)
     qc_vbox.PackStart(m.qc_password, false, true, 5)
+
+    // Nickname
+    nick_tooltip := "Nickname we will use"
+    nick_label := gtk.NewLabel("Nickname:")
+    nick_label.SetTooltipText(nick_tooltip)
+    qc_vbox.PackStart(nick_label, false, true, 5)
+
+    m.qc_nickname = gtk.NewEntry()
+    m.qc_nickname.SetTooltipText(nick_tooltip)
+    qc_vbox.PackStart(m.qc_nickname, false, true, 5)
 
     m.hpane.Add2(sidebar_vbox)
 }

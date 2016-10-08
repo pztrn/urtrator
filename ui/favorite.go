@@ -245,7 +245,7 @@ func (f *FavoriteDialog) saveFavorite() error {
     ctx.Cache.Servers[key].Server.ExtendedConfig = f.server.ExtendedConfig
     ctx.Cache.Servers[key].Server.PlayersInfo = f.server.PlayersInfo
 
-    ctx.Eventer.LaunchEvent("loadFavoriteServers")
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
     f.window.Destroy()
 
     return nil

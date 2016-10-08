@@ -17,13 +17,13 @@ import (
 
 type Eventer struct {
     // Events
-    events map[string]map[string]func()
+    events map[string]map[string]func(data map[string]string)
 }
 
-func (e *Eventer) AddEventHandler(event string, handler func()) {
+func (e *Eventer) AddEventHandler(event string, handler func(data map[string]string)) {
     _, ok := e.events[event]
     if !ok {
-        e.events[event] = make(map[string]func())
+        e.events[event] = make(map[string]func(data map[string]string))
     }
     event_id_raw := make([]byte, 16)
     crand.Read(event_id_raw)
@@ -36,10 +36,10 @@ func (e *Eventer) Initialize() {
 }
 
 func (e *Eventer) initializeStorage() {
-    e.events = make(map[string]map[string]func())
+    e.events = make(map[string]map[string]func(data map[string]string))
 }
 
-func (e *Eventer) LaunchEvent(event string) error {
+func (e *Eventer) LaunchEvent(event string, data map[string]string) error {
     _, ok := e.events[event]
     if !ok {
         return errors.New("Event " + event + " not found!")
@@ -47,7 +47,7 @@ func (e *Eventer) LaunchEvent(event string) error {
     fmt.Println("Launching event " + event)
 
     for _, val := range e.events[event] {
-        val()
+        val(data)
     }
 
     return nil

@@ -51,7 +51,8 @@ func (ctx *Context) Close() error {
     if launched != nil {
         return errors.New("Urban Terror is launched!")
     }
-    ctx.Cache.FlushServers()
+    ctx.Cache.FlushProfiles(map[string]string{})
+    ctx.Cache.FlushServers(map[string]string{})
     ctx.Database.Close()
 
     // At last, close main window.

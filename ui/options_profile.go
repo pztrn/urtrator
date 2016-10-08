@@ -47,10 +47,6 @@ type OptionsProfile struct {
     // This is profile update?
     update bool
 
-    // Callbacks.
-    // This will be triggered after we change profile.
-    loadProfiles func()
-
     // Others.
     // Old profile, needed for proper update.
     old_profile *datamodels.Profile
@@ -105,12 +101,10 @@ func (op *OptionsProfile) closeByCancel() {
 func (op *OptionsProfile) closeWithDiscard() {
 }
 
-func (op *OptionsProfile) Initialize(update bool, lp func()) {
+func (op *OptionsProfile) Initialize(update bool) {
     if update {
         op.update = true
     }
-
-    op.loadProfiles = lp
 
     op.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     if update {
@@ -233,9 +227,9 @@ func (op *OptionsProfile) Initialize(update bool, lp func()) {
     op.window.ShowAll()
 }
 
-func (op *OptionsProfile) InitializeUpdate(profile_name string, lp func()) {
+func (op *OptionsProfile) InitializeUpdate(profile_name string) {
     fmt.Println("Updating profile '" + profile_name + "'")
-    op.Initialize(true, lp)
+    op.Initialize(true)
 
     // Get profile data.
     profile := []datamodels.Profile{}
@@ -284,7 +278,7 @@ func (op *OptionsProfile) saveProfile() {
         m.Run()
     }
     // ...and must be executable! :)
-    filestat, err := os.Stat(op.binary_path.GetText())
+    _, err := os.Stat(op.binary_path.GetText())
     if err != nil {
         mbox_string := "Invalid path to binary!\n\nError was:\n" + err.Error() + "\n\nCheck binary path and try again."
         m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
@@ -294,37 +288,11 @@ func (op *OptionsProfile) saveProfile() {
         m.Run()
     } else {
         // ToDo: executable flag checking.
-        fmt.Println(filestat.Mode())
+        //fmt.Println(filestat.Mode())
+        profile_name := op.profile_name.GetText()
 
-        // If we here - we can try to save game profile :).
-        profile := datamodels.Profile{
-            Name:               op.profile_name.GetText(),
-            Version:            op.urt_version_combo.GetActiveText(),
-            Binary:             op.binary_path.GetText(),
-            Additional_params:  op.additional_parameters.GetText(),
-        }
-
-        if op.another_x_session.GetActive() {
-            profile.Second_x_session = "1"
-        } else {
-            profile.Second_x_session = "0"
-        }
-
-        // Check if we already have profile with such name.
-        profiles := []datamodels.Profile{}
-        err1 := ctx.Database.Db.Select(&profiles, "SELECT * FROM urt_profiles")
-        if err1 != nil {
-            fmt.Println(err1.Error())
-        }
-
-        var found bool = false
-        for p := range profiles {
-            if profiles[p].Name == profile.Name {
-                found = true
-            }
-        }
-
-        if found && profile.Version == op.old_profile.Version && profile.Binary == op.old_profile.Binary && profile.Name == op.old_profile.Name && profile.Second_x_session == op.old_profile.Second_x_session {
+        _, ok := ctx.Cache.Profiles[profile_name]
+        if ok && !op.update {
             mbox_string := "Game profile with same name already exist.\nRename profile for saving."
             m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
@@ -332,13 +300,20 @@ func (op *OptionsProfile) saveProfile() {
             })
             m.Run()
         } else {
-            if op.update {
-                ctx.Database.Db.NamedExec("UPDATE urt_profiles SET name=:name, version=:version, binary=:binary, second_x_session=:second_x_session, additional_parameters=:additional_parameters WHERE name='" + op.old_profile.Name + "'", &profile)
+            ctx.Cache.CreateProfile(profile_name)
+            ctx.Cache.Profiles[profile_name].Profile.Name = profile_name
+            ctx.Cache.Profiles[profile_name].Profile.Version = op.urt_version_combo.GetActiveText()
+            ctx.Cache.Profiles[profile_name].Profile.Binary = op.binary_path.GetText()
+            ctx.Cache.Profiles[profile_name].Profile.Additional_params = op.additional_parameters.GetText()
+
+            if op.another_x_session.GetActive() {
+                ctx.Cache.Profiles[profile_name].Profile.Second_x_session = "1"
             } else {
-                ctx.Database.Db.NamedExec("INSERT INTO urt_profiles (name, version, binary, second_x_session, additional_parameters) VALUES (:name, :version, :binary, :second_x_session, :additional_parameters)", &profile)
+                ctx.Cache.Profiles[profile_name].Profile.Second_x_session = "0"
             }
         }
     }
-    op.loadProfiles()
+    ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
+    ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
     op.window.Destroy()
 }
