@@ -87,8 +87,6 @@ type MainWindow struct {
 
     // Dialogs.
     options_dialog *OptionsDialog
-    // Favorite server editing.
-    favorite_dialog *FavoriteDialog
 
     // Other
     // Old profiles count.
@@ -141,7 +139,7 @@ func (m *MainWindow) addToFavorites() {
     }
 
     // Getting server from database.
-    m.favorite_dialog = &FavoriteDialog{}
+    fd := &FavoriteDialog{}
     if len(server_address) > 0 {
         servers := []datamodels.Server{}
         address := strings.Split(server_address, ":")[0]
@@ -150,9 +148,9 @@ func (m *MainWindow) addToFavorites() {
         if err1 != nil {
             fmt.Println(err1.Error())
         }
-        m.favorite_dialog.InitializeUpdate(&servers[0])
+        fd.InitializeUpdate(&servers[0])
     } else {
-        m.favorite_dialog.InitializeNew()
+        fd.InitializeNew()
     }
 }
 
@@ -264,7 +262,8 @@ func (m *MainWindow) editFavorite() {
 
     if len(server_address) > 0 {
         srv := ctx.Cache.Servers[server_address].Server
-        m.favorite_dialog.InitializeUpdate(srv)
+        fd := FavoriteDialog{}
+        fd.InitializeUpdate(srv)
     }
 }
 

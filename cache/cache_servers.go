@@ -64,6 +64,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             new_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
             new_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
             new_servers[mapping_item_name].Favorite = s.Server.Favorite
+            new_servers[mapping_item_name].ProfileToUse = s.Server.ProfileToUse
         } else {
             cached_servers[mapping_item_name].Ip = s.Server.Ip
             cached_servers[mapping_item_name].Port = s.Server.Port
@@ -78,6 +79,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             cached_servers[mapping_item_name].PlayersInfo = s.Server.PlayersInfo
             cached_servers[mapping_item_name].IsPrivate = s.Server.IsPrivate
             cached_servers[mapping_item_name].Favorite = s.Server.Favorite
+            cached_servers[mapping_item_name].ProfileToUse = s.Server.ProfileToUse
         }
     }
 
