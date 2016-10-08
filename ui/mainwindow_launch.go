@@ -179,9 +179,11 @@ func (m *MainWindow) launchActually(server_profile *datamodels.Server, user_prof
     }
 
     // Hey, we're ok here! :) Launch Urban Terror!
-    // Crear server name from "<markup></markup>" things.
-    srv_name_for_label := string([]byte(server_profile.Name)[8:len(server_profile.Name)-9])
-    fmt.Println(srv_name_for_label)
+    // Clear server name from "<markup></markup>" things.
+    srv_name_for_label := server_profile.Name
+    if strings.Contains(server_profile.Name, "markup") {
+        srv_name_for_label = string([]byte(server_profile.Name)[8:len(server_profile.Name)-9])
+    }
     // Show great coloured label.
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Urban Terror is launched with profile </span><span foreground=\"blue\">" + user_profile.Name + "</span> <span foreground=\"red\" font_weight=\"bold\">and connected to </span><span foreground=\"orange\" font_weight=\"bold\">" + srv_name_for_label + "</span></markup>"})
     m.launch_button.SetSensitive(false)
