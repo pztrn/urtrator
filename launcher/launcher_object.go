@@ -15,6 +15,7 @@ import (
     "fmt"
     "os"
     "os/exec"
+    "runtime"
     "strconv"
     "strings"
 
@@ -88,8 +89,7 @@ func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datam
             launch_params = append(launch_params, additional_parameters[i])
         }
     }
-    if user_profile.Second_x_session == "1" {
-        fmt.Println(launch_params)
+    if runtime.GOOS == "linux" && user_profile.Second_x_session == "1" {
         launch_params = append([]string{launch_bin}, launch_params...)
         display := l.findFreeDisplay()
         launch_bin, err = exec.LookPath("xinit")
@@ -98,7 +98,15 @@ func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datam
         }
         launch_params = append(launch_params, "--", ":" + display)
     }
-    fmt.Println(launch_params)
+    if runtime.GOOS == "darwin" {
+        // On macOS we should not start binary, but application bundle.
+        // So we will obtain app bundle path.
+        bundle_path := strings.Split(launch_bin, "/Contents")[0]
+        // and create special launch string, which involves open.
+        launch_bin = "/usr/bin/open"
+        launch_params = append([]string{launch_bin, "-W", bundle_path, "--args"}, launch_params...)
+    }
+    fmt.Println(launch_bin, launch_params)
     go func() {
         go func() {
             cmd := exec.Command(launch_bin, launch_params...)

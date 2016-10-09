@@ -32,7 +32,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Building URTrator..."
-go build -v github.com/pztrn/urtrator
+go install -v github.com/pztrn/urtrator
 if [ $? -ne 0 ]; then
     echo "Failed to build URTrator! Please, create a new bug report at https://github.com/pztrn/urtrator and attach FULL console output!"
     exit 1

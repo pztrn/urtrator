@@ -53,7 +53,7 @@ type OptionsProfile struct {
 }
 
 func (op *OptionsProfile) browseForBinary() {
-    op.f = gtk.NewFileChooserDialog("URTrator - Select Urban Terro binary", op.window, gtk.FILE_CHOOSER_ACTION_OPEN, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+    op.f = gtk.NewFileChooserDialog("URTrator - Select Urban Terror binary", op.window, gtk.FILE_CHOOSER_ACTION_OPEN, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
     op.f.Response(op.browseForBinaryHelper)
     op.f.Run()
 }
@@ -62,6 +62,7 @@ func (op *OptionsProfile) browseForBinaryHelper() {
     filename := op.f.GetFilename()
     op.binary_path.SetText(filename)
     op.f.Destroy()
+    fmt.Println(filename)
 
     // Check for valid filename.
     // ToDo: add more OSes.
@@ -80,16 +81,27 @@ func (op *OptionsProfile) browseForBinaryHelper() {
             }
         }
     } else if runtime.GOOS == "darwin" {
-        // No separate arch thing here, macOS now 64bit only.
-        if len(filename) > 0 && strings.Split(filename, ".")[1] != "x86_64" && strings.Split(filename, ".")[0] != "Quake3-UrT" {
-            fmt.Println("Invalid binary selected!")
-            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
+        // Official application: Quake3-UrT.app. Split by it and get second
+        // part of string.
+        if strings.Contains(filename, "Quake3-UrT.app") {
+            filename = strings.Split(filename, "Quake3-UrT.app")[1]
+            if len(filename) > 0 && !strings.Contains(strings.Split(filename, ".")[1], "x86_64") && !strings.Contains(strings.Split(filename, ".")[0], "Quake3-UrT") {
+                fmt.Println("Invalid binary selected!")
+                mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
+                m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+                m.Response(func() {
+                    m.Destroy()
+                })
+                m.Run()
+                op.binary_path.SetText("")
+            }
+        } else {
+            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64.\n\nNote, that currently URTrator supports only official binary."
             m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
                 m.Destroy()
             })
             m.Run()
-            op.binary_path.SetText("")
         }
     }
 }
@@ -177,7 +189,7 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.another_x_session.SetTooltipText(another_x_tooltip)
     op.vbox.PackStart(op.another_x_session, false, true, 5)
     // macOS can't do that :).
-    if runtime.GOOS == "darwin" {
+    if runtime.GOOS != "linux" {
         op.another_x_session.SetSensitive(false)
     }
 

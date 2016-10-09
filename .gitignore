@@ -1,3 +1,6 @@
 # We don't need binaries.
 urtrator
 *tar*
+
+# macOS things
+.DS_Store
