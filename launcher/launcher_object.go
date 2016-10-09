@@ -104,7 +104,7 @@ func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datam
         bundle_path := strings.Split(launch_bin, "/Contents")[0]
         // and create special launch string, which involves open.
         launch_bin = "/usr/bin/open"
-        launch_params = append([]string{launch_bin, "-W", bundle_path, "--args"}, launch_params...)
+        launch_params = append([]string{launch_bin, "-W", "-a", bundle_path, "--args"}, launch_params...)
     }
     fmt.Println(launch_bin, launch_params)
     go func() {
