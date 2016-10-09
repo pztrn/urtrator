@@ -81,9 +81,9 @@ func (op *OptionsProfile) browseForBinaryHelper() {
         }
     } else if runtime.GOOS == "darwin" {
         // No separate arch thing here, macOS now 64bit only.
-        if len(filename) > 0 && strings.Split(filename, ".")[1] != "app" && strings.Split(filename, ".")[0] != "Quake3-UrT" {
+        if len(filename) > 0 && strings.Split(filename, ".")[1] != "x86_64" && strings.Split(filename, ".")[0] != "Quake3-UrT" {
             fmt.Println("Invalid binary selected!")
-            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app."
+            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
             m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
                 m.Destroy()

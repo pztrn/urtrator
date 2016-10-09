@@ -70,9 +70,6 @@ func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datam
     if err != nil {
         fmt.Println(err.Error())
     }
-    if runtime.GOOS == "darwin" {
-        launch_bin = launch_bin + "/Contents/MacOS/Quake3-UrT.x86_64"
-    }
 
     server_address := server_profile.Ip + ":" + server_profile.Port
 
