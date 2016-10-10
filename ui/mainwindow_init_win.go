@@ -1,7 +1,12 @@
 package ui
 
 import (
+    // stdlib
+    "os"
+    "path/filepath"
+
     // other
+    "github.com/mattn/go-gtk/gtk"
     "github.com/couchbase/goutils/platform"
 )
 
