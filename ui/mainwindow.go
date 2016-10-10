@@ -29,6 +29,8 @@ type MainWindow struct {
     // Gamemodes.
     gamemodes map[string]string
 
+    text string
+
     // Widgets.
     // The window itself.
     window *gtk.Window

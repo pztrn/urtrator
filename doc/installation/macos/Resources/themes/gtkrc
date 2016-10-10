@@ -1,0 +1,2 @@
+include "ClearlooksBrave/gtk-2.0/gtkrc"
+include "gtkrc-keybindings"

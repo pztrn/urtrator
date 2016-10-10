@@ -76,7 +76,11 @@ func (m *MainWindow) Initialize() {
     m.options_dialog = &OptionsDialog{}
 
     // Main menu.
-    m.InitializeMainMenu()
+    if runtime.GOOS == "darwin" {
+        m.initializeMacMenu()
+    } else {
+        m.InitializeMainMenu()
+    }
 
     // Toolbar.
     m.InitializeToolbar()
@@ -140,6 +144,7 @@ func (m *MainWindow) Initialize() {
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
     m.window.Add(m.vbox)
+
     m.window.ShowAll()
 
     // Launch events.
