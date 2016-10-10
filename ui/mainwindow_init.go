@@ -149,6 +149,9 @@ func (m *MainWindow) Initialize() {
     if runtime.GOOS == "windows" {
         m.initializeWin()
     }
+    if runtime.GOOS == "darwin" {
+        m.initializeMac()
+    }
 
     m.window.ShowAll()
 
