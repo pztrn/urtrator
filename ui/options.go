@@ -128,6 +128,16 @@ func (o *OptionsDialog) fill() {
     }
 }
 
+// Appearance tab initialization.
+func (o *OptionsDialog) initializeAppearanceTab() {
+    appearance_vbox := gtk.NewVBox(false, 0)
+
+    l := gtk.NewLabel("There will be some appearance configuration options soon.")
+    appearance_vbox.PackStart(l, false, true, 5)
+
+    o.tab_widget.AppendPage(appearance_vbox, gtk.NewLabel("Appearance"))
+}
+
 func (o *OptionsDialog) initializeGeneralTab() {
     general_vbox := gtk.NewVBox(false, 0)
 
@@ -153,8 +163,10 @@ func (o *OptionsDialog) initializeStorages() {
 func (o *OptionsDialog) initializeTabs() {
     o.initializeStorages()
     o.tab_widget = gtk.NewNotebook()
+    o.tab_widget.SetTabPos(gtk.POS_LEFT)
 
     o.initializeGeneralTab()
+    o.initializeAppearanceTab()
     o.initializeUrtTab()
 
     // Buttons for saving and discarding changes.
