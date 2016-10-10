@@ -36,6 +36,14 @@ func (m *MainWindow) Initialize() {
 
     m.window.Connect("configure-event", m.checkPositionAndSize)
 
+    // Additional OS-specific initialization.
+    if runtime.GOOS == "windows" {
+        m.initializeWin()
+    }
+    if runtime.GOOS == "darwin" {
+        m.initializeMac()
+    }
+
     // Restoring window position.
     var win_pos_x_str string = "0"
     var win_pos_y_str string = "0"
@@ -144,14 +152,6 @@ func (m *MainWindow) Initialize() {
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
     m.window.Add(m.vbox)
-
-    // Additional Windows-related initialization.
-    if runtime.GOOS == "windows" {
-        m.initializeWin()
-    }
-    if runtime.GOOS == "darwin" {
-        m.initializeMac()
-    }
 
     m.window.ShowAll()
 
