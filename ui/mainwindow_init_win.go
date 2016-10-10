@@ -10,6 +10,10 @@ import (
     "github.com/couchbase/goutils/platform"
 )
 
+func (m *MainWindow) closeWin() {
+    platform.HideConsole(false)
+}
+
 func (m *MainWindow) initializeWin() {
     platform.HideConsole(true)
 

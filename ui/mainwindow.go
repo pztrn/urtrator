@@ -12,6 +12,7 @@ package ui
 import (
     // stdlib
     "fmt"
+    "runtime"
     "strconv"
     "strings"
 
@@ -191,6 +192,11 @@ func (m *MainWindow) Close() {
     for i := range fav_servers_columns {
         ctx.Cfg.Cfg["/mainwindow/fav_servers/" + fav_servers_columns[i].GetTitle() + "_position"] = strconv.Itoa(i)
         ctx.Cfg.Cfg["/mainwindow/fav_servers/" + fav_servers_columns[i].GetTitle() + "_width"] = strconv.Itoa(fav_servers_columns[i].GetWidth())
+    }
+
+    // Additional actions should be taken on Windows.
+    if runtime.GOOS == "windows" {
+        m.closeWin()
     }
 
     ctx.Close()
