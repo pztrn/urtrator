@@ -145,6 +145,11 @@ func (m *MainWindow) Initialize() {
 
     m.window.Add(m.vbox)
 
+    // Additional Windows-related initialization.
+    if runtime.GOOS == "windows" {
+        m.initializeWin()
+    }
+
     m.window.ShowAll()
 
     // Launch events.
