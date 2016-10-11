@@ -47,41 +47,30 @@ func (cw *ClipboardWatcher) Initialize() {
 }
 
 func (cw *ClipboardWatcher) parseData(data string) {
-    fmt.Println(data)
+    // We should check only first string.
+    data = strings.Split(data, "\n")[0]
     // Checking if we have connection string here.
-    if strings.Contains(data, "connect") && strings.Contains(data, "password") {
+    if strings.Contains(data, "ct ") {
         fmt.Println("Connection string detected!")
         var server string = ""
         var password string = ""
         conn_string := strings.Split(data, ";")
         if len(conn_string) > 0 {
             srv_string := strings.Split(data, ";")[0]
-            srv_splitted := strings.Split(srv_string, "connect ")
+            srv_splitted := strings.Split(srv_string, "ct ")
             if len(srv_splitted) > 1 {
-                server_raw := srv_splitted[1]
+                server_raw := strings.Split(srv_splitted[1], " ")[0]
                 // Get rid of spaces.
-                server_raw_splitted := strings.Split(server_raw, " ")
-                for i := range server_raw_splitted {
-                    if server_raw_splitted[i] == "" {
-                        continue
-                    }
-                    server = server_raw_splitted[i]
-                }
+                server = strings.TrimSpace(server_raw)
             }
         }
-        if len(conn_string) > 1 {
+        if len(conn_string) > 1 && strings.Contains(data, "password")  {
             pw_string := strings.Split(data, ";")[1]
             pw_splitted := strings.Split(pw_string, "password ")
             if len(pw_splitted) > 1 {
-                password_raw := pw_splitted[1]
+                password_raw := strings.Split(pw_splitted[1], " ")[0]
                 // Get rid of spaces.
-                password_raw_splitted := strings.Split(password_raw, " ")
-                for i := range password_raw_splitted {
-                    if password_raw_splitted[i] == "" {
-                        continue
-                    }
-                    password = password_raw_splitted[i]
-                }
+                password = strings.TrimSpace(password_raw)
             }
         }
         Eventer.LaunchEvent("setQuickConnectDetails", map[string]string{"server": server, "password": password})
