@@ -95,7 +95,17 @@ func (m *MainWindow) launchAsUsual() error {
     } else if strings.Contains(current_tab, "Favorites") {
         // For favorite servers profile specified in favorite server
         // information have higher priority, so we just override it :)
-        user_profile = ctx.Cache.Profiles[server_profile.ProfileToUse].Profile
+        user_profile_cached, ok := ctx.Cache.Profiles[server_profile.ProfileToUse]
+        if !ok {
+            mbox_string := "Invalid game profile specified for favorite server.\n\nPlease, edit your favorite server, select valid profile and retry."
+            m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+            return errors.New("User didn't select valid profile.")
+        }
+        user_profile = user_profile_cached.Profile
     }
 
     m.launchActually(server_profile, user_profile, "", "")
