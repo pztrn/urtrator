@@ -437,6 +437,12 @@ func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Servers updated."})
 }
 
+func (m *MainWindow) setQuickConnectDetails(data map[string]string) {
+    fmt.Println("Setting quick connect data...")
+    m.qc_server_address.SetText(data["server"])
+    m.qc_password.SetText(data["password"])
+}
+
 func (m *MainWindow) setToolbarLabelText(data map[string]string) {
     fmt.Println("Setting toolbar's label text...")
     if strings.Contains(data["text"], "<markup>") {

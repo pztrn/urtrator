@@ -21,6 +21,7 @@ func (m *MainWindow) Initialize() {
     gtk.Init(nil)
 
     m.initializeStorages()
+    ctx.InitializeClipboardWatcher()
 
     m.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     m.window.SetTitle("URTrator")
@@ -173,6 +174,7 @@ func (m *MainWindow) initializeEvents() {
     ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
     ctx.Eventer.AddEventHandler("loadProfilesIntoMainWindow", m.loadProfiles)
     ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
+    ctx.Eventer.AddEventHandler("setQuickConnectDetails", m.setQuickConnectDetails)
     ctx.Eventer.AddEventHandler("setToolbarLabelText", m.setToolbarLabelText)
 }
 

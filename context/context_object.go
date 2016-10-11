@@ -16,6 +16,7 @@ import (
 
     // local
     "github.com/pztrn/urtrator/cache"
+    "github.com/pztrn/urtrator/clipboardwatcher"
     "github.com/pztrn/urtrator/colorizer"
     "github.com/pztrn/urtrator/configuration"
     "github.com/pztrn/urtrator/database"
@@ -30,6 +31,8 @@ import (
 type Context struct {
     // Caching.
     Cache *cache.Cache
+    // Clipboard watcher.
+    Clipboard *clipboardwatcher.ClipboardWatcher
     // Colors parser and prettifier.
     Colorizer *colorizer.Colorizer
     // Configuration.
@@ -63,6 +66,11 @@ func (ctx *Context) Close() error {
 func (ctx *Context) initializeCache() {
     ctx.Cache = cache.New(ctx.Database, ctx.Eventer)
     ctx.Cache.Initialize()
+}
+
+func (ctx *Context) InitializeClipboardWatcher() {
+    ctx.Clipboard = clipboardwatcher.New(ctx.Eventer)
+    ctx.Clipboard.Initialize()
 }
 
 func (ctx *Context) initializeColorizer() {
