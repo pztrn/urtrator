@@ -36,6 +36,8 @@ func (cw *ClipboardWatcher) checkInput() {
     if !cw.just_set {
         text := cw.clipboard.WaitForText()
         cw.parseData(text)
+    } else {
+        cw.just_set = false
     }
 }
 
@@ -43,6 +45,8 @@ func (cw *ClipboardWatcher) checkPrimaryInput() {
     if !cw.just_set {
         text := cw.prim_clipboard.WaitForText()
         cw.parseData(text)
+    } else {
+        cw.just_set = false
     }
 }
 
