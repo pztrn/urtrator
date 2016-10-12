@@ -69,7 +69,7 @@ func (ctx *Context) initializeCache() {
 }
 
 func (ctx *Context) InitializeClipboardWatcher() {
-    ctx.Clipboard = clipboardwatcher.New(ctx.Eventer)
+    ctx.Clipboard = clipboardwatcher.New(ctx.Cache, ctx.Eventer)
     ctx.Clipboard.Initialize()
 }
 

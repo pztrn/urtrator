@@ -202,6 +202,13 @@ func (m *MainWindow) Close() {
     ctx.Close()
 }
 
+func (m *MainWindow) copyServerCredentialsToClipboard() {
+    fmt.Println("Copying server's credentials to clipboard...")
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+    server_address := m.getIpFromServersList(current_tab)
+    ctx.Clipboard.CopyServerData(server_address)
+}
+
 // Deleting server from favorites.
 func (m *MainWindow) deleteFromFavorites() {
     fmt.Println("Removing server from favorites...")

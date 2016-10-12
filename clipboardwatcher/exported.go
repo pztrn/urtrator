@@ -11,15 +11,18 @@ package clipboardwatcher
 
 import(
     // local
+    "github.com/pztrn/urtrator/cache"
     "github.com/pztrn/urtrator/eventer"
 )
 
 var (
+    Cache *cache.Cache
     Eventer *eventer.Eventer
 )
 
-func New(e *eventer.Eventer) *ClipboardWatcher {
+func New(c *cache.Cache, e *eventer.Eventer) *ClipboardWatcher {
+    Cache = c
     Eventer = e
-    c := ClipboardWatcher{}
-    return &c
+    cw := ClipboardWatcher{}
+    return &cw
 }

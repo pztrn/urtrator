@@ -11,6 +11,7 @@ package clipboardwatcher
 
 import (
     // stdlib
+    "errors"
     "fmt"
     "strings"
 
@@ -24,20 +25,51 @@ type ClipboardWatcher struct {
     clipboard *gtk.Clipboard
     // PRIMARY clipboard.
     prim_clipboard *gtk.Clipboard
+
+    // Flags.
+    // We have just copy connect string to clipboard.
+    // Used to ignore clipboard data in check*Input()
+    just_set bool
 }
 
 func (cw *ClipboardWatcher) checkInput() {
-    text := cw.clipboard.WaitForText()
-    cw.parseData(text)
+    if !cw.just_set {
+        text := cw.clipboard.WaitForText()
+        cw.parseData(text)
+    }
 }
 
 func (cw *ClipboardWatcher) checkPrimaryInput() {
-    text := cw.prim_clipboard.WaitForText()
-    cw.parseData(text)
+    if !cw.just_set {
+        text := cw.prim_clipboard.WaitForText()
+        cw.parseData(text)
+    }
+}
+
+func (cw *ClipboardWatcher) CopyServerData(server_address string) error {
+    server, ok := Cache.Servers[server_address]
+    if !ok {
+        // ToDo: show message box?
+        return errors.New("Server wasn't selected")
+    }
+
+    // Composing connection string.
+    var connect_string string = ""
+    connect_string += "/connect " + server.Server.Ip + ":" + server.Server.Port
+    if len(server.Server.Password) >= 1 {
+        connect_string += ";password " + server.Server.Password
+    }
+    fmt.Println("Connect string: ", connect_string)
+    cw.just_set = true
+    cw.clipboard.SetText(connect_string)
+
+    return nil
 }
 
 func (cw *ClipboardWatcher) Initialize() {
     fmt.Println("Initializing clipboard watcher...")
+
+    cw.just_set = false
 
     cw.clipboard = gtk.NewClipboardGetForDisplay(gdk.DisplayGetDefault(), gdk.SELECTION_CLIPBOARD)
     cw.clipboard.Connect("owner-change", cw.checkInput)

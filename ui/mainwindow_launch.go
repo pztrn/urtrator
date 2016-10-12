@@ -58,18 +58,18 @@ func (m *MainWindow) launchAsUsual() error {
     if len(server_profile.Name) == 0 {
         var will_continue bool = false
         mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
-        m.Connect("response", func(resp *glib.CallbackContext) {
+        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
+        messagebox.Connect("response", func(resp *glib.CallbackContext) {
             if resp.Args(0) == 4294967287 {
                 will_continue = false
             } else {
                 will_continue = true
             }
         })
-        m.Response(func() {
-            m.Destroy()
+        messagebox.Response(func() {
+            messagebox.Destroy()
         })
-        m.Run()
+        messagebox.Run()
         if !will_continue {
             return errors.New("User declined to connect to offline server")
         }
@@ -84,11 +84,11 @@ func (m *MainWindow) launchAsUsual() error {
         // have profiles defined (see next).
         if len(profile_name) == 0 {
             mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
-            m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            m.Response(func() {
-                m.Destroy()
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            messagebox.Response(func() {
+                messagebox.Destroy()
             })
-            m.Run()
+            messagebox.Run()
             return errors.New("User didn't select valid profile.")
         }
         user_profile = ctx.Cache.Profiles[profile_name].Profile
@@ -98,11 +98,11 @@ func (m *MainWindow) launchAsUsual() error {
         user_profile_cached, ok := ctx.Cache.Profiles[server_profile.ProfileToUse]
         if !ok {
             mbox_string := "Invalid game profile specified for favorite server.\n\nPlease, edit your favorite server, select valid profile and retry."
-            m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            m.Response(func() {
-                m.Destroy()
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            messagebox.Response(func() {
+                messagebox.Destroy()
             })
-            m.Run()
+            messagebox.Run()
             return errors.New("User didn't select valid profile.")
         }
         user_profile = user_profile_cached.Profile
@@ -155,18 +155,18 @@ func (m *MainWindow) launchActually(server_profile *datamodels.Server, user_prof
     if server_profile.Name == "" {
         var will_continue bool = false
         mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
-        m.Connect("response", func(resp *glib.CallbackContext) {
+        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
+        messagebox.Connect("response", func(resp *glib.CallbackContext) {
             if resp.Args(0) == 4294967287 {
                 will_continue = false
             } else {
                 will_continue = true
             }
         })
-        m.Response(func() {
-            m.Destroy()
+        messagebox.Response(func() {
+            messagebox.Destroy()
         })
-        m.Run()
+        messagebox.Run()
         if !will_continue {
             return errors.New("User declined to connect to offline server")
         }
@@ -175,11 +175,11 @@ func (m *MainWindow) launchActually(server_profile *datamodels.Server, user_prof
     // Check if server is applicable for selected profile.
     if server_profile.Version != user_profile.Version {
         mbox_string := "Invalid game profile selected.\n\nSelected profile have different game version than server.\nPlease, select valid profile and retry."
-        m := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
+        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+        messagebox.Response(func() {
+            messagebox.Destroy()
         })
-        m.Run()
+        messagebox.Run()
         return errors.New("User didn't select valid profile, mismatch with server's version.")
     }
 

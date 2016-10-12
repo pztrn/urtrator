@@ -560,15 +560,22 @@ func (m *MainWindow) InitializeToolbar() {
     fav_delete_button.OnClicked(m.deleteFromFavorites)
     m.toolbar.Insert(fav_delete_button, 5)
 
+    // Copy server address button.
+    copy_srv_addr_button := gtk.NewToolButtonFromStock(gtk.STOCK_COPY)
+    copy_srv_addr_button.SetLabel("Copy server's creds")
+    copy_srv_addr_button.SetTooltipText("Copy server's credentials to clipboard for sharing")
+    copy_srv_addr_button.OnClicked(m.copyServerCredentialsToClipboard)
+    m.toolbar.Insert(copy_srv_addr_button, 6)
+
     // Separator for toolbar's label and buttons.
     toolbar_separator_toolitem := gtk.NewToolItem()
     toolbar_separator_toolitem.SetExpand(true)
-    m.toolbar.Insert(toolbar_separator_toolitem, 6)
+    m.toolbar.Insert(toolbar_separator_toolitem, 7)
     // Toolbar's label.
     m.toolbar_label = gtk.NewLabel("URTrator is ready")
     toolbar_label_toolitem := gtk.NewToolItem()
     toolbar_label_toolitem.Add(m.toolbar_label)
-    m.toolbar.Insert(toolbar_label_toolitem, 7)
+    m.toolbar.Insert(toolbar_label_toolitem, 8)
 }
 
 // Tray icon initialization.
