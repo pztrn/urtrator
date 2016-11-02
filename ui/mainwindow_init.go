@@ -11,6 +11,7 @@ import (
     "github.com/pztrn/urtrator/common"
 
     // Other
+    "github.com/mattn/go-gtk/gdk"
     "github.com/mattn/go-gtk/gdkpixbuf"
     "github.com/mattn/go-gtk/glib"
     "github.com/mattn/go-gtk/gtk"
@@ -18,6 +19,10 @@ import (
 
 // Main window initialization.
 func (m *MainWindow) Initialize() {
+
+    gdk.ThreadsInit()
+    gdk.ThreadsEnter()
+
     gtk.Init(nil)
 
     m.initializeStorages()
@@ -165,6 +170,7 @@ func (m *MainWindow) Initialize() {
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
 
     gtk.Main()
+    gdk.ThreadsLeave()
 }
 
 // Events initialization.

@@ -308,7 +308,6 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
 
 func (m *MainWindow) loadAllServers(data map[string]string) {
     fmt.Println("Loading all servers...")
-    // ToDo: do it without clearing.
     for _, server := range ctx.Cache.Servers {
         iter := new(gtk.TreeIter)
         ping, _ := strconv.Atoi(server.Server.Ping)
@@ -321,7 +320,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
         }
 
         if m.all_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
-            if server.AllServersIterInList {
+            if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
             }
