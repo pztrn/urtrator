@@ -13,6 +13,10 @@ import (
     crand "crypto/rand"
     "errors"
     "fmt"
+    //"reflect"
+
+    // github
+    "github.com/mattn/go-gtk/glib"
 )
 
 type Eventer struct {
@@ -44,11 +48,19 @@ func (e *Eventer) LaunchEvent(event string, data map[string]string) error {
     if !ok {
         return errors.New("Event " + event + " not found!")
     }
-    fmt.Println("Launching event " + event)
 
+    fmt.Println("Launching event " + event)
+    glib.IdleAdd(func() bool {
+        e.reallyLaunchEvent(event, data)
+        return false
+    })
+
+    return nil
+}
+
+func (e *Eventer) reallyLaunchEvent(event string, data map[string]string) {
+    fmt.Println("Really launching event " + event + "...")
     for _, val := range e.events[event] {
         val(data)
     }
-
-    return nil
 }

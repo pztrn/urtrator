@@ -152,7 +152,7 @@ func (f *FavoriteDialog) initializeWindow() {
     srv_addr_hbox.PackStart(f.server_address, true, true, 5)
     srv_addr_update_btn := gtk.NewButton()
     srv_addr_update_btn.SetTooltipText("Update server information")
-    srv_addr_update_btn_image := gtk.NewImageFromStock(gtk.STOCK_REDO, 24)
+    srv_addr_update_btn_image := gtk.NewImageFromStock(gtk.STOCK_REDO, gtk.ICON_SIZE_SMALL_TOOLBAR)
     srv_addr_update_btn.SetImage(srv_addr_update_btn_image)
     srv_addr_update_btn.Clicked(f.updateServerInfo)
     srv_addr_hbox.PackStart(srv_addr_update_btn, false, true, 5)

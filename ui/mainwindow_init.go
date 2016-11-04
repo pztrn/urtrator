@@ -153,7 +153,7 @@ func (m *MainWindow) Initialize() {
     m.launch_button = gtk.NewButtonWithLabel("Launch!")
     m.launch_button.SetTooltipText("Launch Urban Terror")
     m.launch_button.Clicked(m.launchGame)
-    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, 24)
+    launch_button_image := gtk.NewImageFromStock(gtk.STOCK_APPLY, gtk.ICON_SIZE_SMALL_TOOLBAR)
     m.launch_button.SetImage(launch_button_image)
     profile_and_launch_hbox.PackStart(m.launch_button, false, true, 5)
 
