@@ -20,6 +20,7 @@ import (
 // Main window initialization.
 func (m *MainWindow) Initialize() {
 
+    glib.ThreadInit(nil)
     gdk.ThreadsInit()
     gdk.ThreadsEnter()
 
