@@ -12,6 +12,7 @@ package requester
 import (
     // stdlib
     "bytes"
+    "errors"
     "fmt"
     "net"
     "strconv"
@@ -46,11 +47,13 @@ func (r *Requester) Initialize() {
 
 // Gets all available servers from master server.
 // This isn't in pooler, because it have no need to be pooled.
-func (r *Requester) getServers() {
+func (r *Requester) getServers() error {
     // IP addresses we will compose to return.
     conn, err1 := net.Dial("udp", r.master_server + ":" + r.master_server_port)
     if err1 != nil {
         fmt.Println("Error dialing to master server!")
+        Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Failed to connect to master server!"})
+        return errors.New("Failed to connect to master server!")
     }
     defer conn.Close()
 
@@ -118,6 +121,8 @@ func (r *Requester) getServers() {
             Cache.Servers[addr].Server.Port = port
         }
     }
+
+    return nil
 }
 
 // Updates information about all available servers from master server and
