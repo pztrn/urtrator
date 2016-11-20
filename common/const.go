@@ -10,5 +10,5 @@
 package common
 
 const (
-    URTRATOR_VERSION = "0.1-beta3"
+    URTRATOR_VERSION = "0.1-beta4"
 )
