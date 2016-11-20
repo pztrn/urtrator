@@ -160,17 +160,23 @@ func (m *MainWindow) addToFavorites() {
 // Executes when delimiter for two panes is moved, to calculate VALID
 // position.
 func (m *MainWindow) checkMainPanePosition() {
-    m.pane_negative_position = m.window_width - m.hpane.GetPosition()
+    glib.IdleAdd(func() {
+        m.pane_negative_position = m.window_width - m.hpane.GetPosition()
+        return false
+    })
 }
 
 // Executes when main window is moved or resized.
 // Also calculating pane delimiter position and set it to avoid
 // widgets hell :).
 func (m *MainWindow) checkPositionAndSize() {
-    m.window.GetPosition(&m.window_pos_x, &m.window_pos_y)
-    m.window.GetSize(&m.window_width, &m.window_height)
+    glib.IdleAdd(func() {
+        m.window.GetPosition(&m.window_pos_x, &m.window_pos_y)
+        m.window.GetSize(&m.window_width, &m.window_height)
 
-    m.hpane.SetPosition(m.window_width - m.pane_negative_position)
+        m.hpane.SetPosition(m.window_width - m.pane_negative_position)
+        return false
+    })
 }
 
 // Executes on URTrator shutdown.
