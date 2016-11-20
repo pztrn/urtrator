@@ -160,7 +160,7 @@ func (m *MainWindow) addToFavorites() {
 // Executes when delimiter for two panes is moved, to calculate VALID
 // position.
 func (m *MainWindow) checkMainPanePosition() {
-    glib.IdleAdd(func() {
+    glib.IdleAdd(func() bool {
         m.pane_negative_position = m.window_width - m.hpane.GetPosition()
         return false
     })
@@ -170,7 +170,7 @@ func (m *MainWindow) checkMainPanePosition() {
 // Also calculating pane delimiter position and set it to avoid
 // widgets hell :).
 func (m *MainWindow) checkPositionAndSize() {
-    glib.IdleAdd(func() {
+    glib.IdleAdd(func() bool {
         m.window.GetPosition(&m.window_pos_x, &m.window_pos_y)
         m.window.GetSize(&m.window_width, &m.window_height)
 
