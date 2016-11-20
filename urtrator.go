@@ -25,7 +25,6 @@ func main() {
 
     numCPUs := runtime.NumCPU()
     runtime.GOMAXPROCS(numCPUs)
-    runtime.LockOSThread()
 
     ctx := context.New()
     ctx.Initialize()

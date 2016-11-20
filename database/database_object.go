@@ -14,6 +14,7 @@ import (
     //"database/sql"
     "fmt"
     "path"
+    "runtime"
     "strconv"
 
     // local
@@ -48,10 +49,12 @@ func (d *Database) Close() {
     tx.Commit()
 
     d.Db.Close()
+    runtime.UnlockOSThread()
 }
 
 func (d *Database) Initialize(cfg *configuration.Config) {
     fmt.Println("Initializing database...")
+    runtime.LockOSThread()
 
     // Connect to database.
     db_path := path.Join(cfg.TEMP["DATA"], "database.sqlite3")
@@ -72,6 +75,10 @@ func (d *Database) Initialize(cfg *configuration.Config) {
     }
 }
 
+func (d *Database) Lock() {
+    runtime.LockOSThread()
+}
+
 func (d *Database) Migrate() {
     // Getting current database version.
     dbver := 0
@@ -86,4 +93,8 @@ func (d *Database) Migrate() {
 
 
     migrate_full(d, dbver)
+}
+
+func (d *Database) Unlock() {
+    runtime.UnlockOSThread()
 }

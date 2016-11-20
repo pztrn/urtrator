@@ -85,6 +85,7 @@ func (c *Cache) FlushServers(data map[string]string) {
         }
     }
 
+    Database.Unlock()
     tx := Database.Db.MustBegin()
     fmt.Println("Adding new servers...")
     if len(new_servers) > 0 {
@@ -101,6 +102,7 @@ func (c *Cache) FlushServers(data map[string]string) {
     }
 
     tx.Commit()
+    Database.Lock()
     fmt.Println("Done")
 }
 
