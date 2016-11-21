@@ -355,24 +355,29 @@ func (m *MainWindow) initializeStorages() {
     // Pixbufs.
     // Offline server.
     srv_offline_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_OFFLINE)
-    srv_offline_pixbuf := gdkpixbuf.NewLoader()
+    srv_offline_pixbuf, _ := gdkpixbuf.NewLoaderWithType("png")
+    srv_offline_pixbuf.SetSize(24, 24)
     srv_offline_pixbuf.Write(srv_offline_bytes)
     m.server_offline_pic = srv_offline_pixbuf.GetPixbuf()
     // Online server.
     srv_online_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_ONLINE)
-    srv_online_pixbuf := gdkpixbuf.NewLoader()
+    srv_online_pixbuf, _ := gdkpixbuf.NewLoaderWithType("png")
+    srv_online_pixbuf.SetSize(24, 24)
     srv_online_pixbuf.Write(srv_online_bytes)
     m.server_online_pic = srv_online_pixbuf.GetPixbuf()
     // Private server.
     srv_private_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_PRIVATE)
-    srv_private_pixbuf := gdkpixbuf.NewLoader()
+    srv_private_pixbuf, _ := gdkpixbuf.NewLoaderWithType("png")
+    srv_private_pixbuf.SetSize(24, 24)
     srv_private_pixbuf.Write(srv_private_bytes)
     m.server_private_pic = srv_private_pixbuf.GetPixbuf()
     // Public server.
     srv_public_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_PUBLIC)
-    srv_public_pixbuf := gdkpixbuf.NewLoader()
+    srv_public_pixbuf, _ := gdkpixbuf.NewLoaderWithType("png")
+    srv_public_pixbuf.SetSize(24, 24)
     srv_public_pixbuf.Write(srv_public_bytes)
     m.server_public_pic = srv_public_pixbuf.GetPixbuf()
+    fmt.Println(srv_public_pixbuf.GetFormat().GetName())
 }
 
 // Tabs widget initialization, including all child widgets.
