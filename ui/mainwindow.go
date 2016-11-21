@@ -234,12 +234,18 @@ func (m *MainWindow) deleteFromFavorites() {
     }
 
     if not_favorited {
-        mbox_string := "Cannot delete server from favorites.\n\nServer isn't favorited."
-        d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
-        d.Response(func() {
-            d.Destroy()
-        })
-        d.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Cannot delete server from favorites.\n\nServer isn't favorited."
+            d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
+            d.Response(func() {
+                d.Destroy()
+            })
+            d.Run()
+        } else {
+            ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Server isn't favorited</span></markup>"})
+        }
     }
 
     ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
@@ -250,19 +256,23 @@ func (m *MainWindow) deleteFromFavorites() {
 func (m *MainWindow) dropDatabasesData() {
     fmt.Println("Dropping database data...")
     var will_continue bool = false
-    mbox_string := "You are about to drop whole database data.\n\nAfter clicking \"YES\" ALL data in database (servers, profiles, settings, etc.)\nwill be lost FOREVER. Are you sure?"
-    d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, mbox_string)
-    d.Connect("response", func(resp *glib.CallbackContext) {
-        if resp.Args(0) == 4294967287 {
-            will_continue = false
-        } else {
-            will_continue = true
-        }
-    })
-    d.Response(func() {
-        d.Destroy()
-    })
-    d.Run()
+    // Temporary disable all these modals on Linux.
+    // See https://github.com/mattn/go-gtk/issues/289.
+    if runtime.GOOS != "linux" {
+        mbox_string := "You are about to drop whole database data.\n\nAfter clicking \"YES\" ALL data in database (servers, profiles, settings, etc.)\nwill be lost FOREVER. Are you sure?"
+        d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, mbox_string)
+        d.Connect("response", func(resp *glib.CallbackContext) {
+            if resp.Args(0) == 4294967287 {
+                will_continue = false
+            } else {
+                will_continue = true
+            }
+            d.Destroy()
+        })
+        d.Run()
+    } else {
+        ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Remove ~/.config/urtrator/database.sqlite3 manually!</span></markup>"})
+    }
 
     if will_continue {
         ctx.Database.Db.MustExec("DELETE FROM servers")

@@ -14,6 +14,7 @@ import (
     "encoding/base64"
     "errors"
     "fmt"
+    "runtime"
     "strings"
 
     // Local
@@ -205,12 +206,16 @@ func (f *FavoriteDialog) saveFavorite() error {
     //ctx.Requester.Pooler.UpdateSpecificServer(f.server)
 
     if len(f.server_address.GetText()) == 0 {
-        mbox_string := "Server address is empty.\n\nServers without address cannot be added."
-        m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Server address is empty.\n\nServers without address cannot be added."
+            m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+        }
         return errors.New("No server address specified")
     }
 
@@ -224,12 +229,16 @@ func (f *FavoriteDialog) saveFavorite() error {
     f.server.Port = port
 
     if len(f.profile.GetActiveText()) == 0 {
-        mbox_string := "Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab."
-        m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab."
+            m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+        }
         return errors.New("No game profile specified")
     }
 

@@ -12,6 +12,7 @@ package ui
 import (
     // stdlib
     "fmt"
+    "runtime"
 
     // Local
     "github.com/pztrn/urtrator/datamodels"
@@ -66,12 +67,16 @@ func (o *OptionsDialog) closeOptionsDialogWithSaving() {
 
     o.saveGeneral()
 
-    mbox_string := "Some options require application restart to be applied."
-    m := gtk.NewMessageDialog(o.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
-    m.Response(func() {
-        m.Destroy()
-    })
-    m.Run()
+    // Temporary disable all these modals on Linux.
+    // See https://github.com/mattn/go-gtk/issues/289.
+    if runtime.GOOS != "linux" {
+        mbox_string := "Some options require application restart to be applied."
+        m := gtk.NewMessageDialog(o.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
+        m.Response(func() {
+            m.Destroy()
+        })
+        m.Run()
+    }
 
     o.window.Destroy()
 }

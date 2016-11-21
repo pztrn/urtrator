@@ -4,6 +4,7 @@ import (
     // stdlib
     "errors"
     "fmt"
+    "runtime"
     "strings"
 
     // Local
@@ -57,19 +58,25 @@ func (m *MainWindow) launchAsUsual() error {
     // we should show notification to user.
     if len(server_profile.Name) == 0 {
         var will_continue bool = false
-        mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
-        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
-        messagebox.Connect("response", func(resp *glib.CallbackContext) {
-            if resp.Args(0) == 4294967287 {
-                will_continue = false
-            } else {
-                will_continue = true
-            }
-        })
-        messagebox.Response(func() {
-            messagebox.Destroy()
-        })
-        messagebox.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
+            messagebox.Connect("response", func(resp *glib.CallbackContext) {
+                if resp.Args(0) == 4294967287 {
+                    will_continue = false
+                } else {
+                    will_continue = true
+                }
+                messagebox.Destroy()
+            })
+            messagebox.Run()
+        } else {
+            // We're okay to connect to empty server, temporary.
+            will_continue = true
+        }
+
         if !will_continue {
             return errors.New("User declined to connect to offline server")
         }
@@ -83,12 +90,18 @@ func (m *MainWindow) launchAsUsual() error {
         // This check only relevant to "Servers" tab, favorite servers
         // have profiles defined (see next).
         if len(profile_name) == 0 {
-            mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
-            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            messagebox.Response(func() {
-                messagebox.Destroy()
-            })
-            messagebox.Run()
+            // Temporary disable all these modals on Linux.
+            // See https://github.com/mattn/go-gtk/issues/289.
+            if runtime.GOOS != "linux" {
+                mbox_string := "Invalid game profile selected.\n\nPlease, select profile and retry."
+                messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+                messagebox.Response(func() {
+                    messagebox.Destroy()
+                })
+                messagebox.Run()
+            } else {
+                ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Invalid game profile selected.</span></markup>"})
+            }
             return errors.New("User didn't select valid profile.")
         }
         user_profile = ctx.Cache.Profiles[profile_name].Profile
@@ -97,12 +110,18 @@ func (m *MainWindow) launchAsUsual() error {
         // information have higher priority, so we just override it :)
         user_profile_cached, ok := ctx.Cache.Profiles[server_profile.ProfileToUse]
         if !ok {
-            mbox_string := "Invalid game profile specified for favorite server.\n\nPlease, edit your favorite server, select valid profile and retry."
-            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            messagebox.Response(func() {
-                messagebox.Destroy()
-            })
-            messagebox.Run()
+            // Temporary disable all these modals on Linux.
+            // See https://github.com/mattn/go-gtk/issues/289.
+            if runtime.GOOS != "linux" {
+                mbox_string := "Invalid game profile specified for favorite server.\n\nPlease, edit your favorite server, select valid profile and retry."
+                messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+                messagebox.Response(func() {
+                    messagebox.Destroy()
+                })
+                messagebox.Run()
+            } else {
+                ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Invalid game profile specified in favorite entry.</span></markup>"})
+            }
             return errors.New("User didn't select valid profile.")
         }
         user_profile = user_profile_cached.Profile
@@ -154,19 +173,25 @@ func (m *MainWindow) launchWithQuickConnect() error {
 func (m *MainWindow) launchActually(server_profile *datamodels.Server, user_profile *datamodels.Profile, password string, nickname_to_use string) error {
     if server_profile.Name == "" {
         var will_continue bool = false
-        mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
-        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
-        messagebox.Connect("response", func(resp *glib.CallbackContext) {
-            if resp.Args(0) == 4294967287 {
-                will_continue = false
-            } else {
-                will_continue = true
-            }
-        })
-        messagebox.Response(func() {
-            messagebox.Destroy()
-        })
-        messagebox.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Selected server is offline.\n\nWould you still want to launch Urban Terror?\nIt will just launch a game, without connecting to\nany server."
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_YES_NO, mbox_string)
+            messagebox.Connect("response", func(resp *glib.CallbackContext) {
+                if resp.Args(0) == 4294967287 {
+                    will_continue = false
+                } else {
+                    will_continue = true
+                }
+                messagebox.Destroy()
+            })
+            messagebox.Run()
+        } else {
+            // We're ok here, temporary.
+            will_continue = true
+        }
+
         if !will_continue {
             return errors.New("User declined to connect to offline server")
         }
@@ -174,12 +199,18 @@ func (m *MainWindow) launchActually(server_profile *datamodels.Server, user_prof
 
     // Check if server is applicable for selected profile.
     if server_profile.Version != user_profile.Version {
-        mbox_string := "Invalid game profile selected.\n\nSelected profile have different game version than server.\nPlease, select valid profile and retry."
-        messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        messagebox.Response(func() {
-            messagebox.Destroy()
-        })
-        messagebox.Run()
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Invalid game profile selected.\n\nSelected profile have different game version than server.\nPlease, select valid profile and retry."
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            messagebox.Response(func() {
+                messagebox.Destroy()
+            })
+            messagebox.Run()
+        } else {
+            ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Invalid game profile selected.</span></markup>"})
+        }
         return errors.New("User didn't select valid profile, mismatch with server's version.")
     }
 

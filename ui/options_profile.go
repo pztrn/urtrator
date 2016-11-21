@@ -71,12 +71,18 @@ func (op *OptionsProfile) browseForBinaryHelper() {
         if runtime.GOARCH == "amd64" {
             if len(filename) > 0 && strings.Split(filename, ".")[1] != "x86_64" && strings.Split(filename, ".")[0] != "Quake3-UrT" {
                 fmt.Println("Invalid binary selected!")
-                mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.x86_64."
-                m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-                m.Response(func() {
-                    m.Destroy()
-                })
-                m.Run()
+                // Temporary disable all these modals on Linux.
+                // See https://github.com/mattn/go-gtk/issues/289.
+                if runtime.GOOS != "linux" {
+                    mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.x86_64."
+                    m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+                    m.Response(func() {
+                        m.Destroy()
+                    })
+                    m.Run()
+                } else {
+                    //
+                }
                 op.binary_path.SetText("")
             }
         }
@@ -87,21 +93,33 @@ func (op *OptionsProfile) browseForBinaryHelper() {
             filename = strings.Split(filename, "Quake3-UrT.app")[1]
             if len(filename) > 0 && !strings.Contains(strings.Split(filename, ".")[1], "x86_64") && !strings.Contains(strings.Split(filename, ".")[0], "Quake3-UrT") {
                 fmt.Println("Invalid binary selected!")
-                mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
+                // Temporary disable all these modals on Linux.
+                // See https://github.com/mattn/go-gtk/issues/289.
+                if runtime.GOOS != "linux" {
+                    mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
+                    m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+                    m.Response(func() {
+                        m.Destroy()
+                    })
+                    m.Run()
+                } else {
+                    //
+                }
+                op.binary_path.SetText("")
+            }
+        } else {
+            // Temporary disable all these modals on Linux.
+            // See https://github.com/mattn/go-gtk/issues/289.
+            if runtime.GOOS != "linux" {
+                mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64.\n\nNote, that currently URTrator supports only official binary."
                 m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
                 m.Response(func() {
                     m.Destroy()
                 })
                 m.Run()
-                op.binary_path.SetText("")
+            } else {
+                //
             }
-        } else {
-            mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64.\n\nNote, that currently URTrator supports only official binary."
-            m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-            m.Response(func() {
-                m.Destroy()
-            })
-            m.Run()
         }
     }
 }

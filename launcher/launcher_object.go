@@ -34,13 +34,17 @@ type Launcher struct {
 
 func (l *Launcher) CheckForLaunchedUrbanTerror() error {
     if l.launched {
-        mbox_string := "Game is launched.\n\nCannot quit, because game is launched.\nQuit Urban Terror to exit URTrator!"
-        m := gtk.NewMessageDialog(nil, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
-        m.Response(func() {
-            m.Destroy()
-        })
-        m.Run()
-        return errors.New("User didn't select valid profile, mismatch with server's version.")
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "Game is launched.\n\nCannot quit, because game is launched.\nQuit Urban Terror to exit URTrator!"
+            m := gtk.NewMessageDialog(nil, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            m.Response(func() {
+                m.Destroy()
+            })
+            m.Run()
+            return errors.New("User didn't select valid profile, mismatch with server's version.")
+        }
     }
 
     return nil
