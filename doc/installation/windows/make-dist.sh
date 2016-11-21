@@ -36,7 +36,7 @@ check_msys() {
 # Check if we have neccessary MSYS packages installed.
 check_msys_packages() {
     echo "* Installing neccessary MSYS2 packages..."
-    pacman -S ${MINGW_PACKAGE_PREFIX}-tools-git ${MINGW_PACKAGE_PREFIX}-gtk2 ${MINGW_PACKAGE_PREFIX}-pkg-config ${MINGW_PACKAGE_PREFIX}-gtk-engines ${MINGW_PACKAGE_PREFIX}-gtk-engine-murrine --noconfirm --needed
+    pacman -S ${MINGW_PACKAGE_PREFIX}-tools-git ${MINGW_PACKAGE_PREFIX}-gtk2 ${MINGW_PACKAGE_PREFIX}-pkg-config ${MINGW_PACKAGE_PREFIX}-gtk-engines ${MINGW_PACKAGE_PREFIX}-gtk-engine-murrine ${MINGW_PACKAGE_PREFIX}-gcc --noconfirm --needed
 }
 
 # Build URTrator

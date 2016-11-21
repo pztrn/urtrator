@@ -15,6 +15,7 @@ import (
     "fmt"
     "os"
     "os/exec"
+    "path/filepath"
     "runtime"
     "strconv"
     "strings"
@@ -114,6 +115,12 @@ func (l *Launcher) Launch(server_profile *datamodels.Server, user_profile *datam
     go func() {
         go func() {
             cmd := exec.Command(launch_bin, launch_params...)
+            // This workaround is required on Windows, otherwise ioq3
+            // will not find game data.
+            if runtime.GOOS == "windows" {
+                dir := filepath.Dir(launch_bin)
+                cmd.Dir = dir
+            }
             out, err1 := cmd.Output()
             if err1 != nil {
                 fmt.Println("Launch error: " + err1.Error())
