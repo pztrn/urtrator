@@ -121,7 +121,7 @@ type MainWindow struct {
     // For online server.
     server_online_pic *gdkpixbuf.Pixbuf
     // For private (passworded) server.
-    server_passworded_pic *gdkpixbuf.Pixbuf
+    server_private_pic *gdkpixbuf.Pixbuf
     // For public server
     server_public_pic *gdkpixbuf.Pixbuf
 
@@ -358,7 +358,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
                 m.all_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
             }
             if server.Server.IsPrivate == "1" {
-                m.all_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
+                m.all_servers_store.SetValue(iter, 1, m.server_private_pic.GPixbuf)
             } else {
                 m.all_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }
@@ -423,7 +423,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
                 m.fav_servers_store.SetValue(iter, 0, m.server_online_pic.GPixbuf)
             }
             if server.Server.IsPrivate == "1" {
-                m.fav_servers_store.SetValue(iter, 1, m.server_passworded_pic.GPixbuf)
+                m.fav_servers_store.SetValue(iter, 1, m.server_private_pic.GPixbuf)
             } else {
                 m.fav_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }

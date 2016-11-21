@@ -52,6 +52,21 @@ func (m *MainWindow) launchAsUsual() error {
         model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_address_gval)
     }
     srv_address = srv_address_gval.GetString()
+    if len(srv_address) == 0 {
+        // Temporary disable all these modals on Linux.
+        // See https://github.com/mattn/go-gtk/issues/289.
+        if runtime.GOOS != "linux" {
+            mbox_string := "No server selected.\n\nPlease, select a server to continue connecting."
+            messagebox := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
+            messagebox.Response(func() {
+                messagebox.Destroy()
+            })
+            messagebox.Run()
+        } else {
+            ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Select a server we will connect to!</span></markup>"})
+        }
+        return errors.New("No server selected.")
+    }
     server_profile := ctx.Cache.Servers[srv_address].Server
 
     // Check for proper server name. If length == 0: server is offline,

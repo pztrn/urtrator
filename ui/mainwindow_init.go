@@ -354,13 +354,25 @@ func (m *MainWindow) initializeStorages() {
 
     // Pixbufs.
     // Offline server.
-    m.server_offline_pic = gtk.NewImage().RenderIcon(gtk.STOCK_NO, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    srv_offline_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_OFFLINE)
+    srv_offline_pixbuf := gdkpixbuf.NewLoader()
+    srv_offline_pixbuf.Write(srv_offline_bytes)
+    m.server_offline_pic = srv_offline_pixbuf.GetPixbuf()
     // Online server.
-    m.server_online_pic = gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
-    // Passworded server.
-    m.server_passworded_pic = gtk.NewImage().RenderIcon(gtk.STOCK_CLOSE, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    srv_online_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_ONLINE)
+    srv_online_pixbuf := gdkpixbuf.NewLoader()
+    srv_online_pixbuf.Write(srv_online_bytes)
+    m.server_online_pic = srv_online_pixbuf.GetPixbuf()
+    // Private server.
+    srv_private_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_PRIVATE)
+    srv_private_pixbuf := gdkpixbuf.NewLoader()
+    srv_private_pixbuf.Write(srv_private_bytes)
+    m.server_private_pic = srv_private_pixbuf.GetPixbuf()
     // Public server.
-    m.server_public_pic = gtk.NewImage().RenderIcon(gtk.STOCK_OK, gtk.ICON_SIZE_SMALL_TOOLBAR, "")
+    srv_public_bytes, _ := base64.StdEncoding.DecodeString(common.SERVER_PUBLIC)
+    srv_public_pixbuf := gdkpixbuf.NewLoader()
+    srv_public_pixbuf.Write(srv_public_bytes)
+    m.server_public_pic = srv_public_pixbuf.GetPixbuf()
 }
 
 // Tabs widget initialization, including all child widgets.
