@@ -25,6 +25,7 @@ the game.
 * Favorites servers.
 * Updating single server.
 * Showing information about servers (like in UrT Connector).
+* Clipboard monitoring.
 
 Planning:
 
@@ -35,7 +36,6 @@ Planning:
 * All kinds of notifications.
 * Extended profile editor, so every profile could have own configuration
 files, etc.
-* Clipboard monitoring.
 * ...maybe more :)
 
 # Installation
