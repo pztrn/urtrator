@@ -21,8 +21,28 @@ type Colorizer struct {
     colors map[string]string
 }
 
+func (c *Colorizer) Clear(data string) string {
+    var result string = ""
+
+    data = html.EscapeString(data)
+
+    data_splitted := strings.Split(data, "^")
+
+    if len(data_splitted) > 1 {
+        for item := range data_splitted {
+            if len(data_splitted[item]) > 0 {
+                result += data_splitted[item]
+            }
+        }
+    } else {
+        result = data_splitted[0]
+    }
+
+    return result
+}
+
 func (c *Colorizer) Fix(data string) string {
-    result := ""
+    var result string = ""
 
     data = html.EscapeString(data)
 

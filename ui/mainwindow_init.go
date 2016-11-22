@@ -443,6 +443,7 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
 
     // Sorting functions.
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
     m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
     m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
 
@@ -576,7 +577,7 @@ func (m *MainWindow) InitializeToolbar() {
     fav_button_icon_pixbuf.SetSize(24, 24)
     fav_button_icon_pixbuf.Write(fav_button_icon_bytes)
     fav_button_icon := gtk.NewImageFromPixbuf(fav_button_icon_pixbuf.GetPixbuf())
-    fav_button := gtk.NewToolButton(fav_button_icon, "Update all servers")
+    fav_button := gtk.NewToolButton(fav_button_icon, "Add to favorites")
     fav_button.SetTooltipText("Add selected server to favorites")
     fav_button.OnClicked(m.addToFavorites)
     m.toolbar.Insert(fav_button, 3)
