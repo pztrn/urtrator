@@ -177,7 +177,7 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.urt_version_combo.AppendText("4.2.023")
     op.urt_version_combo.AppendText("4.3.0")
     op.urt_version_combo.AppendText("4.3.1")
-    op.urt_version_combo.SetActive(1)
+    op.urt_version_combo.SetActive(2)
     urt_version_hbox.PackStart(urt_version_label, false, true, 5)
     urt_version_hbox.PackStart(urt_version_sep, true, true, 5)
     urt_version_hbox.PackStart(op.urt_version_combo, true, true, 5)
