@@ -442,6 +442,10 @@ func (m *MainWindow) InitializeTabs() {
     // ToDo: remembering it to configuration storage.
     m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
 
+    // Sorting functions.
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
+
     // Selection changed signal, which will update server's short info pane.
     m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
 
