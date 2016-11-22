@@ -443,9 +443,11 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
 
     // Sorting functions.
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
+    // Race conditions and GC crazyness appears when activated, so for
+    // now commenting it out.
+    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
+    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
+    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
 
     // Selection changed signal, which will update server's short info pane.
     m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
