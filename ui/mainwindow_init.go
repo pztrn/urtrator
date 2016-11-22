@@ -439,12 +439,7 @@ func (m *MainWindow) InitializeTabs() {
 
     // Sorting.
     // By default we are sorting by server name.
-    // ToDo: remembering it to configuration storage.
-    // For some reason this cause panic on Windows, so disabling
-    // default sorting here.
-    if runtime.GOOS != "windows" {
-        m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
-    }
+    m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
 
     // Sorting functions.
     // Race conditions and GC crazyness appears when activated, so for
