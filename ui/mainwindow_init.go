@@ -445,9 +445,9 @@ func (m *MainWindow) InitializeTabs() {
     // Sorting functions.
     // Race conditions and GC crazyness appears when activated, so for
     // now commenting it out.
-    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
-    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
-    //m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
 
     // Selection changed signal, which will update server's short info pane.
     m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
@@ -461,8 +461,15 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers_hide_offline.SetTooltipText("Hide offline servers on Servers tab")
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_offline, false, true, 5)
     m.all_servers_hide_offline.Clicked(m.hideOfflineAllServers)
-    if ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"] == "1" {
+    // Restore value of hide offline servers checkbox.
+    // Set to checked for new installations.
+    all_servers_hide_offline_cb_val, ok := ctx.Cfg.Cfg["/serverslist/all_servers/hide_offline"]
+    if !ok {
         m.all_servers_hide_offline.SetActive(true)
+    } else {
+        if all_servers_hide_offline_cb_val == "1" {
+            m.all_servers_hide_offline.SetActive(true)
+        }
     }
 
     // Final separator.
@@ -531,8 +538,15 @@ func (m *MainWindow) InitializeTabs() {
     m.fav_servers_hide_offline.SetTooltipText("Hide offline servers on Favorites tab")
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_offline, false, true, 5)
     m.fav_servers_hide_offline.Clicked(m.hideOfflineFavoriteServers)
-    if ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] == "1" {
+    // Restore value of hide offline servers checkbox.
+    // Set to checked for new installations.
+    favorite_servers_hide_offline_cb_val, ok := ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"]
+    if !ok {
         m.fav_servers_hide_offline.SetActive(true)
+    } else {
+        if favorite_servers_hide_offline_cb_val == "1" {
+            m.fav_servers_hide_offline.SetActive(true)
+        }
     }
 
     // Final separator.
