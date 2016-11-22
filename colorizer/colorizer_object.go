@@ -21,17 +21,17 @@ type Colorizer struct {
     colors map[string]string
 }
 
-func (c *Colorizer) Clear(data string) string {
+func (c *Colorizer) ClearFromMarkup(data string) string {
     var result string = ""
 
     data = html.EscapeString(data)
 
-    data_splitted := strings.Split(data, "^")
+    data_splitted := strings.Split(data, "&gt;")
 
     if len(data_splitted) > 1 {
         for item := range data_splitted {
             if len(data_splitted[item]) > 0 {
-                result += data_splitted[item]
+                result += strings.Split(data_splitted[item], "&lt;")[0]
             }
         }
     } else {
