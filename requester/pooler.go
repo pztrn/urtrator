@@ -34,7 +34,7 @@ type Pooler struct {
 func (p *Pooler) Initialize() {
     fmt.Println("Initializing requester goroutine pooler...")
     // ToDo: figure out how to make this work nice.
-    p.maxrequests = 100
+    p.maxrequests = 150
     _ = runtime.GOMAXPROCS(runtime.NumCPU() * 4)
     p.pp = "\377\377\377\377"
     fmt.Println("Pooler initialized")
