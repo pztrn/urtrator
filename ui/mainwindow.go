@@ -453,6 +453,8 @@ func (m *MainWindow) loadProfiles(data map[string]string) {
 
     m.old_profiles_count = len(ctx.Cache.Profiles)
     fmt.Println("Added " + strconv.Itoa(m.old_profiles_count) + " profiles")
+
+    m.profiles.SetActive(0)
 }
 
 func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
