@@ -418,11 +418,7 @@ func (m *MainWindow) InitializeTabs() {
         width_int, _ := strconv.Atoi(width)
 
         col := gtk.NewTreeViewColumnWithAttributes(name, gtk.NewCellRendererText(), "markup", position_int)
-        // For some reason this cause panic on Windows, so disabling
-        // default sorting here.
-        if runtime.GOOS != "windows" {
-            col.SetSortColumnId(position_int)
-        }
+        col.SetSortColumnId(position_int)
         col.SetReorderable(true)
         col.SetResizable(true)
         // GtkTreeViewColumn.SetFixedWidth() accepts only positive integers.
@@ -444,7 +440,11 @@ func (m *MainWindow) InitializeTabs() {
     // Sorting.
     // By default we are sorting by server name.
     // ToDo: remembering it to configuration storage.
-    m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
+    // For some reason this cause panic on Windows, so disabling
+    // default sorting here.
+    if runtime.GOOS != "windows" {
+        m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
+    }
 
     // Sorting functions.
     // Race conditions and GC crazyness appears when activated, so for
