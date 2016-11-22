@@ -418,7 +418,11 @@ func (m *MainWindow) InitializeTabs() {
         width_int, _ := strconv.Atoi(width)
 
         col := gtk.NewTreeViewColumnWithAttributes(name, gtk.NewCellRendererText(), "markup", position_int)
-        col.SetSortColumnId(position_int)
+        // For some reason this cause panic on Windows, so disabling
+        // default sorting here.
+        if runtime.GOOS != "windows" {
+            col.SetSortColumnId(position_int)
+        }
         col.SetReorderable(true)
         col.SetResizable(true)
         // GtkTreeViewColumn.SetFixedWidth() accepts only positive integers.
@@ -507,7 +511,11 @@ func (m *MainWindow) InitializeTabs() {
         width_int, _ := strconv.Atoi(width)
 
         col := gtk.NewTreeViewColumnWithAttributes(name, gtk.NewCellRendererText(), "markup", position_int)
-        col.SetSortColumnId(position_int)
+        // For some reason this cause panic on Windows, so disabling
+        // default sorting here.
+        if runtime.GOOS != "windows" {
+            col.SetSortColumnId(position_int)
+        }
         col.SetReorderable(true)
         col.SetResizable(true)
         // GtkTreeViewColumn.SetFixedWidth() accepts only positive integers.
