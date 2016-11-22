@@ -40,6 +40,11 @@ files, etc.
 
 # Installation
 
+## Precautions
+
+Due to Go's GC bugs, it is required to use devel version of Go
+compiler!
+
 ## Release
 
 You don't need to install anything, thanks to Go's.
