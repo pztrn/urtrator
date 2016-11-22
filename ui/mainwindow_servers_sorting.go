@@ -25,8 +25,8 @@ func (m *MainWindow) sortServersByName(model *gtk.TreeModel, a *gtk.TreeIter, b 
         return 0
     }
 
-    name1 := ctx.Colorizer.ClearFromMarkup(name1_raw.GetString())
-    name2 := ctx.Colorizer.ClearFromMarkup(name2_raw.GetString())
+    name1 := strings.ToLower(ctx.Colorizer.ClearFromMarkup(name1_raw.GetString()))
+    name2 := strings.ToLower(ctx.Colorizer.ClearFromMarkup(name2_raw.GetString()))
 
     if name1 < name2 {
         return -1

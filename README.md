@@ -2,6 +2,8 @@
 
 [![Join the chat at https://gitter.im/urtrator/Lobby](https://badges.gitter.im/urtrator/Lobby.svg)](https://gitter.im/urtrator/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+Chat on Matrix: #gitter_urtrator=2Flobby:matrix.org (Gitter bridge).
+
 ![Main Window](/doc/screenshots/0.1-main_window.png)
 
 URTrator is a desktop application that should (eventually) replace
