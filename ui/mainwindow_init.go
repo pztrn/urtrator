@@ -466,6 +466,21 @@ func (m *MainWindow) InitializeTabs() {
         }
     }
 
+    // Checkbox for hiding passworded servers.
+    m.all_servers_hide_private = gtk.NewCheckButtonWithLabel("Hide private servers")
+    m.all_servers_hide_private.SetTooltipText("Hide servers which requires password to enter")
+    tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_private, false, true, 5)
+    m.all_servers_hide_private.Clicked(m.hidePrivateAllServers)
+    // Restore checkbox value.
+    all_servers_hide_private_cb_val, ok := ctx.Cfg.Cfg["/serverslist/all_servers/hide_private"]
+    if !ok {
+        m.all_servers_hide_private.SetActive(true)
+    } else {
+        if all_servers_hide_private_cb_val == "1" {
+            m.all_servers_hide_private.SetActive(true)
+        }
+    }
+
     // Final separator.
     ctl_sep := gtk.NewVSeparator()
     tab_all_srv_ctl_vbox.PackStart(ctl_sep, true, true, 5)
@@ -544,6 +559,21 @@ func (m *MainWindow) InitializeTabs() {
     } else {
         if favorite_servers_hide_offline_cb_val == "1" {
             m.fav_servers_hide_offline.SetActive(true)
+        }
+    }
+
+    // Checkbox for hiding passworded servers.
+    m.fav_servers_hide_private = gtk.NewCheckButtonWithLabel("Hide private servers")
+    m.fav_servers_hide_private.SetTooltipText("Hide servers which requires password to enter")
+    tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_private, false, true, 5)
+    m.fav_servers_hide_private.Clicked(m.hidePrivateFavoriteServers)
+    // Restore checkbox value.
+    fav_servers_hide_private_cb_val, ok := ctx.Cfg.Cfg["/serverslist/favorite/hide_private"]
+    if !ok {
+        m.fav_servers_hide_private.SetActive(true)
+    } else {
+        if fav_servers_hide_private_cb_val == "1" {
+            m.fav_servers_hide_private.SetActive(true)
         }
     }
 

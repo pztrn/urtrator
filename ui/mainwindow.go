@@ -60,8 +60,12 @@ type MainWindow struct {
     profiles *gtk.ComboBoxText
     // Checkbox for hiding/showing offline servers in 'Servers' tab list.
     all_servers_hide_offline *gtk.CheckButton
+    // Checkbox for hiding/showing passworded servers in 'Servers' tab list.
+    all_servers_hide_private *gtk.CheckButton
     // Checkbox for hiding/showing offline servers in 'Favorites' tab list.
     fav_servers_hide_offline *gtk.CheckButton
+    // Checkbox for hiding/showing passworded servers in 'Favorites' tab list.
+    fav_servers_hide_private *gtk.CheckButton
     // Game launch button.
     launch_button *gtk.Button
     // Server's information.
@@ -311,6 +315,18 @@ func (m *MainWindow) hideOfflineAllServers() {
     ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
 }
 
+// Executes when "Hide passworded servers" checkbox changed it's state on
+// "Servers" tab.
+func (m *MainWindow) hidePrivateAllServers() {
+    fmt.Println("(Un)Hiding private servers in 'Servers' tab...")
+    if m.all_servers_hide_private.GetActive() {
+        ctx.Cfg.Cfg["/serverslist/all_servers/hide_private"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/serverslist/all_servers/hide_private"] = "0"
+    }
+    ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
+}
+
 // Executes when "Hide offline servers" checkbox changed it's state on
 // "Favorites" tab.
 func (m *MainWindow) hideOfflineFavoriteServers() {
@@ -319,6 +335,18 @@ func (m *MainWindow) hideOfflineFavoriteServers() {
         ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] = "1"
     } else {
         ctx.Cfg.Cfg["/serverslist/favorite/hide_offline"] = "0"
+    }
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
+}
+
+// Executes when "Hide passworded servers" checkbox changed it's state on
+// "Favorites" tab.
+func (m *MainWindow) hidePrivateFavoriteServers() {
+    fmt.Println("(Un)Hiding private servers in 'Favorite' tab...")
+    if m.all_servers_hide_private.GetActive() {
+        ctx.Cfg.Cfg["/serverslist/favorite/hide_private"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/serverslist/favorite/hide_private"] = "0"
     }
     ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
 }
@@ -337,6 +365,14 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
         }
 
         if m.all_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
+            if server.AllServersIterInList && server.AllServersIterSet {
+                m.all_servers_store.Remove(iter)
+                server.AllServersIterInList = false
+            }
+            continue
+        }
+
+        if m.all_servers_hide_private.GetActive() && server.Server.IsPrivate == "1" {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -390,6 +426,14 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
 
         if m.fav_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
             if server.FavServersIterInList {
+                m.fav_servers_store.Remove(iter)
+                server.FavServersIterInList = false
+            }
+            continue
+        }
+
+        if m.fav_servers_hide_private.GetActive() && server.Server.IsPrivate == "1" {
+            if server.FavServersIterInList && server.FavServersIterSet {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false
             }
