@@ -666,6 +666,7 @@ func (m *MainWindow) unlockInterface() {
 }
 
 func (m *MainWindow) updateOneServer() {
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating selected server...</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     srv_address := m.getIpFromServersList(current_tab)
 
