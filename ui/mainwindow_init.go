@@ -250,11 +250,6 @@ func (m *MainWindow) initializeSidebar() {
 
     si_scroll.Add(m.server_info)
 
-    // Button to view additional server info.
-    additional_srv_info_button := gtk.NewButtonWithLabel("Additional information")
-    additional_srv_info_button.Clicked(m.showServerInformation)
-    si_vbox.PackStart(additional_srv_info_button, false, true, 5)
-
     // Quick connect frame.
     quick_connect_frame := gtk.NewFrame("Quick connect")
     sidebar_vbox.PackStart(quick_connect_frame, false, true, 5)

@@ -489,10 +489,6 @@ func (m *MainWindow) showHide() {
     }
 }
 
-func (m *MainWindow) showServerInformation() {
-    fmt.Println("Showing server's information...")
-}
-
 func (m *MainWindow) showShortServerInformation() {
     fmt.Println("Server selection changed, updating server's information widget...")
     m.server_info_store.Clear()
