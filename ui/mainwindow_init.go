@@ -597,7 +597,7 @@ func (m *MainWindow) InitializeToolbar() {
     button_update_all_servers_icon_pixbuf.Write(button_update_all_servers_icon_bytes)
     button_update_all_servers_icon := gtk.NewImageFromPixbuf(button_update_all_servers_icon_pixbuf.GetPixbuf())
     button_update_all_servers := gtk.NewToolButton(button_update_all_servers_icon, "Update all servers")
-    button_update_all_servers.SetTooltipText("Update all servers in all tabs")
+    button_update_all_servers.SetTooltipText("Update all servers in currently selected tab")
     button_update_all_servers.OnClicked(m.UpdateServers)
     m.toolbar.Insert(button_update_all_servers, 0)
 
