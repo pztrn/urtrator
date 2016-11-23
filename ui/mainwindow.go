@@ -504,6 +504,16 @@ func (m *MainWindow) loadProfiles(data map[string]string) {
 
 func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Servers updated."})
+    // Trigger "selection-changed" events on currently active tab's
+    // servers list.
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+
+    if strings.Contains(current_tab, "Servers") {
+        m.all_servers.Emit("cursor-changed")
+    } else if strings.Contains(current_tab, "Favorites") {
+        m.fav_servers.Emit("cursor-changed")
+    }
+
 }
 
 func (m *MainWindow) setQuickConnectDetails(data map[string]string) {
