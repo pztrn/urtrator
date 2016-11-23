@@ -13,6 +13,7 @@ import (
     // stdlib
     "fmt"
     "runtime"
+    "sort"
     "strconv"
     "strings"
 
@@ -565,12 +566,22 @@ func (m *MainWindow) showShortServerInformation() {
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">PLAYERS</span></markup>")
 
-        for _, value := range parsed_players_info {
+        // Sorting keys of map.
+        players_map_keys := make([]string, 0, len(parsed_players_info))
+        for k := range parsed_players_info {
+            // ToDo: figure out how to do this properly without
+            // append().
+            players_map_keys = append(players_map_keys, k)
+        }
+
+        sort.Strings(players_map_keys)
+
+        for k := range players_map_keys {
             iter = new(gtk.TreeIter)
-            nick := ctx.Colorizer.Fix(value["nick"])
+            nick := ctx.Colorizer.Fix(parsed_players_info[players_map_keys[k]]["nick"])
             m.server_info_store.Append(iter)
             m.server_info_store.SetValue(iter, 0, nick)
-            m.server_info_store.SetValue(iter, 1, "(frags: " + value["frags"] + " | ping: " + value["ping"] + ")")
+            m.server_info_store.SetValue(iter, 1, "(frags: " + parsed_players_info[players_map_keys[k]]["frags"] + " | ping: " + parsed_players_info[players_map_keys[k]]["ping"] + ")")
         }
 
         // Just a separator.
@@ -582,11 +593,19 @@ func (m *MainWindow) showShortServerInformation() {
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">OTHER PARAMETERS</span></markup>")
 
-        for key, value := range parsed_general_data {
+        // Sort it!
+        general_data_keys := make([]string, 0, len(parsed_general_data))
+        for k := range parsed_general_data {
+            general_data_keys = append(general_data_keys, k)
+        }
+
+        sort.Strings(general_data_keys)
+
+        for k := range general_data_keys {
             iter = new(gtk.TreeIter)
             m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, key)
-        m.server_info_store.SetValue(iter, 1, value)
+            m.server_info_store.SetValue(iter, 0, general_data_keys[k])
+            m.server_info_store.SetValue(iter, 1, parsed_general_data[general_data_keys[k]])
         }
     }
 }
