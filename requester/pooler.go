@@ -34,7 +34,7 @@ type Pooler struct {
 func (p *Pooler) Initialize() {
     fmt.Println("Initializing requester goroutine pooler...")
     // ToDo: figure out how to make this work nice.
-    p.maxrequests = 150
+    p.maxrequests = 200
     _ = runtime.GOMAXPROCS(runtime.NumCPU() * 4)
     p.pp = "\377\377\377\377"
     fmt.Println("Pooler initialized")
@@ -238,7 +238,9 @@ func (p *Pooler) UpdateSpecificServer(server *datamodels.Server) error {
             if len(players) == 1 && len(players[0]) > 255 {
                 server.Players = "0"
             } else {
-                server.Players = strconv.Itoa(len(players))
+                // Looks like we have last element to be empty, due to
+                // strings.Split() call before.
+                server.Players = strconv.Itoa(len(players) - 1)
             }
             server.PlayersInfo = strings.Join(received_lines[2:], "\\")
         }
