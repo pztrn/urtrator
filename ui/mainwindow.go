@@ -132,8 +132,14 @@ type MainWindow struct {
 
 
     // Flags.
+    // Application is initialized?
+    initialized bool
     // Window is hidden?
     hidden bool
+    // Use other's tab information?
+    // Used when user changed active tab, to show information about
+    // server which is selected on activated tab.
+    use_other_servers_tab bool
 }
 
 func (m *MainWindow) addToFavorites() {
@@ -502,6 +508,24 @@ func (m *MainWindow) loadProfiles(data map[string]string) {
     m.profiles.SetActive(0)
 }
 
+func (m *MainWindow) tabChanged() {
+    if !m.initialized {
+        return
+    }
+
+    fmt.Println("Active tab changed...")
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+    fmt.Println(current_tab)
+
+    m.use_other_servers_tab = true
+    if strings.Contains(current_tab, "Servers") {
+        m.fav_servers.Emit("cursor-changed")
+    } else if strings.Contains(current_tab, "Favorites") {
+        m.all_servers.Emit("cursor-changed")
+    }
+    m.use_other_servers_tab = false
+}
+
 func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Servers updated."})
     // Trigger "selection-changed" events on currently active tab's
@@ -548,6 +572,13 @@ func (m *MainWindow) showShortServerInformation() {
     fmt.Println("Server selection changed, updating server's information widget...")
     m.server_info_store.Clear()
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+    if m.use_other_servers_tab {
+        if strings.Contains(current_tab, "Servers") {
+            current_tab = "Favorites"
+        } else if strings.Contains(current_tab, "Favorites") {
+            current_tab = "Servers"
+        }
+    }
     srv_address := m.getIpFromServersList(current_tab)
 
     // Getting server information from cache.

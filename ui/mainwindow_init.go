@@ -165,6 +165,9 @@ func (m *MainWindow) Initialize() {
     ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
 
+    // Set flag that shows to other parts that we're initialized.
+    m.initialized = true
+
     gtk.Main()
 }
 
@@ -291,6 +294,9 @@ func (m *MainWindow) initializeSidebar() {
 
 // Initializes internal storages.
 func (m *MainWindow) initializeStorages() {
+    // Application isn't initialized.
+    m.initialized = false
+    m.use_other_servers_tab = false
     // Gamemodes.
     m.gamemodes = make(map[string]string)
     m.gamemodes = map[string]string{
@@ -379,6 +385,7 @@ func (m *MainWindow) initializeStorages() {
 func (m *MainWindow) InitializeTabs() {
     // Create tabs widget.
     m.tab_widget = gtk.NewNotebook()
+    m.tab_widget.Connect("switch-page", m.tabChanged)
 
     tab_allsrv_hbox := gtk.NewHBox(false, 0)
     swin1 := gtk.NewScrolledWindow(nil, nil)
