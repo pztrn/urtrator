@@ -262,26 +262,21 @@ func (op *OptionsProfile) InitializeUpdate(profile_name string) {
     op.Initialize(true)
 
     // Get profile data.
-    profile := []datamodels.Profile{}
-    err := ctx.Database.Db.Select(&profile, ctx.Database.Db.Rebind("SELECT * FROM urt_profiles WHERE name=?"), profile_name)
-    if err != nil {
-        fmt.Println(err.Error())
-    }
-
-    op.profile_name.SetText(profile[0].Name)
-    op.binary_path.SetText(profile[0].Binary)
-    op.additional_parameters.SetText(profile[0].Additional_params)
-    if profile[0].Second_x_session == "1" {
+    profile := ctx.Cache.Profiles[profile_name].Profile
+    op.profile_name.SetText(profile.Name)
+    op.binary_path.SetText(profile.Binary)
+    op.additional_parameters.SetText(profile.Additional_params)
+    if profile.Second_x_session == "1" {
         op.another_x_session.SetActive(true)
     }
 
-    if profile[0].Version == "4.3.0" {
+    if profile.Version == "4.3.0" {
         op.urt_version_combo.SetActive(1)
     } else {
         op.urt_version_combo.SetActive(0)
     }
 
-    op.old_profile = &profile[0]
+    op.old_profile = profile
 
 }
 
