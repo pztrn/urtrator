@@ -27,8 +27,8 @@ import (
 type OptionsProfile struct {
     // Window.
     window *gtk.Window
-    // Main Vertical Box.
-    vbox *gtk.VBox
+    // Main table.
+    table *gtk.Table
     // Profile name.
     profile_name *gtk.Entry
     // Binary path.
@@ -148,90 +148,85 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.window.SetPosition(gtk.WIN_POS_CENTER)
     op.window.SetIcon(logo)
 
-    op.vbox = gtk.NewVBox(false, 0)
-
+    op.table = gtk.NewTable(6, 2, false)
+    op.table.SetRowSpacings(2)
 
     // Profile name.
     profile_name_tooltip := "This how you will see profile on profiles lists."
-    pn_hbox := gtk.NewHBox(false, 0)
     pn_label := gtk.NewLabel("Profile name:")
     pn_label.SetTooltipText(profile_name_tooltip)
-    profile_name_sep := gtk.NewHSeparator()
-    profile_name_sep.SetTooltipText(profile_name_tooltip)
+    pn_label.SetAlignment(0, 0)
+    op.table.Attach(pn_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
+
     op.profile_name = gtk.NewEntry()
     op.profile_name.SetTooltipText(profile_name_tooltip)
-    pn_hbox.PackStart(pn_label, false, true, 5)
-    pn_hbox.PackStart(profile_name_sep, true, true, 5)
-    pn_hbox.PackStart(op.profile_name, true, true, 5)
-    op.vbox.PackStart(pn_hbox, false, true, 5)
+    op.table.Attach(op.profile_name, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
+
 
     // Urban Terror version.
     urt_version_tooltip := "Urban Terror version for which this profile applies."
-    urt_version_hbox := gtk.NewHBox(false, 0)
     urt_version_label := gtk.NewLabel("Urban Terror version:")
     urt_version_label.SetTooltipText(urt_version_tooltip)
-    urt_version_sep := gtk.NewHSeparator()
-    urt_version_sep.SetTooltipText(urt_version_tooltip)
+    urt_version_label.SetAlignment(0, 0)
+    op.table.Attach(urt_version_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
+
     op.urt_version_combo = gtk.NewComboBoxText()
     op.urt_version_combo.SetTooltipText(urt_version_tooltip)
     op.urt_version_combo.AppendText("4.2.023")
     op.urt_version_combo.AppendText("4.3.0")
     op.urt_version_combo.AppendText("4.3.1")
     op.urt_version_combo.SetActive(2)
-    urt_version_hbox.PackStart(urt_version_label, false, true, 5)
-    urt_version_hbox.PackStart(urt_version_sep, true, true, 5)
-    urt_version_hbox.PackStart(op.urt_version_combo, true, true, 5)
-    op.vbox.PackStart(urt_version_hbox, false, true, 5)
+    op.table.Attach(op.urt_version_combo, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Urban Terror binary path.
     select_binary_tooltip := "Urban Terror binary. Some checks will be executed, so make sure you have selected right binary:\n\nQuake3-UrT.i386 for linux-x86\nQuake3-UrT.x86_64 for linux-amd64\nQuake3-UrT.app for macOS"
     binpath_hbox := gtk.NewHBox(false, 0)
     binpath_label := gtk.NewLabel("Urban Terror binary:")
     binpath_label.SetTooltipText(select_binary_tooltip)
-    binpath_sep := gtk.NewHSeparator()
-    binpath_sep.SetTooltipText(select_binary_tooltip)
+    binpath_label.SetAlignment(0, 0)
+    op.table.Attach(binpath_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
+
     op.binary_path = gtk.NewEntry()
     op.binary_path.SetTooltipText(select_binary_tooltip)
     button_select_binary := gtk.NewButtonWithLabel("Browse")
     button_select_binary.SetTooltipText(select_binary_tooltip)
     button_select_binary.Clicked(op.browseForBinary)
-    binpath_hbox.PackStart(binpath_label, false, true, 5)
-    binpath_hbox.PackStart(binpath_sep, true, true, 5)
     binpath_hbox.PackStart(op.binary_path, true, true, 5)
     binpath_hbox.PackStart(button_select_binary, false, true, 5)
-    op.vbox.PackStart(binpath_hbox, false, true, 5)
+    op.table.Attach(binpath_hbox, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 0, 0)
 
     // Should we use additional X session?
     another_x_tooltip := "If this is checked, Urban Terror will be launched in another X session.\n\nThis could help if you're experiencing visual lag, glitches and FPS drops under compositing WMs, like Mutter and KWin."
-    op.another_x_session = gtk.NewCheckButtonWithLabel("Start Urban Terror in another X session?")
+    another_x_label := gtk.NewLabel("Start Urban Terror in another X session?")
+    another_x_label.SetTooltipText(another_x_tooltip)
+    another_x_label.SetAlignment(0, 0)
+    op.table.Attach(another_x_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
+    op.another_x_session = gtk.NewCheckButtonWithLabel("")
     op.another_x_session.SetTooltipText(another_x_tooltip)
-    op.vbox.PackStart(op.another_x_session, false, true, 5)
-    // macOS can't do that :).
+    // macOS and Windows can't do that :).
     if runtime.GOOS != "linux" {
         op.another_x_session.SetSensitive(false)
     }
+    op.table.Attach(op.another_x_session, 1, 2, 3, 4, gtk.FILL, gtk.FILL, 5, 5)
 
     // Additional game parameters.
     params_tooltip := "Additional parameters that will be passed to Urban Terror executable."
-    params_hbox := gtk.NewHBox(false, 0)
     params_label := gtk.NewLabel("Additional parameters:")
     params_label.SetTooltipText(params_tooltip)
-    params_sep := gtk.NewHSeparator()
-    params_sep.SetTooltipText(params_tooltip)
+    params_label.SetAlignment(0, 0)
+    op.table.Attach(params_label, 0, 1, 4, 5, gtk.FILL, gtk.SHRINK, 5, 5)
+
     op.additional_parameters = gtk.NewEntry()
     op.additional_parameters.SetTooltipText(params_tooltip)
-    params_hbox.PackStart(params_label, false, true, 5)
-    params_hbox.PackStart(params_sep, true, true, 5)
-    params_hbox.PackStart(op.additional_parameters, true, true, 5)
-    op.vbox.PackStart(params_hbox, false, true, 5)
+    op.table.Attach(op.additional_parameters, 1, 2, 4, 5, gtk.FILL, gtk.FILL, 5, 5)
 
-    // Vertical separator.
-    vert_sep := gtk.NewVSeparator()
-    op.vbox.PackStart(vert_sep, true, true, 5)
+    // Invisible thing.
+    inv_label := gtk.NewLabel("")
+    op.table.Attach(inv_label, 1, 2, 5, 6, gtk.EXPAND, gtk.FILL, 5, 5)
 
     // The buttons.
     buttons_box := gtk.NewHBox(false, 0)
-    buttons_sep := gtk.NewHSeparator()
+    buttons_sep := gtk.NewHBox(false, 0)
 
     cancel_button := gtk.NewButtonWithLabel("Cancel")
     cancel_button.SetTooltipText("Close without saving")
@@ -251,9 +246,14 @@ func (op *OptionsProfile) Initialize(update bool) {
     add_button.Clicked(op.saveProfile)
     buttons_box.PackStart(add_button, false, true, 5)
 
-    op.vbox.PackStart(buttons_box, false, true, 5)
+    vert_sep_box := gtk.NewVBox(false, 0)
 
-    op.window.Add(op.vbox)
+    vbox := gtk.NewVBox(false, 0)
+    vbox.PackStart(op.table, false, true, 5)
+    vbox.PackStart(vert_sep_box, true, true, 5)
+    vbox.PackStart(buttons_box, false, true, 5)
+
+    op.window.Add(vbox)
     op.window.ShowAll()
 }
 

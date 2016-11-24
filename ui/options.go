@@ -176,7 +176,7 @@ func (o *OptionsDialog) initializeTabs() {
 
     // Buttons for saving and discarding changes.
     buttons_hbox := gtk.NewHBox(false, 0)
-    sep := gtk.NewHSeparator()
+    sep := gtk.NewHBox(false, 0)
 
     cancel_button := gtk.NewButtonWithLabel("Cancel")
     cancel_button.Clicked(o.closeOptionsDialogByCancel)
@@ -223,7 +223,7 @@ func (o *OptionsDialog) initializeUrtTab() {
     urt_profiles_buttons_vbox.PackStart(button_edit, false, true, 5)
 
     // Spacer for profiles list buttons.
-    sep := gtk.NewVSeparator()
+    sep := gtk.NewVBox(false, 0)
     urt_profiles_buttons_vbox.PackStart(sep, true, true, 5)
 
     button_delete := gtk.NewButtonWithLabel("Delete")

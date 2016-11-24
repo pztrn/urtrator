@@ -130,7 +130,7 @@ func (m *MainWindow) Initialize() {
     m.vbox.PackStart(profile_and_launch_hbox, false, true, 5)
 
     // Separator
-    sep := gtk.NewHSeparator()
+    sep := gtk.NewHBox(false, 0)
     profile_and_launch_hbox.PackStart(sep, true, true, 5)
 
     // Profile selection.
