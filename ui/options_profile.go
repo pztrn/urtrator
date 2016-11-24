@@ -272,6 +272,8 @@ func (op *OptionsProfile) InitializeUpdate(profile_name string) {
 
     if profile.Version == "4.3.0" {
         op.urt_version_combo.SetActive(1)
+    } else if profile.Version == "4.3.1" {
+        op.urt_version_combo.SetActive(2)
     } else {
         op.urt_version_combo.SetActive(0)
     }
