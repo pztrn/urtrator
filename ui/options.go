@@ -146,15 +146,33 @@ func (o *OptionsDialog) initializeAppearanceTab() {
 func (o *OptionsDialog) initializeGeneralTab() {
     general_vbox := gtk.NewVBox(false, 0)
 
+    general_table := gtk.NewTable(2, 2, false)
+
     // Tray icon checkbox.
-    o.show_tray_icon = gtk.NewCheckButtonWithLabel("Show tray icon?")
+    show_tray_icon_label := gtk.NewLabel("Show icon in tray")
+    show_tray_icon_label.SetAlignment(0, 0)
+    general_table.Attach(show_tray_icon_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.show_tray_icon = gtk.NewCheckButtonWithLabel("")
     o.show_tray_icon.SetTooltipText("Show icon in tray")
-    general_vbox.PackStart(o.show_tray_icon, false, true, 5)
+    general_table.Attach(o.show_tray_icon, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
 
     // Autoupdate checkbox.
-    o.autoupdate = gtk.NewCheckButtonWithLabel("Automatically update URTrator?")
-    o.autoupdate.SetTooltipText("Should URTrator check for updates and update itself? Not working now.")
-    general_vbox.PackStart(o.autoupdate, false, true, 5)
+    autoupdate_tooltip := "Should URTrator check for updates and update itself? Not working now."
+    autoupdate_label := gtk.NewLabel("Automatically update URTrator?")
+    autoupdate_label.SetTooltipText(autoupdate_tooltip)
+    autoupdate_label.SetAlignment(0, 0)
+    general_table.Attach(autoupdate_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.autoupdate = gtk.NewCheckButtonWithLabel("")
+    o.autoupdate.SetTooltipText(autoupdate_tooltip)
+    general_table.Attach(o.autoupdate, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
+
+    // Vertical separator.
+    sep := gtk.NewVBox(false, 0)
+
+    general_vbox.PackStart(general_table, false, true, 0)
+    general_vbox.PackStart(sep, false, true, 0)
 
     o.tab_widget.AppendPage(general_vbox, gtk.NewLabel("General"))
 }
@@ -195,7 +213,7 @@ func (o *OptionsDialog) initializeTabs() {
 }
 
 func (o *OptionsDialog) initializeUrtTab() {
-    urt_hbox := gtk.NewHBox(false, 0)
+    urt_hbox := gtk.NewHBox(false, 5)
 
     // Profiles list.
     o.profiles_list = gtk.NewTreeView()
@@ -205,17 +223,13 @@ func (o *OptionsDialog) initializeUrtTab() {
     o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Profile name", gtk.NewCellRendererText(), "text", 0))
     o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Urban Terror version", gtk.NewCellRendererText(), "text", 1))
 
-    //crt := gtk.NewCellRendererToggle()
-    //second_x_column := gtk.NewTreeViewColumnWithAttributes("Second X session", crt, "bool", 2)
-    //o.profiles_list.AppendColumn(second_x_column)
-
     // Profiles list buttons.
     urt_profiles_buttons_vbox := gtk.NewVBox(false, 0)
 
     button_add := gtk.NewButtonWithLabel("Add")
     button_add.SetTooltipText("Add new profile")
     button_add.Clicked(o.addProfile)
-    urt_profiles_buttons_vbox.PackStart(button_add, false, true, 5)
+    urt_profiles_buttons_vbox.PackStart(button_add, false, true, 0)
 
     button_edit := gtk.NewButtonWithLabel("Edit")
     button_edit.SetTooltipText("Edit selected profile. Do nothing if no profile was selected.")
@@ -229,7 +243,7 @@ func (o *OptionsDialog) initializeUrtTab() {
     button_delete := gtk.NewButtonWithLabel("Delete")
     button_delete.SetTooltipText("Delete selected profile. Do nothing if no profile was selected.")
     button_delete.Clicked(o.deleteProfile)
-    urt_profiles_buttons_vbox.PackStart(button_delete, false, true, 5)
+    urt_profiles_buttons_vbox.PackStart(button_delete, false, true, 0)
 
     urt_hbox.Add(urt_profiles_buttons_vbox)
 
