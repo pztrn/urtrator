@@ -118,7 +118,6 @@ func (f *FavoriteDialog) initializeWindow() {
     f.window.SetModal(true)
     f.window.SetSizeRequest(400, 200)
     f.window.SetResizable(false)
-    f.vbox = gtk.NewVBox(false, 0)
 
     // Load program icon from base64.
     icon_bytes, _ := base64.StdEncoding.DecodeString(common.Logo)
@@ -132,23 +131,25 @@ func (f *FavoriteDialog) initializeWindow() {
     gtk_opts := gtk_opts_raw.ToGObject()
     gtk_opts.Set("gtk-button-images", true)
 
+    f.vbox = gtk.NewVBox(false, 0)
+
+    table := gtk.NewTable(5, 2, false)
+    f.vbox.PackStart(table, true, true, 5)
+
     // Server name.
-    srv_name_hbox := gtk.NewHBox(false, 0)
-    f.vbox.PackStart(srv_name_hbox, false, true, 5)
     srv_name_label := gtk.NewLabel("Server name:")
-    srv_name_hbox.PackStart(srv_name_label, false, true, 5)
-    srv_name_sep := gtk.NewHSeparator()
-    srv_name_hbox.PackStart(srv_name_sep, true, true, 5)
+    srv_name_label.SetAlignment(0, 0)
+    table.Attach(srv_name_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
+
     f.server_name = gtk.NewEntry()
-    srv_name_hbox.PackStart(f.server_name, true, true, 5)
+    table.Attach(f.server_name, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
 
     // Server address.
-    srv_addr_hbox := gtk.NewHBox(false, 0)
-    f.vbox.PackStart(srv_addr_hbox, false, true, 5)
     srv_addr_label := gtk.NewLabel("Server address:")
-    srv_addr_hbox.PackStart(srv_addr_label, false, true, 5)
-    srv_addr_sep := gtk.NewHSeparator()
-    srv_addr_hbox.PackStart(srv_addr_sep, true, true, 5)
+    srv_addr_label.SetAlignment(0, 0)
+    table.Attach(srv_addr_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    srv_addr_hbox := gtk.NewHBox(false, 0)
     f.server_address = gtk.NewEntry()
     srv_addr_hbox.PackStart(f.server_address, true, true, 5)
     srv_addr_update_btn := gtk.NewButton()
@@ -160,26 +161,29 @@ func (f *FavoriteDialog) initializeWindow() {
     if f.update {
         f.server_address.SetSensitive(false)
     }
+    table.Attach(f.server_address, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Server password.
-    srv_pass_hbox := gtk.NewHBox(false, 0)
-    f.vbox.PackStart(srv_pass_hbox, false, true, 5)
     srv_pass_label := gtk.NewLabel("Password:")
-    srv_pass_hbox.PackStart(srv_pass_label, false, true, 5)
-    srv_pass_sep := gtk.NewHSeparator()
-    srv_pass_hbox.PackStart(srv_pass_sep, true, true, 5)
+    srv_pass_label.SetAlignment(0, 0)
+    table.Attach(srv_pass_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
+
     f.server_password = gtk.NewEntry()
-    srv_pass_hbox.PackStart(f.server_password, true, true, 5)
+    table.Attach(f.server_password, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 5, 5)
 
     // Profile to use.
-    profile_hbox := gtk.NewHBox(false, 0)
-    f.vbox.PackStart(profile_hbox, false, true, 5)
     profile_label := gtk.NewLabel("Profile:")
-    profile_hbox.PackStart(profile_label, false, true, 5)
-    profile_sep := gtk.NewHSeparator()
-    profile_hbox.PackStart(profile_sep, true, true, 5)
+    profile_label.SetAlignment(0, 0)
+    table.Attach(profile_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
+
     f.profile = gtk.NewComboBoxText()
-    profile_hbox.PackStart(f.profile, false, true, 5)
+    table.Attach(f.profile , 1, 2, 3, 4, gtk.FILL, gtk.FILL, 5, 5)
+
+    // Invisible thing.
+    inv_label1 := gtk.NewLabel("")
+    table.Attach(inv_label1, 0, 1, 4, 5, gtk.EXPAND, gtk.FILL, 5, 5)
+    inv_label2 := gtk.NewLabel("")
+    table.Attach(inv_label2, 1, 2, 4, 5, gtk.EXPAND, gtk.FILL, 5, 5)
 
     // Buttons hbox.
     buttons_hbox := gtk.NewHBox(false, 0)
