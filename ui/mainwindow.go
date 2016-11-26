@@ -68,8 +68,10 @@ type MainWindow struct {
     fav_servers_hide_private *gtk.CheckButton
     // Game launch button.
     launch_button *gtk.Button
-    // Server's information.
+    // Server's main information.
     server_info *gtk.TreeView
+    // Players information.
+    players_info *gtk.TreeView
     // Quick connect: server address
     qc_server_address *gtk.Entry
     // Quick connect: password
@@ -92,9 +94,12 @@ type MainWindow struct {
     fav_servers_store *gtk.ListStore
     // Server's information store.
     server_info_store *gtk.ListStore
+    // Players information store.
+    players_info_store *gtk.ListStore
 
     // Dialogs.
     options_dialog *OptionsDialog
+    server_cvars_dialog *ServerCVarsDialog
 
     // Other
     // Old profiles count.
@@ -568,9 +573,25 @@ func (m *MainWindow) showHide() {
     }
 }
 
+func (m *MainWindow) showServerCVars() {
+    current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
+    if m.use_other_servers_tab {
+        if strings.Contains(current_tab, "Servers") {
+            current_tab = "Favorites"
+        } else if strings.Contains(current_tab, "Favorites") {
+            current_tab = "Servers"
+        }
+    }
+    srv_address := m.getIpFromServersList(current_tab)
+    if len(srv_address) > 0 {
+        m.server_cvars_dialog.Initialize(m.window, srv_address)
+    }
+}
+
 func (m *MainWindow) showShortServerInformation() {
     fmt.Println("Server selection changed, updating server's information widget...")
     m.server_info_store.Clear()
+    m.players_info_store.Clear()
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     if m.use_other_servers_tab {
         if strings.Contains(current_tab, "Servers") {
@@ -642,15 +663,6 @@ func (m *MainWindow) showShortServerInformation() {
         }
         m.server_info_store.SetValue(iter, 1, passworded_status)
 
-        // Just a separator.
-        iter = new(gtk.TreeIter)
-        m.server_info_store.Append(iter)
-
-        // Players information
-        iter = new(gtk.TreeIter)
-        m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">PLAYERS</span></markup>")
-
         // Sorting keys of map.
         players_map_keys := make([]string, 0, len(parsed_players_info))
         for k := range parsed_players_info {
@@ -664,11 +676,13 @@ func (m *MainWindow) showShortServerInformation() {
         for k := range players_map_keys {
             iter = new(gtk.TreeIter)
             nick := ctx.Colorizer.Fix(parsed_players_info[players_map_keys[k]]["nick"])
-            m.server_info_store.Append(iter)
-            m.server_info_store.SetValue(iter, 0, nick)
-            m.server_info_store.SetValue(iter, 1, "(frags: " + parsed_players_info[players_map_keys[k]]["frags"] + " | ping: " + parsed_players_info[players_map_keys[k]]["ping"] + ")")
+            m.players_info_store.Append(iter)
+            m.players_info_store.SetValue(iter, 0, nick)
+            m.players_info_store.SetValue(iter, 1, parsed_players_info[players_map_keys[k]]["frags"])
+            m.players_info_store.SetValue(iter, 2, parsed_players_info[players_map_keys[k]]["ping"])
         }
 
+        /*
         // Just a separator.
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
@@ -692,6 +706,7 @@ func (m *MainWindow) showShortServerInformation() {
             m.server_info_store.SetValue(iter, 0, general_data_keys[k])
             m.server_info_store.SetValue(iter, 1, parsed_general_data[general_data_keys[k]])
         }
+        */
     }
 }
 

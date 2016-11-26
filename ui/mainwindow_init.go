@@ -84,6 +84,7 @@ func (m *MainWindow) Initialize() {
 
     // Dialogs initialization.
     m.options_dialog = &OptionsDialog{}
+    m.server_cvars_dialog = &ServerCVarsDialog{}
 
     // Main menu.
     if runtime.GOOS == "darwin" {
@@ -239,6 +240,7 @@ func (m *MainWindow) initializeSidebar() {
 
     // Scrolled thing.
     si_scroll := gtk.NewScrolledWindow(nil, nil)
+    si_scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
     si_vbox.PackStart(si_scroll, true, true, 5)
 
     // Server's information.
@@ -252,6 +254,33 @@ func (m *MainWindow) initializeSidebar() {
     m.server_info.AppendColumn(value_column)
 
     si_scroll.Add(m.server_info)
+
+    // Players information.
+    players_info_frame := gtk.NewFrame("Players")
+    sidebar_vbox.PackStart(players_info_frame, true, true, 5)
+
+    pi_scroll := gtk.NewScrolledWindow(nil, nil)
+    pi_scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+    players_info_frame.Add(pi_scroll)
+
+    m.players_info = gtk.NewTreeView()
+    m.players_info.SetModel(m.players_info_store)
+    pi_scroll.Add(m.players_info)
+
+    name_column := gtk.NewTreeViewColumnWithAttributes("Player name", gtk.NewCellRendererText(), "markup", 0)
+    m.players_info.AppendColumn(name_column)
+
+    frags_column := gtk.NewTreeViewColumnWithAttributes("Frags", gtk.NewCellRendererText(), "markup", 1)
+    m.players_info.AppendColumn(frags_column)
+
+    ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "markup", 2)
+    m.players_info.AppendColumn(ping_column)
+
+    // Show CVars button.
+    show_cvars_button := gtk.NewButtonWithLabel("Show CVars")
+    show_cvars_button.SetTooltipText("Show server's CVars")
+    show_cvars_button.Clicked(m.showServerCVars)
+    sidebar_vbox.PackStart(show_cvars_button, false, true, 5)
 
     // Quick connect frame.
     quick_connect_frame := gtk.NewFrame("Quick connect")
@@ -346,6 +375,10 @@ func (m *MainWindow) initializeStorages() {
 
     // Server's information store. Used for quick preview in main window.
     m.server_info_store = gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
+
+    // Players information store. Used in sidebar for players list for
+    // currently selected server.
+    m.players_info_store = gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_STRING)
 
     // Profiles count after filling combobox. Defaulting to 0.
     m.old_profiles_count = 0

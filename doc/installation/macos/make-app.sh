@@ -150,6 +150,9 @@ ln -s ../../../Framework .
 cd ../../../MacOS
 GDK_PIXBUF_MODULE_FILE="../lib/gdk-pixbuf-2.0/loaders.cache" GDK_PIXBUF_MODULEDIR="../lib/gdk-pixbuf-2.0/2.10.0/loaders/" GTK_EXE_PREFIX="../lib" GTK_PATH="../Framework" ./gdk-pixbuf-query-loaders > ../lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
 
+echo "Copying icon theme..."
+
+
 echo "Finishing..."
 
 echo "URTrator is ready! Copy URTrator.app bundle to Applications and launch it!"
