@@ -409,7 +409,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Name"], server_name)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Mode"], m.getGameModeName(server.Server.Gamemode))
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Map"], server.Server.Map)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Players"], server.Server.Players + "/" + server.Server.Maxplayers)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Players"], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Ping"], server.Server.Ping)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Version"], server.Server.Version)
             m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
@@ -482,7 +482,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Name"], server_name)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Mode"], m.getGameModeName(server.Server.Gamemode))
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Map"], server.Server.Map)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Players"], server.Server.Players + "/" + server.Server.Maxplayers)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Players"], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Ping"], server.Server.Ping)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Version"], server.Server.Version)
             m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
@@ -611,7 +611,7 @@ func (m *MainWindow) showShortServerInformation() {
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Players")
-        m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed_general_data["sv_maxclients"])
+        m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed_general_data["sv_maxclients"] + " (" + server_info.Bots + " bots)")
         delete(parsed_general_data, "sv_maxclients")
 
         // Ping

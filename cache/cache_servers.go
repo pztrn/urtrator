@@ -55,6 +55,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             new_servers[mapping_item_name].Port = s.Server.Port
             new_servers[mapping_item_name].Name = s.Server.Name
             new_servers[mapping_item_name].Players = s.Server.Players
+            new_servers[mapping_item_name].Bots = s.Server.Bots
             new_servers[mapping_item_name].Maxplayers = s.Server.Maxplayers
             new_servers[mapping_item_name].Ping = s.Server.Ping
             new_servers[mapping_item_name].Map = s.Server.Map
@@ -71,6 +72,7 @@ func (c *Cache) FlushServers(data map[string]string) {
             cached_servers[mapping_item_name].Port = s.Server.Port
             cached_servers[mapping_item_name].Name = s.Server.Name
             cached_servers[mapping_item_name].Players = s.Server.Players
+            cached_servers[mapping_item_name].Bots = s.Server.Bots
             cached_servers[mapping_item_name].Maxplayers = s.Server.Maxplayers
             cached_servers[mapping_item_name].Ping = s.Server.Ping
             cached_servers[mapping_item_name].Map = s.Server.Map
@@ -90,12 +92,12 @@ func (c *Cache) FlushServers(data map[string]string) {
     fmt.Println("Adding new servers...")
     if len(new_servers) > 0 {
         for _, srv := range new_servers {
-            tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private, favorite, profile_to_use) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private, :favorite, :profile_to_use)", srv)
+            tx.NamedExec("INSERT INTO servers (ip, port, name, ping, players, maxplayers, gamemode, map, version, extended_config, players_info, is_private, favorite, profile_to_use, bots) VALUES (:ip, :port, :name, :ping, :players, :maxplayers, :gamemode, :map, :version, :extended_config, :players_info, :is_private, :favorite, :profile_to_use, :bots)", srv)
         }
     }
     fmt.Println("Updating cached servers...")
     for _, srv := range cached_servers {
-        _, err := tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, favorite=:favorite, password=:password, players_info=:players_info, is_private=:is_private, profile_to_use=:profile_to_use WHERE ip=:ip AND port=:port", &srv)
+        _, err := tx.NamedExec("UPDATE servers SET name=:name, players=:players, maxplayers=:maxplayers, gamemode=:gamemode, map=:map, ping=:ping, version=:version, extended_config=:extended_config, favorite=:favorite, password=:password, players_info=:players_info, is_private=:is_private, profile_to_use=:profile_to_use, bots=:bots WHERE ip=:ip AND port=:port", &srv)
         if err != nil {
             fmt.Println(err.Error())
         }
@@ -125,6 +127,7 @@ func (c *Cache) LoadServers(data map[string]string) {
         c.Servers[key].Server.Ip = server.Ip
         c.Servers[key].Server.Port = server.Port
         c.Servers[key].Server.Players = server.Players
+        c.Servers[key].Server.Bots = server.Bots
         c.Servers[key].Server.Maxplayers = server.Maxplayers
         c.Servers[key].Server.Ping = server.Ping
         c.Servers[key].Server.Gamemode = server.Gamemode

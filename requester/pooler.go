@@ -234,13 +234,34 @@ func (p *Pooler) UpdateSpecificServer(server *datamodels.Server) error {
         if len(received_lines) >= 2 {
             // Here we go, players information.
             players := received_lines[2:]
+            var real_players int = 0
+            var bots int = 0
             // Calculate players!
             if len(players) == 1 && len(players[0]) > 255 {
                 server.Players = "0"
+                server.Bots = "0"
             } else {
                 // Looks like we have last element to be empty, due to
                 // strings.Split() call before.
-                server.Players = strconv.Itoa(len(players) - 1)
+                for i := range players {
+                    // Get slice with data for bots-humans parsing.
+                    player_data := strings.Split(string(players[i]), " ")
+                    // If slice length isn't equal 3 - this is not what
+                    // we want.
+                    if len(player_data) != 3 {
+                        continue
+                    }
+
+                    if player_data[1] == "0" {
+                        bots++
+                    } else {
+                        real_players++
+                    }
+                }
+                //server.Players = strconv.Itoa(len(players) - 1)
+                server.Players = strconv.Itoa(real_players)
+                server.Bots = strconv.Itoa(bots)
+                fmt.Println(server.Players, server.Bots)
             }
             server.PlayersInfo = strings.Join(received_lines[2:], "\\")
         }

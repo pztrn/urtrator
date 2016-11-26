@@ -18,6 +18,8 @@ type Server struct {
     Name                string          `db:"name"`
     // Current players count
     Players             string          `db:"players"`
+    // Bots count
+    Bots                string          `db:"bots"`
     // Maximum players
     Maxplayers          string          `db:"maxplayers"`
     // Ping
