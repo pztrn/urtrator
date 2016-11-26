@@ -21,6 +21,10 @@ func (m *MainWindow) initializeMac() {
     }
 }
 
+func (m *MainWindow) initializeMacAfter() {
+    m.toolbar.SetStyle(gtk.TOOLBAR_ICONS)
+}
+
 func (m *MainWindow) initializeMacMenu() {
     // This is a placeholder, in future we will use native mac menu.
     // For now it launches default menu initialization.

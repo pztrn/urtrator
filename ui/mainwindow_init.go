@@ -156,6 +156,10 @@ func (m *MainWindow) Initialize() {
 
     m.window.Add(m.vbox)
 
+    if runtime.GOOS == "darwin" {
+        m.initializeMacAfter()
+    }
+
     m.window.ShowAll()
 
     // Launch events.
