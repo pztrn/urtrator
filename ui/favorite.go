@@ -151,7 +151,7 @@ func (f *FavoriteDialog) initializeWindow() {
 
     srv_addr_hbox := gtk.NewHBox(false, 0)
     f.server_address = gtk.NewEntry()
-    srv_addr_hbox.PackStart(f.server_address, true, true, 5)
+    srv_addr_hbox.PackStart(f.server_address, true, true, 0)
     srv_addr_update_btn := gtk.NewButton()
     srv_addr_update_btn.SetTooltipText("Update server information")
     srv_addr_update_btn_image := gtk.NewImageFromStock(gtk.STOCK_REDO, gtk.ICON_SIZE_SMALL_TOOLBAR)
@@ -161,7 +161,7 @@ func (f *FavoriteDialog) initializeWindow() {
     if f.update {
         f.server_address.SetSensitive(false)
     }
-    table.Attach(f.server_address, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
+    table.Attach(srv_addr_hbox, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Server password.
     srv_pass_label := gtk.NewLabel("Password:")
