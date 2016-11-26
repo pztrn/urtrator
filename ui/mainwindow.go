@@ -611,7 +611,7 @@ func (m *MainWindow) showShortServerInformation() {
         // will be deleted from map.
 
         // Server's name.
-        iter = new(gtk.TreeIter)
+        iter := new(gtk.TreeIter)
         m.server_info_store.Append(iter)
         m.server_info_store.SetValue(iter, 0, "Server's name")
         m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed_general_data["sv_hostname"]))
