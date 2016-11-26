@@ -62,10 +62,14 @@ type MainWindow struct {
     all_servers_hide_offline *gtk.CheckButton
     // Checkbox for hiding/showing passworded servers in 'Servers' tab list.
     all_servers_hide_private *gtk.CheckButton
+    // Combobox for filtering server's versions.
+    all_servers_version *gtk.ComboBoxText
     // Checkbox for hiding/showing offline servers in 'Favorites' tab list.
     fav_servers_hide_offline *gtk.CheckButton
     // Checkbox for hiding/showing passworded servers in 'Favorites' tab list.
     fav_servers_hide_private *gtk.CheckButton
+    // Combobox for filtering server's versions.
+    fav_servers_version *gtk.ComboBoxText
     // Game launch button.
     launch_button *gtk.Button
     // Server's main information.
@@ -171,6 +175,11 @@ func (m *MainWindow) addToFavorites() {
     } else {
         fd.InitializeNew()
     }
+}
+
+func (m *MainWindow) allServersVersionFilterChanged() {
+    ctx.Cfg.Cfg["/serverslist/all_servers/version"] = strconv.Itoa(m.all_servers_version.GetActive())
+    ctx.Eventer.LaunchEvent("loadAllServers", nil)
 }
 
 // Executes when delimiter for two panes is moved, to calculate VALID
@@ -314,6 +323,11 @@ func (m *MainWindow) editFavorite() {
     }
 }
 
+func (m *MainWindow) favServersVersionFilterChanged() {
+    ctx.Cfg.Cfg["/serverslist/favorite/version"] = strconv.Itoa(m.all_servers_version.GetActive())
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", nil)
+}
+
 // Executes when "Hide offline servers" checkbox changed it's state on
 // "Servers" tab.
 func (m *MainWindow) hideOfflineAllServers() {
@@ -375,6 +389,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
             iter = server.AllServersIter
         }
 
+        // Hide offline servers?
         if m.all_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
@@ -383,7 +398,18 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
             continue
         }
 
+        // Hide private servers?
         if m.all_servers_hide_private.GetActive() && server.Server.IsPrivate == "1" {
+            if server.AllServersIterInList && server.AllServersIterSet {
+                m.all_servers_store.Remove(iter)
+                server.AllServersIterInList = false
+            }
+            continue
+        }
+
+        // Hide servers that using different version than selected in
+        // filter?
+        if m.all_servers_version.GetActiveText() != "All" && m.all_servers_version.GetActiveText() != server.Server.Version {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -435,6 +461,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
             iter = server.FavServersIter
         }
 
+        // Hide offline servers?
         if m.fav_servers_hide_offline.GetActive() && (server.Server.Players == "" && server.Server.Maxplayers == "" || ping > 9000) {
             if server.FavServersIterInList {
                 m.fav_servers_store.Remove(iter)
@@ -443,7 +470,18 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
             continue
         }
 
+        // Hide private servers?
         if m.fav_servers_hide_private.GetActive() && server.Server.IsPrivate == "1" {
+            if server.FavServersIterInList && server.FavServersIterSet {
+                m.fav_servers_store.Remove(iter)
+                server.FavServersIterInList = false
+            }
+            continue
+        }
+
+        // Hide servers that using different version than selected in
+        // filter?
+        if m.fav_servers_version.GetActiveText() != "All" && m.fav_servers_version.GetActiveText() != server.Server.Version {
             if server.FavServersIterInList && server.FavServersIterSet {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false

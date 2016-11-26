@@ -525,8 +525,24 @@ func (m *MainWindow) InitializeTabs() {
         }
     }
 
+    m.all_servers_version = gtk.NewComboBoxText()
+    m.all_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
+    m.all_servers_version.AppendText("All")
+    for i := range common.SUPPORTED_URT_VERSIONS {
+        m.all_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
+    }
+    all_servers_version_val, ok := ctx.Cfg.Cfg["/serverslist/all_servers/version"]
+    if ok {
+        all_servers_version_int, _ := strconv.Atoi(all_servers_version_val)
+        m.all_servers_version.SetActive(all_servers_version_int)
+    } else {
+        m.all_servers_version.SetActive(0)
+    }
+    m.all_servers_version.Connect("changed", m.allServersVersionFilterChanged)
+    tab_all_srv_ctl_vbox.PackStart(m.all_servers_version, false, true, 5)
+
     // Final separator.
-    ctl_sep := gtk.NewVSeparator()
+    ctl_sep := gtk.NewVBox(false, 0)
     tab_all_srv_ctl_vbox.PackStart(ctl_sep, true, true, 5)
 
     // Favorites servers
@@ -621,8 +637,24 @@ func (m *MainWindow) InitializeTabs() {
         }
     }
 
+    m.fav_servers_version = gtk.NewComboBoxText()
+    m.fav_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
+    m.fav_servers_version.AppendText("All")
+    for i := range common.SUPPORTED_URT_VERSIONS {
+        m.fav_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
+    }
+    fav_servers_version_val, ok := ctx.Cfg.Cfg["/serverslist/favorite/version"]
+    if ok {
+        fav_servers_version_int, _ := strconv.Atoi(fav_servers_version_val)
+        m.fav_servers_version.SetActive(fav_servers_version_int)
+    } else {
+        m.fav_servers_version.SetActive(0)
+    }
+    m.fav_servers_version.Connect("changed", m.favServersVersionFilterChanged)
+    tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_version, false, true, 5)
+
     // Final separator.
-    ctl_fav_sep := gtk.NewVSeparator()
+    ctl_fav_sep := gtk.NewVBox(false, 0)
     tab_fav_srv_ctl_vbox.PackStart(ctl_fav_sep, true, true, 5)
 
     // Add tab_widget widget to window.
