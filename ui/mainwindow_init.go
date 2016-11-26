@@ -527,7 +527,7 @@ func (m *MainWindow) InitializeTabs() {
 
     m.all_servers_version = gtk.NewComboBoxText()
     m.all_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
-    m.all_servers_version.AppendText("All")
+    m.all_servers_version.AppendText("All versions")
     for i := range common.SUPPORTED_URT_VERSIONS {
         m.all_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
     }
@@ -639,7 +639,7 @@ func (m *MainWindow) InitializeTabs() {
 
     m.fav_servers_version = gtk.NewComboBoxText()
     m.fav_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
-    m.fav_servers_version.AppendText("All")
+    m.fav_servers_version.AppendText("All versions")
     for i := range common.SUPPORTED_URT_VERSIONS {
         m.fav_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
     }
