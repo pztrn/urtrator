@@ -610,10 +610,6 @@ func (m *MainWindow) showShortServerInformation() {
         // Append to treeview generic info first. After appending it
         // will be deleted from map.
 
-        iter := new(gtk.TreeIter)
-        m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "<markup><span font_weight=\"bold\">GENERAL INFO</span></markup>")
-
         // Server's name.
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
