@@ -64,12 +64,16 @@ type MainWindow struct {
     all_servers_hide_private *gtk.CheckButton
     // Combobox for filtering server's versions.
     all_servers_version *gtk.ComboBoxText
+    // Combobox for filtering by gamemode.
+    all_servers_gamemode *gtk.ComboBoxText
     // Checkbox for hiding/showing offline servers in 'Favorites' tab list.
     fav_servers_hide_offline *gtk.CheckButton
     // Checkbox for hiding/showing passworded servers in 'Favorites' tab list.
     fav_servers_hide_private *gtk.CheckButton
     // Combobox for filtering server's versions.
     fav_servers_version *gtk.ComboBoxText
+    // Combobox for filtering by gamemode.
+    fav_servers_gamemode *gtk.ComboBoxText
     // Game launch button.
     launch_button *gtk.Button
     // Server's main information.
@@ -175,6 +179,11 @@ func (m *MainWindow) addToFavorites() {
     } else {
         fd.InitializeNew()
     }
+}
+
+func (m *MainWindow) allServersGamemodeFilterChanged() {
+    ctx.Cfg.Cfg["/serverslist/all_servers/gamemode"] = strconv.Itoa(m.all_servers_gamemode.GetActive())
+    ctx.Eventer.LaunchEvent("loadAllServers", nil)
 }
 
 func (m *MainWindow) allServersVersionFilterChanged() {
@@ -323,8 +332,13 @@ func (m *MainWindow) editFavorite() {
     }
 }
 
+func (m *MainWindow) favServersGamemodeFilterChanged() {
+    ctx.Cfg.Cfg["/serverslist/favorite/gamemode"] = strconv.Itoa(m.fav_servers_gamemode.GetActive())
+    ctx.Eventer.LaunchEvent("loadFavoriteServers", nil)
+}
+
 func (m *MainWindow) favServersVersionFilterChanged() {
-    ctx.Cfg.Cfg["/serverslist/favorite/version"] = strconv.Itoa(m.all_servers_version.GetActive())
+    ctx.Cfg.Cfg["/serverslist/favorite/version"] = strconv.Itoa(m.fav_servers_version.GetActive())
     ctx.Eventer.LaunchEvent("loadFavoriteServers", nil)
 }
 
@@ -409,7 +423,18 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
 
         // Hide servers that using different version than selected in
         // filter?
-        if m.all_servers_version.GetActiveText() != "All" && m.all_servers_version.GetActiveText() != server.Server.Version {
+        if m.all_servers_version.GetActiveText() != "All versions" && m.all_servers_version.GetActiveText() != server.Server.Version {
+            if server.AllServersIterInList && server.AllServersIterSet {
+                m.all_servers_store.Remove(iter)
+                server.AllServersIterInList = false
+            }
+            continue
+        }
+
+        // Hide servers that using different gamemode than selected in
+        // filter?
+        gm_int_as_str := strconv.Itoa(m.all_servers_gamemode.GetActive())
+        if m.all_servers_gamemode.GetActiveText() != "All gamemodes" && gm_int_as_str != server.Server.Gamemode {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -481,7 +506,18 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
 
         // Hide servers that using different version than selected in
         // filter?
-        if m.fav_servers_version.GetActiveText() != "All" && m.fav_servers_version.GetActiveText() != server.Server.Version {
+        if m.fav_servers_version.GetActiveText() != "All versions" && m.fav_servers_version.GetActiveText() != server.Server.Version {
+            if server.FavServersIterInList && server.FavServersIterSet {
+                m.fav_servers_store.Remove(iter)
+                server.FavServersIterInList = false
+            }
+            continue
+        }
+
+        // Hide servers that using different gamemode than selected in
+        // filter?
+        gm_int_as_str := strconv.Itoa(m.fav_servers_gamemode.GetActive())
+        if m.fav_servers_gamemode.GetActiveText() != "All gamemodes" && gm_int_as_str != server.Server.Gamemode {
             if server.FavServersIterInList && server.FavServersIterSet {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false

@@ -5,6 +5,7 @@ import (
     "encoding/base64"
     "fmt"
     "runtime"
+    "sort"
     "strconv"
 
     // local
@@ -525,6 +526,7 @@ func (m *MainWindow) InitializeTabs() {
         }
     }
 
+    // Filtering by version.
     m.all_servers_version = gtk.NewComboBoxText()
     m.all_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
     m.all_servers_version.AppendText("All versions")
@@ -540,6 +542,30 @@ func (m *MainWindow) InitializeTabs() {
     }
     m.all_servers_version.Connect("changed", m.allServersVersionFilterChanged)
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_version, false, true, 5)
+
+    // Filtering by gamemode
+    m.all_servers_gamemode = gtk.NewComboBoxText()
+    m.all_servers_gamemode.SetTooltipText("Show only servers which uses selected game mode")
+    m.all_servers_gamemode.AppendText("All gamemodes")
+    // Get sorted gamemodes keys.
+    gm_keys := make([]int, 0, len(m.gamemodes))
+    for i := range m.gamemodes {
+        key, _ := strconv.Atoi(i)
+        gm_keys = append(gm_keys, key)
+    }
+    sort.Ints(gm_keys)
+    for i := range gm_keys {
+        m.all_servers_gamemode.AppendText(m.gamemodes[strconv.Itoa(gm_keys[i])])
+    }
+    all_servers_gamemode_val, ok := ctx.Cfg.Cfg["/serverslist/all_servers/gamemode"]
+    if ok {
+        all_servers_gamemode_int, _ := strconv.Atoi(all_servers_gamemode_val)
+        m.all_servers_gamemode.SetActive(all_servers_gamemode_int)
+    } else {
+        m.all_servers_gamemode.SetActive(0)
+    }
+    m.all_servers_gamemode.Connect("changed", m.allServersGamemodeFilterChanged)
+    tab_all_srv_ctl_vbox.PackStart(m.all_servers_gamemode, false, true, 5)
 
     // Final separator.
     ctl_sep := gtk.NewVBox(false, 0)
@@ -652,6 +678,25 @@ func (m *MainWindow) InitializeTabs() {
     }
     m.fav_servers_version.Connect("changed", m.favServersVersionFilterChanged)
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_version, false, true, 5)
+
+    // Filtering by gamemode
+    m.fav_servers_gamemode = gtk.NewComboBoxText()
+    m.fav_servers_gamemode.SetTooltipText("Show only servers which uses selected game mode")
+    m.fav_servers_gamemode.AppendText("All gamemodes")
+    // Gamemode keys already sorted while adding same filter to "Servers"
+    // tab, so just re-use them.
+    for i := range gm_keys {
+        m.fav_servers_gamemode.AppendText(m.gamemodes[strconv.Itoa(gm_keys[i])])
+    }
+    fav_servers_gamemode_val, ok := ctx.Cfg.Cfg["/serverslist/favorite/gamemode"]
+    if ok {
+        fav_servers_gamemode_int, _ := strconv.Atoi(fav_servers_gamemode_val)
+        m.fav_servers_gamemode.SetActive(fav_servers_gamemode_int)
+    } else {
+        m.fav_servers_gamemode.SetActive(0)
+    }
+    m.fav_servers_gamemode.Connect("changed", m.favServersGamemodeFilterChanged)
+    tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_gamemode, false, true, 5)
 
     // Final separator.
     ctl_fav_sep := gtk.NewVBox(false, 0)
