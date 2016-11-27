@@ -13,7 +13,7 @@ import (
     // local
     "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/context"
-    "github.com/pztrn/urtrator/ui"
+    "github.com/pztrn/urtrator/ui/gtk2"
 
     // stdlib
     "fmt"
