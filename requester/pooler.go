@@ -29,6 +29,8 @@ type Pooler struct {
     maxrequests int
     // Packet prefix.
     pp string
+    // Current requests counter mutex.
+    cur_requests_mutex sync.Mutex
 }
 
 func (p *Pooler) Initialize() {
@@ -73,11 +75,15 @@ func (p *Pooler) PingServers(servers_type string) {
             }
         }
         wait.Add(1)
+        p.cur_requests_mutex.Lock()
         cur_requests += 1
+        p.cur_requests_mutex.Unlock()
         go func(srv *datamodels.Server) {
             defer wait.Done()
             p.pingServersExecutor(srv)
+            p.cur_requests_mutex.Lock()
             cur_requests -= 1
+            p.cur_requests_mutex.Unlock()
         }(server_to_ping.Server)
     }
     wait.Wait()
