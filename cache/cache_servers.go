@@ -21,8 +21,10 @@ import (
 func (c *Cache) CreateServer(addr string) {
     _, ok := c.Servers[addr]
     if !ok {
+        c.ServersMutex.Lock()
         c.Servers[addr] = &cachemodels.Server{}
         c.Servers[addr].Server = &datamodels.Server{}
+        c.ServersMutex.Unlock()
     } else {
         fmt.Println("Server " + addr + " already exist.")
     }

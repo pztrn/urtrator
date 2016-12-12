@@ -12,6 +12,7 @@ package cache
 import (
     // stdlib
     "fmt"
+    "sync"
 
     // local
     "github.com/pztrn/urtrator/cachemodels"
@@ -20,8 +21,12 @@ import (
 type Cache struct {
     // Profiles cache.
     Profiles map[string]*cachemodels.Profile
+    // Profiles cache mutex.
+    ProfilesMutex sync.Mutex
     // Servers cache.
     Servers map[string]*cachemodels.Server
+    // Servers cache mutex.
+    ServersMutex sync.Mutex
 }
 
 func (c *Cache) Initialize() {

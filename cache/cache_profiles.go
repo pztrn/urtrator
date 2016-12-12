@@ -24,8 +24,10 @@ func (c *Cache) CreateProfile(name string) {
     _, ok := c.Profiles[name]
 
     if !ok {
+        c.ProfilesMutex.Lock()
         c.Profiles[name] = &cachemodels.Profile{}
         c.Profiles[name].Profile = &datamodels.Profile{}
+        c.ProfilesMutex.Unlock()
     }
 }
 
@@ -34,7 +36,9 @@ func (c *Cache) deleteProfile(data map[string]string) {
 
     _, ok := c.Profiles[data["profile_name"]]
     if ok {
+        c.ProfilesMutex.Lock()
         delete(c.Profiles, data["profile_name"])
+        c.ProfilesMutex.Unlock()
     }
 
     _, ok1 := c.Profiles[data["profile_name"]]
