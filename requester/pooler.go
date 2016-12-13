@@ -68,9 +68,12 @@ func (p *Pooler) PingServers(servers_type string) {
             continue
         }
         for {
+            p.cur_requests_mutex.Lock()
             if cur_requests == p.maxrequests {
+                p.cur_requests_mutex.Unlock()
                 time.Sleep(time.Second * 1)
             } else {
+                p.cur_requests_mutex.Unlock()
                 break
             }
         }

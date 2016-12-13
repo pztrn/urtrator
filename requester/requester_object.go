@@ -16,16 +16,13 @@ import (
     "fmt"
     "net"
     "strconv"
+    "strings"
     "time"
 )
 
 type Requester struct {
     // Pooler.
     Pooler *Pooler
-    // Master server address
-    master_server string
-    // Master server port
-    master_server_port string
     // Packet prefix.
     pp string
     // Showstopper for delimiting IP addresses.
@@ -37,8 +34,6 @@ type Requester struct {
 // Requester's initialization.
 func (r *Requester) Initialize() {
     fmt.Println("Initializing Requester...")
-    r.master_server = "master.urbanterror.info"
-    r.master_server_port = "27900"
     r.pp = "\377\377\377\377"
     r.ip_delimiter = 92
     r.Pooler = &Pooler{}
@@ -48,8 +43,20 @@ func (r *Requester) Initialize() {
 // Gets all available servers from master server.
 // This isn't in pooler, because it have no need to be pooled.
 func (r *Requester) getServers() error {
+    // Get master server address and port from configuration.
+    var master_server string = ""
+    var master_server_port string = ""
+    master_server_raw, ok := Cfg.Cfg["/servers_updating/master_server"]
+    if ok {
+        master_server = strings.Split(master_server_raw, ":")[0]
+        master_server_port = strings.Split(master_server_raw, ":")[1]
+    } else {
+        master_server = "master.urbanterror.info"
+        master_server_port = "27900"
+    }
+    fmt.Println("Using master server address: " + master_server + ":" + master_server_port)
     // IP addresses we will compose to return.
-    conn, err1 := net.Dial("udp", r.master_server + ":" + r.master_server_port)
+    conn, err1 := net.Dial("udp", master_server + ":" + master_server_port)
     if err1 != nil {
         fmt.Println("Error dialing to master server!")
         Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Failed to connect to master server!"})
@@ -80,11 +87,20 @@ func (r *Requester) getServers() error {
     fmt.Println("Receiving servers list...")
     for {
         _, err := conn.Read(received_buf)
-        if err != nil {
-            break
-        }
         raw_received = append(raw_received, received_buf...)
         fmt.Println("Received " + strconv.Itoa(len(raw_received)) + " bytes")
+
+        if err != nil {
+            // A bit hacky - if we have received data length lower or
+            // equal to 4k - we have an error. Looks like conn.Read()
+            // reads by 4k.
+            if len(raw_received) < 4097 {
+                fmt.Println("Error dialing to master server!")
+                Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Failed to connect to master server!"})
+                return errors.New("Failed to connect to master server!")
+            }
+            break
+        }
     }
 
     // Obtaining list of slices.
@@ -117,8 +133,10 @@ func (r *Requester) getServers() error {
         if !ok {
             // Create cached server.
             Cache.CreateServer(addr)
+            Cache.ServersMutex.Lock()
             Cache.Servers[addr].Server.Ip = ip
             Cache.Servers[addr].Server.Port = port
+            Cache.ServersMutex.Unlock()
         }
     }
 
@@ -127,10 +145,17 @@ func (r *Requester) getServers() error {
 
 // Updates information about all available servers from master server and
 // parses it to usable format.
-func (r *Requester) UpdateAllServers() {
+func (r *Requester) UpdateAllServers(task bool) {
     fmt.Println("Starting all servers updating procedure...")
-    r.getServers()
+    err := r.getServers()
+    if err != nil {
+        return
+    }
     r.Pooler.UpdateServers("all")
+
+    if task {
+        Eventer.LaunchEvent("taskDone", map[string]string{"task_name": "Server's autoupdating"})
+    }
 }
 
 func (r *Requester) UpdateFavoriteServers() {

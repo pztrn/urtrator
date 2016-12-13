@@ -39,6 +39,13 @@ type OptionsDialog struct {
     // Urban Terror tab.
     // Profiles list.
     profiles_list *gtk.TreeView
+    // Servers updating tab.
+    // Master server address.
+    master_server_addr *gtk.Entry
+    // Servers autoupdate.
+    servers_autoupdate *gtk.CheckButton
+    // Timeout for servers autoupdating.
+    servers_autoupdate_timeout *gtk.Entry
 
     // Data stores.
     // Urban Terror profiles list.
@@ -131,6 +138,29 @@ func (o *OptionsDialog) fill() {
     if ctx.Cfg.Cfg["/general/urtrator_autoupdate"] == "1" {
         o.autoupdate.SetActive(true)
     }
+
+    // Servers updating tab.
+    master_server_addr, ok := ctx.Cfg.Cfg["/servers_updating/master_server"]
+    if !ok {
+        o.master_server_addr.SetText("master.urbanterror.info:27900")
+    } else {
+        o.master_server_addr.SetText(master_server_addr)
+    }
+
+    servers_autoupdate, ok1 := ctx.Cfg.Cfg["/servers_updating/servers_autoupdate"]
+    if ok1 {
+        if servers_autoupdate == "1" {
+            o.servers_autoupdate.SetActive(true)
+        }
+    }
+
+    servers_update_timeout, ok2 := ctx.Cfg.Cfg["/servers_updating/servers_autoupdate_timeout"]
+    if !ok2 {
+        o.servers_autoupdate_timeout.SetText("10")
+    } else {
+        o.servers_autoupdate_timeout.SetText(servers_update_timeout)
+    }
+
 }
 
 // Appearance tab initialization.
@@ -177,6 +207,54 @@ func (o *OptionsDialog) initializeGeneralTab() {
     o.tab_widget.AppendPage(general_vbox, gtk.NewLabel("General"))
 }
 
+func (o *OptionsDialog) initializeServersOptionsTab() {
+    servers_options_vbox := gtk.NewVBox(false, 0)
+
+    servers_updating_table := gtk.NewTable(3, 2, false)
+    servers_updating_table.SetRowSpacings(2)
+
+    // Master server address.
+    master_server_addr_tooltip := "Address of master server. Specify in form: addr:port."
+    master_server_addr_label := gtk.NewLabel("Master server address")
+    master_server_addr_label.SetTooltipText(master_server_addr_tooltip)
+    master_server_addr_label.SetAlignment(0, 0)
+    servers_updating_table.Attach(master_server_addr_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.master_server_addr = gtk.NewEntry()
+    o.master_server_addr.SetTooltipText(master_server_addr_tooltip)
+    servers_updating_table.Attach(o.master_server_addr, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
+
+    // Servers autoupdate checkbox.
+    servers_autoupdate_cb_tooptip := "Should servers be automatically updated?"
+    servers_autoupdate_cb_label := gtk.NewLabel("Servers autoupdate")
+    servers_autoupdate_cb_label.SetTooltipText(servers_autoupdate_cb_tooptip)
+    servers_autoupdate_cb_label.SetAlignment(0, 0)
+    servers_updating_table.Attach(servers_autoupdate_cb_label, 0, 1 ,1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.servers_autoupdate = gtk.NewCheckButtonWithLabel("")
+    o.servers_autoupdate.SetTooltipText(servers_autoupdate_cb_tooptip)
+    servers_updating_table.Attach(o.servers_autoupdate, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
+
+    // Servers update timeout.
+    servers_autoupdate_timeout_tooltip := "Timeout which will trigger servers information update, in minutes."
+    servers_autoupdate_label := gtk.NewLabel("Servers update timeout (minutes)")
+    servers_autoupdate_label.SetTooltipText(servers_autoupdate_timeout_tooltip)
+    servers_autoupdate_label.SetAlignment(0, 0)
+    servers_updating_table.Attach(servers_autoupdate_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.servers_autoupdate_timeout = gtk.NewEntry()
+    o.servers_autoupdate_timeout.SetTooltipText(servers_autoupdate_timeout_tooltip)
+    servers_updating_table.Attach(o.servers_autoupdate_timeout, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 5, 5)
+
+    // Vertical separator.
+    sep := gtk.NewVBox(false, 0)
+
+    servers_options_vbox.PackStart(servers_updating_table, false, true, 0)
+    servers_options_vbox.PackStart(sep, true, true, 0)
+
+    o.tab_widget.AppendPage(servers_options_vbox, gtk.NewLabel("Servers updating"))
+}
+
 func (o *OptionsDialog) initializeStorages() {
     // Structure:
     // Name|Version|Second X session
@@ -191,6 +269,7 @@ func (o *OptionsDialog) initializeTabs() {
     o.initializeGeneralTab()
     o.initializeAppearanceTab()
     o.initializeUrtTab()
+    o.initializeServersOptionsTab()
 
     // Buttons for saving and discarding changes.
     buttons_hbox := gtk.NewHBox(false, 0)
@@ -278,7 +357,28 @@ func (o *OptionsDialog) saveGeneral() {
         ctx.Cfg.Cfg["/general/urtrator_autoupdate"] = "0"
     }
 
-    fmt.Println(ctx.Cfg.Cfg)
+    // Servers updating tab.
+    master_server_addr := o.master_server_addr.GetText()
+    if len(master_server_addr) < 1 {
+        ctx.Cfg.Cfg["/servers_updating/master_server"] = "master.urbanterror.info:27900"
+    } else {
+        ctx.Cfg.Cfg["/servers_updating/master_server"] = master_server_addr
+    }
+
+    if o.servers_autoupdate.GetActive() {
+        ctx.Cfg.Cfg["/servers_updating/servers_autoupdate"] = "1"
+    } else {
+        ctx.Cfg.Cfg["/servers_updating/servers_autoupdate"] = "0"
+    }
+
+    update_timeout := o.servers_autoupdate_timeout.GetText()
+    if len(update_timeout) < 1 {
+        ctx.Cfg.Cfg["/servers_updating/servers_autoupdate_timeout"] = "10"
+    } else {
+        ctx.Cfg.Cfg["/servers_updating/servers_autoupdate_timeout"] = update_timeout
+    }
+
+    ctx.Eventer.LaunchEvent("initializeTasksForMainWindow", map[string]string{})
 }
 
 func (o *OptionsDialog) ShowOptionsDialog() {

@@ -10,6 +10,7 @@ import (
 
     // local
     "github.com/pztrn/urtrator/common"
+    "github.com/pztrn/urtrator/timer"
 
     // Other
     "github.com/mattn/go-gtk/gdkpixbuf"
@@ -169,6 +170,7 @@ func (m *MainWindow) Initialize() {
     ctx.Eventer.LaunchEvent("loadServersIntoCache", map[string]string{})
     ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
     ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
+    ctx.Eventer.LaunchEvent("initializeTasksForMainWindow", map[string]string{})
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
 
     // Set flag that shows to other parts that we're initialized.
@@ -180,12 +182,14 @@ func (m *MainWindow) Initialize() {
 // Events initialization.
 func (m *MainWindow) initializeEvents() {
     fmt.Println("Initializing events...")
+    ctx.Eventer.AddEventHandler("initializeTasksForMainWindow", m.initializeTasks)
     ctx.Eventer.AddEventHandler("loadAllServers", m.loadAllServers)
     ctx.Eventer.AddEventHandler("loadFavoriteServers", m.loadFavoriteServers)
     ctx.Eventer.AddEventHandler("loadProfilesIntoMainWindow", m.loadProfiles)
     ctx.Eventer.AddEventHandler("serversUpdateCompleted", m.serversUpdateCompleted)
     ctx.Eventer.AddEventHandler("setQuickConnectDetails", m.setQuickConnectDetails)
     ctx.Eventer.AddEventHandler("setToolbarLabelText", m.setToolbarLabelText)
+    ctx.Eventer.AddEventHandler("updateAllServers", m.UpdateServersEventHandler)
 }
 
 // Main menu initialization.
@@ -704,6 +708,37 @@ func (m *MainWindow) InitializeTabs() {
 
     // Add tab_widget widget to window.
     m.hpane.Add1(m.tab_widget)
+}
+
+// Tasks.
+func (m *MainWindow) initializeTasks(data map[string]string) {
+    // Get task status, if it already running.
+    task_status := ctx.Timer.GetTaskStatus("Server's autoupdating")
+    // Remove tasks if they exist.
+    ctx.Timer.RemoveTask("Server's autoupdating")
+
+    // Add servers autoupdate task.
+    if ctx.Cfg.Cfg["/servers_updating/servers_autoupdate"] == "1" {
+        task := timer.TimerTask{
+            Name: "Server's autoupdating",
+            Callee: "updateAllServers",
+            InProgress: task_status,
+        }
+
+        timeout, ok := ctx.Cfg.Cfg["/servers_updating/servers_autoupdate_timeout"]
+        if ok {
+            timeout_int, err := strconv.Atoi(timeout)
+            if err != nil {
+                task.Timeout = 10 * 60
+            } else {
+                task.Timeout = timeout_int * 60
+            }
+        } else {
+            task.Timeout = 10 * 60
+        }
+
+        ctx.Timer.AddTask(&task)
+    }
 }
 
 // Toolbar initialization.

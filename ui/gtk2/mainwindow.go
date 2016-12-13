@@ -808,8 +808,14 @@ func (m *MainWindow) UpdateServers() {
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
 
     if strings.Contains(current_tab, "Servers") {
-        go ctx.Requester.UpdateAllServers()
+        go ctx.Requester.UpdateAllServers(false)
     } else if strings.Contains(current_tab, "Favorites") {
         go ctx.Requester.UpdateFavoriteServers()
     }
+}
+
+func (m *MainWindow) UpdateServersEventHandler(data map[string]string) {
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>"})
+
+    go ctx.Requester.UpdateAllServers(true)
 }

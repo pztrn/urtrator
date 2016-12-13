@@ -23,6 +23,7 @@ import (
     "github.com/pztrn/urtrator/eventer"
     "github.com/pztrn/urtrator/launcher"
     "github.com/pztrn/urtrator/requester"
+    "github.com/pztrn/urtrator/timer"
 
     // Github
     "github.com/mattn/go-gtk/gtk"
@@ -45,6 +46,8 @@ type Context struct {
     Launcher *launcher.Launcher
     // Requester, which requests server's information.
     Requester *requester.Requester
+    // Timer.
+    Timer *timer.Timer
 }
 
 func (ctx *Context) Close() error {
@@ -100,8 +103,13 @@ func (ctx *Context) initializeLauncher() {
 }
 
 func (ctx *Context) initializeRequester() {
-    ctx.Requester = requester.New(ctx.Cache, ctx.Eventer)
+    ctx.Requester = requester.New(ctx.Cache, ctx.Eventer, ctx.Cfg, ctx.Timer)
     ctx.Requester.Initialize()
+}
+
+func (ctx *Context) initializeTimer() {
+    ctx.Timer = timer.New(ctx.Eventer, ctx.Cfg)
+    ctx.Timer.Initialize()
 }
 
 func (ctx *Context) Initialize() {
@@ -112,5 +120,6 @@ func (ctx *Context) Initialize() {
     ctx.initializeEventer()
     ctx.initializeCache()
     ctx.initializeLauncher()
+    ctx.initializeTimer()
     ctx.initializeRequester()
 }
