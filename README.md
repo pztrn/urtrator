@@ -26,6 +26,7 @@ trying to use and, if version incompatability found, will not launch
 the game.
 * Favorites servers.
 * Updating single server.
+* Automatically update servers information.
 * Showing information about servers (like in UrT Connector).
 * Clipboard monitoring.
 
