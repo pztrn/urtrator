@@ -23,7 +23,6 @@ package translator
 
 import (
     // stdlib
-    "errors"
     "fmt"
     "os"
 )
@@ -37,7 +36,7 @@ func (t *Translator) detectLanguage() {
 func (t *Translator) detectTranslationsDirectory() error {
     // Translations MUST reside in directory neear binary!
     // ToDo: more checks.
-    t.translationsPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+    t.translationsPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 
     return nil
 }
