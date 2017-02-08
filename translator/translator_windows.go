@@ -24,6 +24,7 @@ package translator
 import (
     // stdlib
     "fmt"
+    "path/filepath"
     "os"
 )
 
