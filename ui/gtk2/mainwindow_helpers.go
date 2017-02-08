@@ -24,7 +24,7 @@ func (m *MainWindow) getIpFromServersList(current_tab string) string {
     // Assuming that we're on "Servers" tab by default.
     sel := m.all_servers.GetSelection()
     model := m.all_servers.GetModel()
-    if strings.Contains(current_tab, "Favorites") {
+    if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         sel = m.fav_servers.GetSelection()
         model = m.fav_servers.GetModel()
     }
@@ -36,9 +36,9 @@ func (m *MainWindow) getIpFromServersList(current_tab string) string {
     var srv_addr string
     srv_addr_gval := glib.ValueFromNative(srv_addr)
 
-    if strings.Contains(current_tab, "Servers") {
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
         model.GetValue(iter, m.column_pos["Servers"]["IP"], srv_addr_gval)
-    } else if strings.Contains(current_tab, "Favorites") {
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         model.GetValue(iter, m.column_pos["Favorites"]["IP"], srv_addr_gval)
     }
     server_address := srv_addr_gval.GetString()

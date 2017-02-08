@@ -96,6 +96,11 @@ go install github.com/pztrn/urtrator
 
 # Important information
 
+## Translation
+
+Feel free to ping me everywhere you can and ask for adding a language
+for translation, if not already added [here](https://www.transifex.com/issuewarrior/urtrator/dashboard/).
+
 ## GTK warnings in console
 
 Many GTK warnings in console may appear while using URTrator. Unfortunately,

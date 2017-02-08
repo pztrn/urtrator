@@ -15,12 +15,12 @@ func (m *MainWindow) sortServersByName(model *gtk.TreeModel, a *gtk.TreeIter, b 
     var name2_raw glib.GValue
 
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    if current_tab == "Servers" {
-        model.GetValue(a, m.column_pos["Servers"]["Name"], &name1_raw)
-        model.GetValue(b, m.column_pos["Servers"]["Name"], &name2_raw)
-    } else if current_tab == "Favorites" {
-        model.GetValue(a, m.column_pos["Favorites"]["Name"], &name1_raw)
-        model.GetValue(b, m.column_pos["Favorites"]["Name"], &name2_raw)
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
+        model.GetValue(a, m.column_pos["Servers"][ctx.Translator.Translate("Name", nil)], &name1_raw)
+        model.GetValue(b, m.column_pos["Servers"][ctx.Translator.Translate("Name", nil)], &name2_raw)
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
+        model.GetValue(a, m.column_pos["Favorites"][ctx.Translator.Translate("Name", nil)], &name1_raw)
+        model.GetValue(b, m.column_pos["Favorites"][ctx.Translator.Translate("Name", nil)], &name2_raw)
     } else {
         return 0
     }
@@ -42,12 +42,12 @@ func (m *MainWindow) sortServersByPlayers(model *gtk.TreeModel, a *gtk.TreeIter,
     var players2_raw glib.GValue
 
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    if current_tab == "Servers" {
-        model.GetValue(a, m.column_pos["Servers"]["Players"], &players1_raw)
-        model.GetValue(b, m.column_pos["Servers"]["Players"], &players2_raw)
-    } else if current_tab == "Favorites" {
-        model.GetValue(a, m.column_pos["Favorites"]["Players"], &players1_raw)
-        model.GetValue(b, m.column_pos["Favorites"]["Players"], &players2_raw)
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
+        model.GetValue(a, m.column_pos["Servers"][ctx.Translator.Translate("Players", nil)], &players1_raw)
+        model.GetValue(b, m.column_pos["Servers"][ctx.Translator.Translate("Players", nil)], &players2_raw)
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
+        model.GetValue(a, m.column_pos["Favorites"][ctx.Translator.Translate("Players", nil)], &players1_raw)
+        model.GetValue(b, m.column_pos["Favorites"][ctx.Translator.Translate("Players", nil)], &players2_raw)
     } else {
         return 0
     }
@@ -73,12 +73,12 @@ func (m *MainWindow) sortServersByPing(model *gtk.TreeModel, a *gtk.TreeIter, b 
     var ping2_raw glib.GValue
 
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
-    if current_tab == "Servers" {
-        model.GetValue(a, m.column_pos["Servers"]["Ping"], &ping1_raw)
-        model.GetValue(b, m.column_pos["Servers"]["Ping"], &ping2_raw)
-    } else if current_tab == "Favorites" {
-        model.GetValue(a, m.column_pos["Favorites"]["Ping"], &ping1_raw)
-        model.GetValue(b, m.column_pos["Favorites"]["Ping"], &ping2_raw)
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
+        model.GetValue(a, m.column_pos["Servers"][ctx.Translator.Translate("Ping", nil)], &ping1_raw)
+        model.GetValue(b, m.column_pos["Servers"][ctx.Translator.Translate("Ping", nil)], &ping2_raw)
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
+        model.GetValue(a, m.column_pos["Favorites"][ctx.Translator.Translate("Ping", nil)], &ping1_raw)
+        model.GetValue(b, m.column_pos["Favorites"][ctx.Translator.Translate("Ping", nil)], &ping2_raw)
     } else {
         return 0
     }

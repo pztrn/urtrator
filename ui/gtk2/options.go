@@ -77,7 +77,7 @@ func (o *OptionsDialog) closeOptionsDialogWithSaving() {
     // Temporary disable all these modals on Linux.
     // See https://github.com/mattn/go-gtk/issues/289.
     if runtime.GOOS != "linux" {
-        mbox_string := "Some options require application restart to be applied."
+        mbox_string := ctx.Translator.Translate("Some options require application restart to be applied.", nil)
         m := gtk.NewMessageDialog(o.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
         m.Response(func() {
             m.Destroy()
@@ -167,10 +167,10 @@ func (o *OptionsDialog) fill() {
 func (o *OptionsDialog) initializeAppearanceTab() {
     appearance_vbox := gtk.NewVBox(false, 0)
 
-    l := gtk.NewLabel("There will be some appearance configuration options soon.")
+    l := gtk.NewLabel(ctx.Translator.Translate("There will be some appearance configuration options soon.", nil))
     appearance_vbox.PackStart(l, false, true, 5)
 
-    o.tab_widget.AppendPage(appearance_vbox, gtk.NewLabel("Appearance"))
+    o.tab_widget.AppendPage(appearance_vbox, gtk.NewLabel(ctx.Translator.Translate("Appearance", nil)))
 }
 
 func (o *OptionsDialog) initializeGeneralTab() {
@@ -179,17 +179,17 @@ func (o *OptionsDialog) initializeGeneralTab() {
     general_table := gtk.NewTable(2, 2, false)
 
     // Tray icon checkbox.
-    show_tray_icon_label := gtk.NewLabel("Show icon in tray")
+    show_tray_icon_label := gtk.NewLabel(ctx.Translator.Translate("Show icon in tray", nil))
     show_tray_icon_label.SetAlignment(0, 0)
     general_table.Attach(show_tray_icon_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
 
     o.show_tray_icon = gtk.NewCheckButtonWithLabel("")
-    o.show_tray_icon.SetTooltipText("Show icon in tray")
+    o.show_tray_icon.SetTooltipText(ctx.Translator.Translate("Show icon in tray", nil))
     general_table.Attach(o.show_tray_icon, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
 
     // Autoupdate checkbox.
-    autoupdate_tooltip := "Should URTrator check for updates and update itself? Not working now."
-    autoupdate_label := gtk.NewLabel("Automatically update URTrator?")
+    autoupdate_tooltip := ctx.Translator.Translate("Should URTrator check for updates and update itself? Not working now.", nil)
+    autoupdate_label := gtk.NewLabel(ctx.Translator.Translate("Automatically update URTrator?", nil))
     autoupdate_label.SetTooltipText(autoupdate_tooltip)
     autoupdate_label.SetAlignment(0, 0)
     general_table.Attach(autoupdate_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -204,7 +204,7 @@ func (o *OptionsDialog) initializeGeneralTab() {
     general_vbox.PackStart(general_table, false, true, 0)
     general_vbox.PackStart(sep, false, true, 0)
 
-    o.tab_widget.AppendPage(general_vbox, gtk.NewLabel("General"))
+    o.tab_widget.AppendPage(general_vbox, gtk.NewLabel(ctx.Translator.Translate("General", nil)))
 }
 
 func (o *OptionsDialog) initializeServersOptionsTab() {
@@ -214,8 +214,8 @@ func (o *OptionsDialog) initializeServersOptionsTab() {
     servers_updating_table.SetRowSpacings(2)
 
     // Master server address.
-    master_server_addr_tooltip := "Address of master server. Specify in form: addr:port."
-    master_server_addr_label := gtk.NewLabel("Master server address")
+    master_server_addr_tooltip := ctx.Translator.Translate("Address of master server. Specify in form: addr:port.", nil)
+    master_server_addr_label := gtk.NewLabel(ctx.Translator.Translate("Master server address", nil))
     master_server_addr_label.SetTooltipText(master_server_addr_tooltip)
     master_server_addr_label.SetAlignment(0, 0)
     servers_updating_table.Attach(master_server_addr_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -225,8 +225,8 @@ func (o *OptionsDialog) initializeServersOptionsTab() {
     servers_updating_table.Attach(o.master_server_addr, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
 
     // Servers autoupdate checkbox.
-    servers_autoupdate_cb_tooptip := "Should servers be automatically updated?"
-    servers_autoupdate_cb_label := gtk.NewLabel("Servers autoupdate")
+    servers_autoupdate_cb_tooptip := ctx.Translator.Translate("Should servers be automatically updated?", nil)
+    servers_autoupdate_cb_label := gtk.NewLabel(ctx.Translator.Translate("Servers autoupdate", nil))
     servers_autoupdate_cb_label.SetTooltipText(servers_autoupdate_cb_tooptip)
     servers_autoupdate_cb_label.SetAlignment(0, 0)
     servers_updating_table.Attach(servers_autoupdate_cb_label, 0, 1 ,1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -236,8 +236,8 @@ func (o *OptionsDialog) initializeServersOptionsTab() {
     servers_updating_table.Attach(o.servers_autoupdate, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Servers update timeout.
-    servers_autoupdate_timeout_tooltip := "Timeout which will trigger servers information update, in minutes."
-    servers_autoupdate_label := gtk.NewLabel("Servers update timeout (minutes)")
+    servers_autoupdate_timeout_tooltip := ctx.Translator.Translate("Timeout which will trigger servers information update, in minutes.", nil)
+    servers_autoupdate_label := gtk.NewLabel(ctx.Translator.Translate("Servers update timeout (minutes)", nil))
     servers_autoupdate_label.SetTooltipText(servers_autoupdate_timeout_tooltip)
     servers_autoupdate_label.SetAlignment(0, 0)
     servers_updating_table.Attach(servers_autoupdate_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -252,7 +252,7 @@ func (o *OptionsDialog) initializeServersOptionsTab() {
     servers_options_vbox.PackStart(servers_updating_table, false, true, 0)
     servers_options_vbox.PackStart(sep, true, true, 0)
 
-    o.tab_widget.AppendPage(servers_options_vbox, gtk.NewLabel("Servers updating"))
+    o.tab_widget.AppendPage(servers_options_vbox, gtk.NewLabel(ctx.Translator.Translate("Servers updating", nil)))
 }
 
 func (o *OptionsDialog) initializeStorages() {
@@ -275,10 +275,10 @@ func (o *OptionsDialog) initializeTabs() {
     buttons_hbox := gtk.NewHBox(false, 0)
     sep := gtk.NewHBox(false, 0)
 
-    cancel_button := gtk.NewButtonWithLabel("Cancel")
+    cancel_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("Cancel", nil))
     cancel_button.Clicked(o.closeOptionsDialogByCancel)
 
-    ok_button := gtk.NewButtonWithLabel("OK")
+    ok_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("OK", nil))
     ok_button.Clicked(o.closeOptionsDialogWithSaving)
 
     buttons_hbox.PackStart(sep, true, true, 5)
@@ -296,22 +296,22 @@ func (o *OptionsDialog) initializeUrtTab() {
 
     // Profiles list.
     o.profiles_list = gtk.NewTreeView()
-    o.profiles_list.SetTooltipText("All available profiles")
+    o.profiles_list.SetTooltipText(ctx.Translator.Translate("All available profiles", nil))
     urt_hbox.Add(o.profiles_list)
     o.profiles_list.SetModel(o.profiles_list_store)
-    o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Profile name", gtk.NewCellRendererText(), "text", 0))
-    o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Urban Terror version", gtk.NewCellRendererText(), "text", 1))
+    o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Profile name", nil), gtk.NewCellRendererText(), "text", 0))
+    o.profiles_list.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Urban Terror version", nil), gtk.NewCellRendererText(), "text", 1))
 
     // Profiles list buttons.
     urt_profiles_buttons_vbox := gtk.NewVBox(false, 0)
 
-    button_add := gtk.NewButtonWithLabel("Add")
-    button_add.SetTooltipText("Add new profile")
+    button_add := gtk.NewButtonWithLabel(ctx.Translator.Translate("Add", nil))
+    button_add.SetTooltipText(ctx.Translator.Translate("Add new profile", nil))
     button_add.Clicked(o.addProfile)
     urt_profiles_buttons_vbox.PackStart(button_add, false, true, 0)
 
-    button_edit := gtk.NewButtonWithLabel("Edit")
-    button_edit.SetTooltipText("Edit selected profile. Do nothing if no profile was selected.")
+    button_edit := gtk.NewButtonWithLabel(ctx.Translator.Translate("Edit", nil))
+    button_edit.SetTooltipText(ctx.Translator.Translate("Edit selected profile. Do nothing if no profile was selected.", nil))
     button_edit.Clicked(o.editProfile)
     urt_profiles_buttons_vbox.PackStart(button_edit, false, true, 5)
 
@@ -319,14 +319,14 @@ func (o *OptionsDialog) initializeUrtTab() {
     sep := gtk.NewVBox(false, 0)
     urt_profiles_buttons_vbox.PackStart(sep, true, true, 5)
 
-    button_delete := gtk.NewButtonWithLabel("Delete")
-    button_delete.SetTooltipText("Delete selected profile. Do nothing if no profile was selected.")
+    button_delete := gtk.NewButtonWithLabel(ctx.Translator.Translate("Delete", nil))
+    button_delete.SetTooltipText(ctx.Translator.Translate("Delete selected profile. Do nothing if no profile was selected.", nil))
     button_delete.Clicked(o.deleteProfile)
     urt_profiles_buttons_vbox.PackStart(button_delete, false, true, 0)
 
     urt_hbox.Add(urt_profiles_buttons_vbox)
 
-    o.tab_widget.AppendPage(urt_hbox, gtk.NewLabel("Urban Terror"))
+    o.tab_widget.AppendPage(urt_hbox, gtk.NewLabel(ctx.Translator.Translate("Urban Terror", nil)))
 
     // Load Profiles.
     ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
@@ -383,7 +383,7 @@ func (o *OptionsDialog) saveGeneral() {
 
 func (o *OptionsDialog) ShowOptionsDialog() {
     o.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
-    o.window.SetTitle("URTrator - Options")
+    o.window.SetTitle(ctx.Translator.Translate("URTrator - Options", nil))
     o.window.Connect("destroy", o.closeOptionsDialogWithDiscard)
     o.window.SetModal(true)
     o.window.SetSizeRequest(550, 400)

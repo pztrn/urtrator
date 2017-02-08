@@ -21,7 +21,7 @@ func ShowAboutDialog() {
     ad := gtk.NewAboutDialog()
 
     ad.SetProgramName("URTrator")
-    ad.SetComments("Urban Terror servers browser and game launcher")
+    ad.SetComments(ctx.Translator.Translate("Urban Terror servers browser and game launcher", nil))
     ad.SetVersion(common.URTRATOR_VERSION)
     ad.SetWebsite("http://urtrator.pztrn.name")
     ad.SetLogo(logo)

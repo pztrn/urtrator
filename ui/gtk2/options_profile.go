@@ -53,7 +53,7 @@ type OptionsProfile struct {
 }
 
 func (op *OptionsProfile) browseForBinary() {
-    op.f = gtk.NewFileChooserDialog("URTrator - Select Urban Terror binary", op.window, gtk.FILE_CHOOSER_ACTION_OPEN, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+    op.f = gtk.NewFileChooserDialog(ctx.Translator.Translate("URTrator - Select Urban Terror binary", nil), op.window, gtk.FILE_CHOOSER_ACTION_OPEN, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
     op.f.Response(op.browseForBinaryHelper)
     op.f.Run()
 }
@@ -74,7 +74,7 @@ func (op *OptionsProfile) browseForBinaryHelper() {
                 // Temporary disable all these modals on Linux.
                 // See https://github.com/mattn/go-gtk/issues/289.
                 if runtime.GOOS != "linux" {
-                    mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.x86_64."
+                    mbox_string := ctx.Translator.Translate("Invalid binary selected!\nAccording to your OS, it should be", nil) + " Quake3-UrT.x86_64."
                     m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
                     m.Response(func() {
                         m.Destroy()
@@ -96,7 +96,7 @@ func (op *OptionsProfile) browseForBinaryHelper() {
                 // Temporary disable all these modals on Linux.
                 // See https://github.com/mattn/go-gtk/issues/289.
                 if runtime.GOOS != "linux" {
-                    mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
+                    mbox_string := ctx.Translator.Translate("Invalid binary selected!\nAccording to your OS, it should be", nil) + " Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64."
                     m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
                     m.Response(func() {
                         m.Destroy()
@@ -111,7 +111,7 @@ func (op *OptionsProfile) browseForBinaryHelper() {
             // Temporary disable all these modals on Linux.
             // See https://github.com/mattn/go-gtk/issues/289.
             if runtime.GOOS != "linux" {
-                mbox_string := "Invalid binary selected!\nAccording to your OS, it should be Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64.\n\nNote, that currently URTrator supports only official binary."
+                mbox_string := ctx.Translator.Translate("Invalid binary selected!\nAccording to your OS, it should be", nil) + " Quake3-UrT.app/Contents/MacOS/Quake3-UrT.x86_64.\n\n" + ctx.Translator.Translate("Note, that currently URTrator supports only official binary.", nil)
                 m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
                 m.Response(func() {
                     m.Destroy()
@@ -138,9 +138,9 @@ func (op *OptionsProfile) Initialize(update bool) {
 
     op.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     if update {
-        op.window.SetTitle("URTrator - Update Urban Terror profile")
+        op.window.SetTitle(ctx.Translator.Translate("URTrator - Update Urban Terror profile", nil))
     } else {
-        op.window.SetTitle("URTrator - Add Urban Terror profile")
+        op.window.SetTitle(ctx.Translator.Translate("URTrator - Add Urban Terror profile", nil))
     }
     op.window.Connect("destroy", op.closeWithDiscard)
     op.window.SetModal(true)
@@ -152,8 +152,8 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.table.SetRowSpacings(2)
 
     // Profile name.
-    profile_name_tooltip := "This how you will see profile on profiles lists."
-    pn_label := gtk.NewLabel("Profile name:")
+    profile_name_tooltip := ctx.Translator.Translate("This how you will see profile on profiles lists.", nil)
+    pn_label := gtk.NewLabel(ctx.Translator.Translate("Profile name:", nil))
     pn_label.SetTooltipText(profile_name_tooltip)
     pn_label.SetAlignment(0, 0)
     op.table.Attach(pn_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -164,8 +164,8 @@ func (op *OptionsProfile) Initialize(update bool) {
 
 
     // Urban Terror version.
-    urt_version_tooltip := "Urban Terror version for which this profile applies."
-    urt_version_label := gtk.NewLabel("Urban Terror version:")
+    urt_version_tooltip := ctx.Translator.Translate("Urban Terror version for which this profile applies.", nil)
+    urt_version_label := gtk.NewLabel(ctx.Translator.Translate("Urban Terror version:", nil))
     urt_version_label.SetTooltipText(urt_version_tooltip)
     urt_version_label.SetAlignment(0, 0)
     op.table.Attach(urt_version_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -179,16 +179,16 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.table.Attach(op.urt_version_combo, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Urban Terror binary path.
-    select_binary_tooltip := "Urban Terror binary. Some checks will be executed, so make sure you have selected right binary:\n\nQuake3-UrT.i386 for linux-x86\nQuake3-UrT.x86_64 for linux-amd64\nQuake3-UrT.app for macOS"
+    select_binary_tooltip := ctx.Translator.Translate("Urban Terror binary. Some checks will be executed, so make sure you have selected right binary:\n\nQuake3-UrT.i386 for linux-x86\nQuake3-UrT.x86_64 for linux-amd64\nQuake3-UrT.app for macOS", nil)
     binpath_hbox := gtk.NewHBox(false, 0)
-    binpath_label := gtk.NewLabel("Urban Terror binary:")
+    binpath_label := gtk.NewLabel(ctx.Translator.Translate("Urban Terror binary:", nil))
     binpath_label.SetTooltipText(select_binary_tooltip)
     binpath_label.SetAlignment(0, 0)
     op.table.Attach(binpath_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
 
     op.binary_path = gtk.NewEntry()
     op.binary_path.SetTooltipText(select_binary_tooltip)
-    button_select_binary := gtk.NewButtonWithLabel("Browse")
+    button_select_binary := gtk.NewButtonWithLabel(ctx.Translator.Translate("Browse", nil))
     button_select_binary.SetTooltipText(select_binary_tooltip)
     button_select_binary.Clicked(op.browseForBinary)
     binpath_hbox.PackStart(op.binary_path, true, true, 5)
@@ -196,8 +196,8 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.table.Attach(binpath_hbox, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 0, 0)
 
     // Should we use additional X session?
-    another_x_tooltip := "If this is checked, Urban Terror will be launched in another X session.\n\nThis could help if you're experiencing visual lag, glitches and FPS drops under compositing WMs, like Mutter and KWin."
-    another_x_label := gtk.NewLabel("Start Urban Terror in another X session?")
+    another_x_tooltip := ctx.Translator.Translate("If this is checked, Urban Terror will be launched in another X session.\n\nThis could help if you're experiencing visual lag, glitches and FPS drops under compositing WMs, like Mutter and KWin.", nil)
+    another_x_label := gtk.NewLabel(ctx.Translator.Translate("Start Urban Terror in another X session?", nil))
     another_x_label.SetTooltipText(another_x_tooltip)
     another_x_label.SetAlignment(0, 0)
     op.table.Attach(another_x_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -210,8 +210,8 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.table.Attach(op.another_x_session, 1, 2, 3, 4, gtk.FILL, gtk.FILL, 5, 5)
 
     // Additional game parameters.
-    params_tooltip := "Additional parameters that will be passed to Urban Terror executable."
-    params_label := gtk.NewLabel("Additional parameters:")
+    params_tooltip := ctx.Translator.Translate("Additional parameters that will be passed to Urban Terror executable.", nil)
+    params_label := gtk.NewLabel(ctx.Translator.Translate("Additional parameters:", nil))
     params_label.SetTooltipText(params_tooltip)
     params_label.SetAlignment(0, 0)
     op.table.Attach(params_label, 0, 1, 4, 5, gtk.FILL, gtk.SHRINK, 5, 5)
@@ -228,8 +228,8 @@ func (op *OptionsProfile) Initialize(update bool) {
     buttons_box := gtk.NewHBox(false, 0)
     buttons_sep := gtk.NewHBox(false, 0)
 
-    cancel_button := gtk.NewButtonWithLabel("Cancel")
-    cancel_button.SetTooltipText("Close without saving")
+    cancel_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("Cancel", nil))
+    cancel_button.SetTooltipText(ctx.Translator.Translate("Close without saving", nil))
     cancel_button.Clicked(op.closeByCancel)
     buttons_box.PackStart(cancel_button, false, true, 5)
 
@@ -237,11 +237,11 @@ func (op *OptionsProfile) Initialize(update bool) {
 
     add_button := gtk.NewButton()
     if op.update {
-        add_button.SetLabel("Update")
-        add_button.SetTooltipText("Update profile")
+        add_button.SetLabel(ctx.Translator.Translate("Update", nil))
+        add_button.SetTooltipText(ctx.Translator.Translate("Update profile", nil))
     } else {
-        add_button.SetLabel("Add")
-        add_button.SetTooltipText("Add profile")
+        add_button.SetLabel(ctx.Translator.Translate("Add", nil))
+        add_button.SetTooltipText(ctx.Translator.Translate("Add profile", nil))
     }
     add_button.Clicked(op.saveProfile)
     buttons_box.PackStart(add_button, false, true, 5)
@@ -288,7 +288,7 @@ func (op *OptionsProfile) saveProfile() {
     // Validating fields.
     // Profile name must not be empty.
     if len(op.profile_name.GetText()) < 1 {
-        mbox_string := "Empty profile name!\nProfile must be named somehow."
+        mbox_string := ctx.Translator.Translate("Empty profile name!\nProfile must be named somehow.", nil)
         m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
         m.Response(func() {
             m.Destroy()
@@ -297,7 +297,7 @@ func (op *OptionsProfile) saveProfile() {
     }
     // Binary path must also be filled.
     if len(op.binary_path.GetText()) < 1 {
-        mbox_string := "Empty path to binary!\nThis profile will be unusable if you\nwill not provide path to binary!"
+        mbox_string := ctx.Translator.Translate("Empty path to binary!\nThis profile will be unusable if you\nwill not provide path to binary!", nil)
         m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
         m.Response(func() {
             m.Destroy()
@@ -307,7 +307,7 @@ func (op *OptionsProfile) saveProfile() {
     // ...and must be executable! :)
     _, err := os.Stat(op.binary_path.GetText())
     if err != nil {
-        mbox_string := "Invalid path to binary!\n\nError was:\n" + err.Error() + "\n\nCheck binary path and try again."
+        mbox_string := ctx.Translator.Translate("Invalid path to binary!\n\nError was:\n", nil) + err.Error() + ctx.Translator.Translate("\n\nCheck binary path and try again.", nil)
         m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
         m.Response(func() {
             m.Destroy()
@@ -320,7 +320,7 @@ func (op *OptionsProfile) saveProfile() {
 
         _, ok := ctx.Cache.Profiles[profile_name]
         if ok && !op.update {
-            mbox_string := "Game profile with same name already exist.\nRename profile for saving."
+            mbox_string := ctx.Translator.Translate("Game profile with same name already exist.\nRename profile for saving.", nil)
             m := gtk.NewMessageDialog(op.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
                 m.Destroy()

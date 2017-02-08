@@ -24,6 +24,7 @@ import (
     "github.com/pztrn/urtrator/launcher"
     "github.com/pztrn/urtrator/requester"
     "github.com/pztrn/urtrator/timer"
+    "github.com/pztrn/urtrator/translator"
 
     // Github
     "github.com/mattn/go-gtk/gtk"
@@ -48,6 +49,8 @@ type Context struct {
     Requester *requester.Requester
     // Timer.
     Timer *timer.Timer
+    // Translator.
+    Translator *translator.Translator
 }
 
 func (ctx *Context) Close() error {
@@ -112,8 +115,14 @@ func (ctx *Context) initializeTimer() {
     ctx.Timer.Initialize()
 }
 
+func (ctx *Context) initializeTranslator() {
+    ctx.Translator = translator.New()
+    ctx.Translator.Initialize()
+}
+
 func (ctx *Context) Initialize() {
     fmt.Println("Initializing application context...")
+    ctx.initializeTranslator()
     ctx.initializeColorizer()
     ctx.initializeConfig()
     ctx.initializeDatabase()

@@ -161,7 +161,7 @@ func (m *MainWindow) addToFavorites() {
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
 
     server_address := ""
-    if !strings.Contains(current_tab, "Favorites") {
+    if !strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         server_address = m.getIpFromServersList(current_tab)
     }
 
@@ -271,14 +271,14 @@ func (m *MainWindow) deleteFromFavorites() {
         // Temporary disable all these modals on Linux.
         // See https://github.com/mattn/go-gtk/issues/289.
         if runtime.GOOS != "linux" {
-            mbox_string := "Cannot delete server from favorites.\n\nServer isn't favorited."
+            mbox_string := ctx.Translator.Translate("Cannot delete server from favorites.\n\nServer isn't favorited.", nil)
             d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, mbox_string)
             d.Response(func() {
                 d.Destroy()
             })
             d.Run()
         } else {
-            ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Server isn't favorited</span></markup>"})
+            ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Server isn't favorited", nil) + "</span></markup>"})
         }
     }
 
@@ -293,7 +293,7 @@ func (m *MainWindow) dropDatabasesData() {
     // Temporary disable all these modals on Linux.
     // See https://github.com/mattn/go-gtk/issues/289.
     if runtime.GOOS != "linux" {
-        mbox_string := "You are about to drop whole database data.\n\nAfter clicking \"YES\" ALL data in database (servers, profiles, settings, etc.)\nwill be lost FOREVER. Are you sure?"
+        mbox_string := ctx.Translator.Translate("You are about to drop whole database data.\n\nAfter clicking \"YES\" ALL data in database (servers, profiles, settings, etc.)\nwill be lost FOREVER. Are you sure?", nil)
         d := gtk.NewMessageDialog(m.window, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, mbox_string)
         d.Connect("response", func(resp *glib.CallbackContext) {
             if resp.Args(0) == 4294967287 {
@@ -305,7 +305,7 @@ func (m *MainWindow) dropDatabasesData() {
         })
         d.Run()
     } else {
-        ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Remove ~/.config/urtrator/database.sqlite3 manually!</span></markup>"})
+        ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Remove ~/.config/urtrator/database.sqlite3 manually!", nil) + "</span></markup>"})
     }
 
     if will_continue {
@@ -423,7 +423,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
 
         // Hide servers that using different version than selected in
         // filter?
-        if m.all_servers_version.GetActiveText() != "All versions" && m.all_servers_version.GetActiveText() != server.Server.Version {
+        if m.all_servers_version.GetActiveText() != ctx.Translator.Translate("All versions", nil) && m.all_servers_version.GetActiveText() != server.Server.Version {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -434,7 +434,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
         // Hide servers that using different gamemode than selected in
         // filter?
         gm_int_as_str := strconv.Itoa(m.all_servers_gamemode.GetActive())
-        if m.all_servers_gamemode.GetActiveText() != "All gamemodes" && gm_int_as_str != server.Server.Gamemode {
+        if m.all_servers_gamemode.GetActiveText() != ctx.Translator.Translate("All gamemodes", nil) && gm_int_as_str != server.Server.Gamemode {
             if server.AllServersIterInList && server.AllServersIterSet {
                 m.all_servers_store.Remove(iter)
                 server.AllServersIterInList = false
@@ -449,7 +449,7 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
 
         if server.Server.Name == "" && server.Server.Players == "" {
             m.all_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("IP", nil)], server.Server.Ip + ":" + server.Server.Port)
         } else {
             if ping > 9000 {
                 m.all_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
@@ -462,13 +462,13 @@ func (m *MainWindow) loadAllServers(data map[string]string) {
                 m.all_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Name"], server_name)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Mode"], m.getGameModeName(server.Server.Gamemode))
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Map"], server.Server.Map)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Players"], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Ping"], server.Server.Ping)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["Version"], server.Server.Version)
-            m.all_servers_store.SetValue(iter, m.column_pos["Servers"]["IP"], server.Server.Ip + ":" + server.Server.Port)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Name", nil)], server_name)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Mode", nil)], m.getGameModeName(server.Server.Gamemode))
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Map", nil)], server.Server.Map)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Players", nil)], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Ping", nil)], server.Server.Ping)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("Version", nil)], server.Server.Version)
+            m.all_servers_store.SetValue(iter, m.column_pos["Servers"][ctx.Translator.Translate("IP", nil)], server.Server.Ip + ":" + server.Server.Port)
         }
     }
 }
@@ -506,7 +506,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
 
         // Hide servers that using different version than selected in
         // filter?
-        if m.fav_servers_version.GetActiveText() != "All versions" && m.fav_servers_version.GetActiveText() != server.Server.Version {
+        if m.fav_servers_version.GetActiveText() != ctx.Translator.Translate("All versions", nil) && m.fav_servers_version.GetActiveText() != server.Server.Version {
             if server.FavServersIterInList && server.FavServersIterSet {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false
@@ -517,7 +517,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
         // Hide servers that using different gamemode than selected in
         // filter?
         gm_int_as_str := strconv.Itoa(m.fav_servers_gamemode.GetActive())
-        if m.fav_servers_gamemode.GetActiveText() != "All gamemodes" && gm_int_as_str != server.Server.Gamemode {
+        if m.fav_servers_gamemode.GetActiveText() != ctx.Translator.Translate("All gamemodes", nil) && gm_int_as_str != server.Server.Gamemode {
             if server.FavServersIterInList && server.FavServersIterSet {
                 m.fav_servers_store.Remove(iter)
                 server.FavServersIterInList = false
@@ -545,7 +545,7 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
 
         if server.Server.Name == "" && server.Server.Players == "" {
             m.fav_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("IP", nil)], server.Server.Ip + ":" + server.Server.Port)
         } else {
             if ping > 9000 {
                 m.fav_servers_store.SetValue(iter, 0, m.server_offline_pic.GPixbuf)
@@ -558,13 +558,13 @@ func (m *MainWindow) loadFavoriteServers(data map[string]string) {
                 m.fav_servers_store.SetValue(iter, 1, m.server_public_pic.GPixbuf)
             }
             server_name := ctx.Colorizer.Fix(server.Server.Name)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Name"], server_name)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Mode"], m.getGameModeName(server.Server.Gamemode))
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Map"], server.Server.Map)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Players"], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Ping"], server.Server.Ping)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["Version"], server.Server.Version)
-            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"]["IP"], server.Server.Ip + ":" + server.Server.Port)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Name", nil)], server_name)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Mode", nil)], m.getGameModeName(server.Server.Gamemode))
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Map", nil)], server.Server.Map)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Players", nil)], server.Server.Players + "/" + server.Server.Bots + "/" + server.Server.Maxplayers)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Ping", nil)], server.Server.Ping)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("Version", nil)], server.Server.Version)
+            m.fav_servers_store.SetValue(iter, m.column_pos["Favorites"][ctx.Translator.Translate("IP", nil)], server.Server.Ip + ":" + server.Server.Port)
         }
     }
 }
@@ -597,23 +597,23 @@ func (m *MainWindow) tabChanged() {
     fmt.Println(current_tab)
 
     m.use_other_servers_tab = true
-    if strings.Contains(current_tab, "Servers") {
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
         m.fav_servers.Emit("cursor-changed")
-    } else if strings.Contains(current_tab, "Favorites") {
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         m.all_servers.Emit("cursor-changed")
     }
     m.use_other_servers_tab = false
 }
 
 func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "Servers updated."})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": ctx.Translator.Translate("Servers updated.", nil)})
     // Trigger "selection-changed" events on currently active tab's
     // servers list.
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
 
-    if strings.Contains(current_tab, "Servers") {
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
         m.all_servers.Emit("cursor-changed")
-    } else if strings.Contains(current_tab, "Favorites") {
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         m.fav_servers.Emit("cursor-changed")
     }
 
@@ -650,9 +650,9 @@ func (m *MainWindow) showHide() {
 func (m *MainWindow) showServerCVars() {
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     if m.use_other_servers_tab {
-        if strings.Contains(current_tab, "Servers") {
+        if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
             current_tab = "Favorites"
-        } else if strings.Contains(current_tab, "Favorites") {
+        } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
             current_tab = "Servers"
         }
     }
@@ -668,9 +668,9 @@ func (m *MainWindow) showShortServerInformation() {
     m.players_info_store.Clear()
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     if m.use_other_servers_tab {
-        if strings.Contains(current_tab, "Servers") {
+        if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
             current_tab = "Favorites"
-        } else if strings.Contains(current_tab, "Favorites") {
+        } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
             current_tab = "Servers"
         }
     }
@@ -687,49 +687,49 @@ func (m *MainWindow) showShortServerInformation() {
         // Server's name.
         iter := new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Server's name")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Server's name", nil))
         m.server_info_store.SetValue(iter, 1, ctx.Colorizer.Fix(parsed_general_data["sv_hostname"]))
         delete(parsed_general_data, "sv_hostname")
 
         // Game version.
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Game version")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Game version", nil))
         m.server_info_store.SetValue(iter, 1, parsed_general_data["g_modversion"])
         delete(parsed_general_data, "g_modversion")
 
         // Players.
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Players")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Players", nil))
         m.server_info_store.SetValue(iter, 1, server_info.Players + " of " + parsed_general_data["sv_maxclients"] + " (" + server_info.Bots + " bots)")
         delete(parsed_general_data, "sv_maxclients")
 
         // Ping
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Ping")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Ping", nil))
         m.server_info_store.SetValue(iter, 1, server_info.Ping + " ms")
 
         // Game mode
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Game mode")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Game mode", nil))
         m.server_info_store.SetValue(iter, 1, m.gamemodes[server_info.Gamemode])
 
         // Map name
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Current map")
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Current map", nil))
         m.server_info_store.SetValue(iter, 1, server_info.Map)
 
         // Private or public?
         iter = new(gtk.TreeIter)
         m.server_info_store.Append(iter)
-        m.server_info_store.SetValue(iter, 0, "Passworded")
-        passworded_status := "<markup><span foreground=\"green\">No</span></markup>"
+        m.server_info_store.SetValue(iter, 0, ctx.Translator.Translate("Passworded", nil))
+        passworded_status := "<markup><span foreground=\"green\">" + ctx.Translator.Translate("No", nil) + "</span></markup>"
         if server_info.IsPrivate == "1" {
-            passworded_status = "<markup><span foreground=\"red\">Yes</span></markup>"
+            passworded_status = "<markup><span foreground=\"red\">" + ctx.Translator.Translate("Yes", nil) + "</span></markup>"
         }
         m.server_info_store.SetValue(iter, 1, passworded_status)
 
@@ -788,11 +788,11 @@ func (m *MainWindow) showTrayMenu(cbx *glib.CallbackContext) {
 // Unlocking interface after game shut down.
 func (m *MainWindow) unlockInterface() {
     m.launch_button.SetSensitive(true)
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": ctx.Translator.Translate("URTrator is ready.", nil)})
 }
 
 func (m *MainWindow) updateOneServer() {
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating selected server...</span></markup>"})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Updating selected server...", nil) + "</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     srv_address := m.getIpFromServersList(current_tab)
 
@@ -803,19 +803,19 @@ func (m *MainWindow) updateOneServer() {
 
 // Triggered when "Update all servers" button is clicked.
 func (m *MainWindow) UpdateServers() {
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>"})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Updating servers...", nil) + "</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     fmt.Println("Updating servers on tab '" + current_tab + "'...")
 
-    if strings.Contains(current_tab, "Servers") {
+    if strings.Contains(current_tab, ctx.Translator.Translate("Servers", nil)) {
         go ctx.Requester.UpdateAllServers(false)
-    } else if strings.Contains(current_tab, "Favorites") {
+    } else if strings.Contains(current_tab, ctx.Translator.Translate("Favorites", nil)) {
         go ctx.Requester.UpdateFavoriteServers()
     }
 }
 
 func (m *MainWindow) UpdateServersEventHandler(data map[string]string) {
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">Updating servers...</span></markup>"})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Updating servers...", nil) + "</span></markup>"})
 
     go ctx.Requester.UpdateAllServers(true)
 }
