@@ -90,6 +90,7 @@ func (t *Translator) Initialize() {
 // Load translations into memory.
 func (t *Translator) loadTranslations() {
     fmt.Println("Loading translations for language " + t.Language)
+    fmt.Println("Translations directory: " + t.translationsPath)
 
     t.translations[t.Language] = make(map[string]string)
 
