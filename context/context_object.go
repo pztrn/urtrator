@@ -116,16 +116,16 @@ func (ctx *Context) initializeTimer() {
 }
 
 func (ctx *Context) initializeTranslator() {
-    ctx.Translator = translator.New()
+    ctx.Translator = translator.New(ctx.Cfg)
     ctx.Translator.Initialize()
 }
 
 func (ctx *Context) Initialize() {
     fmt.Println("Initializing application context...")
-    ctx.initializeTranslator()
     ctx.initializeColorizer()
     ctx.initializeConfig()
     ctx.initializeDatabase()
+    ctx.initializeTranslator()
     ctx.initializeEventer()
     ctx.initializeCache()
     ctx.initializeLauncher()

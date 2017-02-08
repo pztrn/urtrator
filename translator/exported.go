@@ -9,7 +9,18 @@
 // ToDo: put full text of license here.
 package translator
 
-func New() *Translator {
+import (
+    // local
+    "github.com/pztrn/urtrator/configuration"
+)
+
+var (
+    // Configuration.
+    cfg *configuration.Config
+)
+
+func New(c *configuration.Config) *Translator {
+    cfg = c
     t := Translator{}
     return &t
 }

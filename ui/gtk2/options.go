@@ -36,6 +36,9 @@ type OptionsDialog struct {
     show_tray_icon *gtk.CheckButton
     // Enable autoupdate checkbutton.
     autoupdate *gtk.CheckButton
+    // Appearance tab.
+    // Language to use.
+    language_combo *gtk.ComboBoxText
     // Urban Terror tab.
     // Profiles list.
     profiles_list *gtk.TreeView
@@ -73,6 +76,7 @@ func (o *OptionsDialog) closeOptionsDialogWithSaving() {
     fmt.Println("Saving changes to options...")
 
     o.saveGeneral()
+    o.saveAppearance()
 
     // Temporary disable all these modals on Linux.
     // See https://github.com/mattn/go-gtk/issues/289.
@@ -167,9 +171,32 @@ func (o *OptionsDialog) fill() {
 func (o *OptionsDialog) initializeAppearanceTab() {
     appearance_vbox := gtk.NewVBox(false, 0)
 
-    l := gtk.NewLabel(ctx.Translator.Translate("There will be some appearance configuration options soon.", nil))
-    appearance_vbox.PackStart(l, false, true, 5)
+    appearance_table := gtk.NewTable(1, 2, false)
 
+    language_selection_tooltip := ctx.Translator.Translate("Language which URTrator will use.\n\nChanging this requires URTrator restart!", nil)
+
+    language_selection_label := gtk.NewLabel(ctx.Translator.Translate("Language:", nil))
+    language_selection_label.SetAlignment(0, 0)
+    language_selection_label.SetTooltipText(language_selection_tooltip)
+    appearance_table.Attach(language_selection_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    o.language_combo = gtk.NewComboBoxText()
+    o.language_combo.SetTooltipText(language_selection_tooltip)
+    // Get all available languages and fill combobox.
+    lang_idx := 0
+    var lang_active int = 0
+    for lang, _ := range ctx.Translator.AcceptedLanguages {
+        o.language_combo.AppendText(lang)
+        if ctx.Translator.AcceptedLanguages[lang] == ctx.Cfg.Cfg["/general/language"] {
+            lang_active = lang_idx
+        }
+        lang_idx += 1
+    }
+    o.language_combo.SetActive(lang_active)
+
+    appearance_table.Attach(o.language_combo, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
+
+    appearance_vbox.PackStart(appearance_table, false, true, 0)
     o.tab_widget.AppendPage(appearance_vbox, gtk.NewLabel(ctx.Translator.Translate("Appearance", nil)))
 }
 
@@ -342,6 +369,10 @@ func (o *OptionsDialog) loadProfiles(data map[string]string) {
         o.profiles_list_store.Set(&iter, 0, p.Profile.Name)
         o.profiles_list_store.Set(&iter, 1, p.Profile.Version)
     }
+}
+
+func (o *OptionsDialog) saveAppearance() {
+    ctx.Cfg.Cfg["/general/language"] = ctx.Translator.AcceptedLanguages[o.language_combo.GetActiveText()]
 }
 
 func (o *OptionsDialog) saveGeneral() {

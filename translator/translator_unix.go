@@ -73,17 +73,12 @@ func (t *Translator) detectTranslationsDirectory() error {
         if err != nil {
             t.Language = "en_US"
             fmt.Println("Translations unavailable, forcing en_US language code")
+            return errors.New("No translations directory was detected!")
         } else {
             t.translationsPath = "/usr/share/urtrator/translations"
         }
     } else {
         t.translationsPath = translations_dir
-    }
-
-    if t.translationsPath != "" {
-        t.translationsPath = filepath.Join(t.translationsPath, t.Language)
-    } else {
-        return errors.New("No translations directory was detected!")
     }
 
     return nil

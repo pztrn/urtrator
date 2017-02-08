@@ -23,6 +23,8 @@ import (
 )
 
 type Translator struct {
+    // Accepted languages.
+    AcceptedLanguages map[string]string
     // Currently active language.
     Language string
     // Translations.
@@ -59,6 +61,13 @@ func (t *Translator) formatFromMap(data string, params map[string]string) string
 func (t *Translator) Initialize() {
     fmt.Println("Initializing translations...")
 
+    t.AcceptedLanguages = map[string]string{
+        "System's default language": "default",
+        "English": "en_US",
+        "French": "fr_FR",
+        "Russian": "ru_RU",
+    }
+
     // Initialize storages.
     t.translations = make(map[string]map[string]string)
     t.translationsPath = ""
@@ -85,11 +94,20 @@ func (t *Translator) loadTranslations() {
     t.translations[t.Language] = make(map[string]string)
 
     if t.translationsPath != "" {
-        files_list, _ := ioutil.ReadDir(t.translationsPath)
+        // Check if language was selected in options dialog. In that
+        // case it will overwrite autodetected language.
+        var translationsDir string = ""
+        if cfg.Cfg["/general/language"] != "" {
+            translationsDir = filepath.Join(t.translationsPath, cfg.Cfg["/general/language"])
+            t.Language = cfg.Cfg["/general/language"]
+        } else {
+            translationsDir = filepath.Join(t.translationsPath, t.Language)
+        }
+        files_list, _ := ioutil.ReadDir(translationsDir)
         if len(files_list) > 0 {
             for i := range files_list {
                 // Read file.
-                file_path := filepath.Join(t.translationsPath, files_list[i].Name())
+                file_path := filepath.Join(translationsDir, files_list[i].Name())
                 file_data, _ := ioutil.ReadFile(file_path)
                 var trans map[string]string
                 json.Unmarshal(file_data, &trans)
