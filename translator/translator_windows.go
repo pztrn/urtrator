@@ -37,7 +37,8 @@ func (t *Translator) detectLanguage() {
 func (t *Translator) detectTranslationsDirectory() error {
     // Translations MUST reside in directory neear binary!
     // ToDo: more checks.
-    t.translationsPath, _ = filepath.join(filepath.Abs(filepath.Dir(os.Args[0])), "translations")
+    dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+    t.translationsPath = filepath.join(dir, "translations")
 
     return nil
 }
