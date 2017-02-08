@@ -109,9 +109,9 @@ func (f *FavoriteDialog) InitializeUpdate(server *datamodels.Server) {
 func (f *FavoriteDialog) initializeWindow() {
     f.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
     if f.update {
-        f.window.SetTitle("URTrator - Updating favorite server")
+        f.window.SetTitle(ctx.Translator.Translate("URTrator - {{ action }} favorite server", map[string]string{"action": "Update"}))
     } else {
-        f.window.SetTitle("URTrator - New favorite server")
+        f.window.SetTitle(ctx.Translator.Translate("URTrator - {{ action }} favorite server", map[string]string{"action": "Add"}))
     }
     f.window.Connect("destroy", f.Close)
     f.window.SetPosition(gtk.WIN_POS_CENTER)
@@ -137,7 +137,7 @@ func (f *FavoriteDialog) initializeWindow() {
     f.vbox.PackStart(table, true, true, 5)
 
     // Server name.
-    srv_name_label := gtk.NewLabel("Server name:")
+    srv_name_label := gtk.NewLabel(ctx.Translator.Translate("Server name:", nil))
     srv_name_label.SetAlignment(0, 0)
     table.Attach(srv_name_label, 0, 1, 0, 1, gtk.FILL, gtk.SHRINK, 5, 5)
 
@@ -145,7 +145,7 @@ func (f *FavoriteDialog) initializeWindow() {
     table.Attach(f.server_name, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
 
     // Server address.
-    srv_addr_label := gtk.NewLabel("Server address:")
+    srv_addr_label := gtk.NewLabel(ctx.Translator.Translate("Server address:", nil))
     srv_addr_label.SetAlignment(0, 0)
     table.Attach(srv_addr_label, 0, 1, 1, 2, gtk.FILL, gtk.SHRINK, 5, 5)
 
@@ -153,7 +153,7 @@ func (f *FavoriteDialog) initializeWindow() {
     f.server_address = gtk.NewEntry()
     srv_addr_hbox.PackStart(f.server_address, true, true, 0)
     srv_addr_update_btn := gtk.NewButton()
-    srv_addr_update_btn.SetTooltipText("Update server information")
+    srv_addr_update_btn.SetTooltipText(ctx.Translator.Translate("Update server information", nil))
     srv_addr_update_btn_image := gtk.NewImageFromStock(gtk.STOCK_REDO, gtk.ICON_SIZE_SMALL_TOOLBAR)
     srv_addr_update_btn.SetImage(srv_addr_update_btn_image)
     srv_addr_update_btn.Clicked(f.updateServerInfo)
@@ -164,7 +164,7 @@ func (f *FavoriteDialog) initializeWindow() {
     table.Attach(srv_addr_hbox, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
     // Server password.
-    srv_pass_label := gtk.NewLabel("Password:")
+    srv_pass_label := gtk.NewLabel(ctx.Translator.Translate("Password:", nil))
     srv_pass_label.SetAlignment(0, 0)
     table.Attach(srv_pass_label, 0, 1, 2, 3, gtk.FILL, gtk.SHRINK, 5, 5)
 
@@ -172,7 +172,7 @@ func (f *FavoriteDialog) initializeWindow() {
     table.Attach(f.server_password, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 5, 5)
 
     // Profile to use.
-    profile_label := gtk.NewLabel("Profile:")
+    profile_label := gtk.NewLabel(ctx.Translator.Translate("Profile:", nil))
     profile_label.SetAlignment(0, 0)
     table.Attach(profile_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
 
@@ -190,11 +190,11 @@ func (f *FavoriteDialog) initializeWindow() {
     sep := gtk.NewHSeparator()
     buttons_hbox.PackStart(sep, true, true, 5)
     // OK-Cancel buttons.
-    cancel_button := gtk.NewButtonWithLabel("Cancel")
+    cancel_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("Cancel", nil))
     cancel_button.Clicked(f.closeByCancel)
     buttons_hbox.PackStart(cancel_button, false, true, 5)
 
-    ok_button := gtk.NewButtonWithLabel("OK")
+    ok_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("OK", nil))
     ok_button.Clicked(f.saveFavorite)
     buttons_hbox.PackStart(ok_button, false, true, 5)
 
@@ -213,7 +213,7 @@ func (f *FavoriteDialog) saveFavorite() error {
         // Temporary disable all these modals on Linux.
         // See https://github.com/mattn/go-gtk/issues/289.
         if runtime.GOOS != "linux" {
-            mbox_string := "Server address is empty.\n\nServers without address cannot be added."
+            mbox_string := ctx.Translator.Translate("Server address is empty.\n\nServers without address cannot be added.", nil)
             m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
                 m.Destroy()
@@ -236,7 +236,7 @@ func (f *FavoriteDialog) saveFavorite() error {
         // Temporary disable all these modals on Linux.
         // See https://github.com/mattn/go-gtk/issues/289.
         if runtime.GOOS != "linux" {
-            mbox_string := "Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab."
+            mbox_string := ctx.Translator.Translate("Profile wasn't selected.\n\nPlease, select valid profile for this server.\nIf you haven't add profiles yet - you can do it\nin options on \"Urban Terror\" tab.", nil)
             m := gtk.NewMessageDialog(f.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, mbox_string)
             m.Response(func() {
                 m.Destroy()

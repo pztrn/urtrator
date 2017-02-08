@@ -63,7 +63,7 @@ func (scd *ServerCVarsDialog) Initialize(w *gtk.Window, srv_address string) {
     scd.initializeStorages()
 
     scd.window = gtk.NewWindow(gtk.WINDOW_TOPLEVEL)
-    scd.window.SetTitle("URTrator - Server CVars")
+    scd.window.SetTitle(ctx.Translator.Translate("URTrator - Server CVars", nil))
     scd.window.Connect("destroy", scd.Close)
     scd.window.SetTransientFor(w)
     scd.window.SetDefaultSize(300, 400)
@@ -80,8 +80,8 @@ func (scd *ServerCVarsDialog) Initialize(w *gtk.Window, srv_address string) {
     scd.treeview.SetModel(scd.treeview_store)
     si.Add(scd.treeview)
 
-    scd.treeview.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Key", gtk.NewCellRendererText(), "markup", 0))
-    scd.treeview.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Value", gtk.NewCellRendererText(), "markup", 1))
+    scd.treeview.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Key", nil), gtk.NewCellRendererText(), "markup", 0))
+    scd.treeview.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Value", nil), gtk.NewCellRendererText(), "markup", 1))
 
     // Close button.
     hbox := gtk.NewHBox(false, 0)
@@ -90,7 +90,7 @@ func (scd *ServerCVarsDialog) Initialize(w *gtk.Window, srv_address string) {
     sep := gtk.NewHBox(false, 0)
     hbox.PackStart(sep, true, true, 5)
 
-    close_button := gtk.NewButtonWithLabel("Close")
+    close_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("Close", nil))
     close_button.Clicked(scd.Close)
     hbox.PackStart(close_button, false, true, 5)
 

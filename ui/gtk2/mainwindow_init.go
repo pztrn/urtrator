@@ -137,9 +137,9 @@ func (m *MainWindow) Initialize() {
     profile_and_launch_hbox.PackStart(sep, true, true, 5)
 
     // Profile selection.
-    profiles_label := gtk.NewLabel("Game profile:")
+    profiles_label := gtk.NewLabel(ctx.Translator.Translate("Game profile:", nil))
     m.profiles = gtk.NewComboBoxText()
-    m.profiles.SetTooltipText("Profile which will be used for launching")
+    m.profiles.SetTooltipText(ctx.Translator.Translate("Profile which will be used for launching", nil))
 
     profile_and_launch_hbox.PackStart(profiles_label, false, true, 5)
     profile_and_launch_hbox.PackStart(m.profiles, false, true, 5)
@@ -149,8 +149,8 @@ func (m *MainWindow) Initialize() {
     profile_and_launch_hbox.PackStart(sepp, false, true, 5)
 
     // Game launching button.
-    m.launch_button = gtk.NewButtonWithLabel("Launch!")
-    m.launch_button.SetTooltipText("Launch Urban Terror")
+    m.launch_button = gtk.NewButtonWithLabel(ctx.Translator.Translate("Launch!", nil))
+    m.launch_button.SetTooltipText(ctx.Translator.Translate("Launch Urban Terror", nil))
     m.launch_button.Clicked(m.launchGame)
     launch_button_image := gtk.NewImageFromPixbuf(logo.ScaleSimple(24, 24, gdkpixbuf.INTERP_HYPER))
     m.launch_button.SetImage(launch_button_image)
@@ -171,7 +171,7 @@ func (m *MainWindow) Initialize() {
     ctx.Eventer.LaunchEvent("loadAllServers", map[string]string{})
     ctx.Eventer.LaunchEvent("loadFavoriteServers", map[string]string{})
     ctx.Eventer.LaunchEvent("initializeTasksForMainWindow", map[string]string{})
-    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "URTrator is ready."})
+    ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": ctx.Translator.Translate("URTrator is ready.", nil)})
 
     // Set flag that shows to other parts that we're initialized.
     m.initialized = true
@@ -198,13 +198,13 @@ func (m *MainWindow) InitializeMainMenu() {
     m.vbox.PackStart(m.menubar, false, false, 0)
 
     // File menu.
-    fm := gtk.NewMenuItemWithMnemonic("File")
+    fm := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("File", nil))
     m.menubar.Append(fm)
     file_menu := gtk.NewMenu()
     fm.SetSubmenu(file_menu)
 
     // Options.
-    options_menu_item := gtk.NewMenuItemWithMnemonic("_Options")
+    options_menu_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("_Options", nil))
     file_menu.Append(options_menu_item)
     options_menu_item.Connect("activate", m.options_dialog.ShowOptionsDialog)
 
@@ -213,18 +213,18 @@ func (m *MainWindow) InitializeMainMenu() {
     file_menu.Append(file_menu_sep1)
 
     // Exit.
-    exit_menu_item := gtk.NewMenuItemWithMnemonic("E_xit")
+    exit_menu_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("E_xit", nil))
     file_menu.Append(exit_menu_item)
     exit_menu_item.Connect("activate", m.Close)
 
     // About menu.
-    am := gtk.NewMenuItemWithMnemonic("_About")
+    am := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("_?", nil))
     m.menubar.Append(am)
     about_menu := gtk.NewMenu()
     am.SetSubmenu(about_menu)
 
     // About app item.
-    about_app_item := gtk.NewMenuItemWithMnemonic("About _URTrator...")
+    about_app_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("About _URTrator...", nil))
     about_menu.Append(about_app_item)
     about_app_item.Connect("activate", ShowAboutDialog)
 
@@ -233,7 +233,7 @@ func (m *MainWindow) InitializeMainMenu() {
     about_menu.Append(about_menu_sep1)
 
     // Drop databases thing.
-    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic("Drop database data...")
+    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("Drop database data...", nil))
     about_menu.Append(about_menu_drop_database_data_item)
     about_menu_drop_database_data_item.Connect("activate", m.dropDatabasesData)
 }
@@ -242,7 +242,7 @@ func (m *MainWindow) InitializeMainMenu() {
 func (m *MainWindow) initializeSidebar() {
     sidebar_vbox := gtk.NewVBox(false, 0)
 
-    server_info_frame := gtk.NewFrame("Server information")
+    server_info_frame := gtk.NewFrame(ctx.Translator.Translate("Server information", nil))
     sidebar_vbox.PackStart(server_info_frame, true, true, 5)
     si_vbox := gtk.NewVBox(false, 0)
     server_info_frame.Add(si_vbox)
@@ -256,16 +256,16 @@ func (m *MainWindow) initializeSidebar() {
     m.server_info = gtk.NewTreeView()
     m.server_info.SetModel(m.server_info_store)
 
-    key_column := gtk.NewTreeViewColumnWithAttributes("Key", gtk.NewCellRendererText(), "markup", 0)
+    key_column := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Key", nil), gtk.NewCellRendererText(), "markup", 0)
     m.server_info.AppendColumn(key_column)
 
-    value_column := gtk.NewTreeViewColumnWithAttributes("Value", gtk.NewCellRendererText(), "markup", 1)
+    value_column := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Value", nil), gtk.NewCellRendererText(), "markup", 1)
     m.server_info.AppendColumn(value_column)
 
     si_scroll.Add(m.server_info)
 
     // Players information.
-    players_info_frame := gtk.NewFrame("Players")
+    players_info_frame := gtk.NewFrame(ctx.Translator.Translate("Players", nil))
     sidebar_vbox.PackStart(players_info_frame, true, true, 5)
 
     pi_scroll := gtk.NewScrolledWindow(nil, nil)
@@ -276,30 +276,30 @@ func (m *MainWindow) initializeSidebar() {
     m.players_info.SetModel(m.players_info_store)
     pi_scroll.Add(m.players_info)
 
-    name_column := gtk.NewTreeViewColumnWithAttributes("Player name", gtk.NewCellRendererText(), "markup", 0)
+    name_column := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Player name", nil), gtk.NewCellRendererText(), "markup", 0)
     m.players_info.AppendColumn(name_column)
 
-    frags_column := gtk.NewTreeViewColumnWithAttributes("Frags", gtk.NewCellRendererText(), "markup", 1)
+    frags_column := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Frags", nil), gtk.NewCellRendererText(), "markup", 1)
     m.players_info.AppendColumn(frags_column)
 
-    ping_column := gtk.NewTreeViewColumnWithAttributes("Ping", gtk.NewCellRendererText(), "markup", 2)
+    ping_column := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Ping", nil), gtk.NewCellRendererText(), "markup", 2)
     m.players_info.AppendColumn(ping_column)
 
     // Show CVars button.
-    show_cvars_button := gtk.NewButtonWithLabel("Show CVars")
-    show_cvars_button.SetTooltipText("Show server's CVars")
+    show_cvars_button := gtk.NewButtonWithLabel(ctx.Translator.Translate("Show CVars", nil))
+    show_cvars_button.SetTooltipText(ctx.Translator.Translate("Show server's CVars", nil))
     show_cvars_button.Clicked(m.showServerCVars)
     sidebar_vbox.PackStart(show_cvars_button, false, true, 5)
 
     // Quick connect frame.
-    quick_connect_frame := gtk.NewFrame("Quick connect")
+    quick_connect_frame := gtk.NewFrame(ctx.Translator.Translate("Quick connect", nil))
     sidebar_vbox.PackStart(quick_connect_frame, false, true, 5)
     qc_vbox := gtk.NewVBox(false, 0)
     quick_connect_frame.Add(qc_vbox)
 
     // Server address.
-    srv_tooltip := "Server address we will connect to"
-    srv_label := gtk.NewLabel("Server address:")
+    srv_tooltip := ctx.Translator.Translate("Server address we will connect to", nil)
+    srv_label := gtk.NewLabel(ctx.Translator.Translate("Server address:", nil))
     srv_label.SetTooltipText(srv_tooltip)
     qc_vbox.PackStart(srv_label, false, true, 5)
 
@@ -308,8 +308,8 @@ func (m *MainWindow) initializeSidebar() {
     qc_vbox.PackStart(m.qc_server_address, false, true, 5)
 
     // Password.
-    pass_tooltip := "Password we will use for server"
-    pass_label := gtk.NewLabel("Password:")
+    pass_tooltip := ctx.Translator.Translate("Password we will use for server", nil)
+    pass_label := gtk.NewLabel(ctx.Translator.Translate("Password:", nil))
     pass_label.SetTooltipText(pass_tooltip)
     qc_vbox.PackStart(pass_label, false, true, 5)
 
@@ -318,8 +318,8 @@ func (m *MainWindow) initializeSidebar() {
     qc_vbox.PackStart(m.qc_password, false, true, 5)
 
     // Nickname
-    nick_tooltip := "Nickname we will use"
-    nick_label := gtk.NewLabel("Nickname:")
+    nick_tooltip := ctx.Translator.Translate("Nickname we will use", nil)
+    nick_label := gtk.NewLabel(ctx.Translator.Translate("Nickname:", nil))
     nick_label.SetTooltipText(nick_tooltip)
     qc_vbox.PackStart(nick_label, false, true, 5)
 
@@ -355,13 +355,13 @@ func (m *MainWindow) initializeStorages() {
     // Columns names.
     // Key - default position in lists.
     m.column_names = map[string]string{
-        "2": "Name",
-        "3": "Mode",
-        "4": "Map",
-        "5": "Players",
-        "6": "Ping",
-        "7": "Version",
-        "8": "IP",
+        "2": ctx.Translator.Translate("Name", nil),
+        "3": ctx.Translator.Translate("Mode", nil),
+        "4": ctx.Translator.Translate("Map", nil),
+        "5": ctx.Translator.Translate("Players", nil),
+        "6": ctx.Translator.Translate("Ping", nil),
+        "7": ctx.Translator.Translate("Version", nil),
+        "8": ctx.Translator.Translate("IP", nil),
     }
     // Real columns positions.
     m.column_pos = make(map[string]map[string]int)
@@ -420,7 +420,6 @@ func (m *MainWindow) initializeStorages() {
     srv_public_pixbuf.SetSize(24, 24)
     srv_public_pixbuf.Write(srv_public_bytes)
     m.server_public_pic = srv_public_pixbuf.GetPixbuf()
-    fmt.Println(srv_public_pixbuf.GetFormat().GetName())
 }
 
 // Tabs widget initialization, including all child widgets.
@@ -435,12 +434,12 @@ func (m *MainWindow) InitializeTabs() {
     m.all_servers = gtk.NewTreeView()
     swin1.Add(m.all_servers)
     tab_allsrv_hbox.PackStart(swin1, true, true, 5)
-    m.tab_widget.AppendPage(tab_allsrv_hbox, gtk.NewLabel("Servers"))
+    m.tab_widget.AppendPage(tab_allsrv_hbox, gtk.NewLabel(ctx.Translator.Translate("Servers", nil)))
 
     m.all_servers.SetModel(m.all_servers_store)
     // These columns are static.
-    m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-    m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
+    m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Status", nil), gtk.NewCellRendererPixbuf(), "pixbuf", 0))
+    m.all_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Public", nil), gtk.NewCellRendererPixbuf(), "pixbuf", 1))
 
     // ...aand lets do dynamic generation :)
     // +2 because we have 2 static columns.
@@ -449,19 +448,19 @@ func (m *MainWindow) InitializeTabs() {
         // Check if we have column position saved. If so - use it.
         // Otherwise use default position.
         // Should be actual only for first launch.
-        position := ctx.Cfg.Cfg["/mainwindow/all_servers/" + name + "_position"]
+        position := ctx.Cfg.Cfg["/mainwindow/all_servers/" + ctx.Translator.Translate(name, nil) + "_position"]
         if len(position) == 0 {
             position = pos
         }
         position_int, _ := strconv.Atoi(position)
         // Same for width.
-        width := ctx.Cfg.Cfg["/mainwindow/all_servers/" + name + "_width"]
+        width := ctx.Cfg.Cfg["/mainwindow/all_servers/" + ctx.Translator.Translate(name, nil) + "_width"]
         if len(width) == 0 {
             width = "-1"
         }
         width_int, _ := strconv.Atoi(width)
 
-        col := gtk.NewTreeViewColumnWithAttributes(name, gtk.NewCellRendererText(), "markup", position_int)
+        col := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate(name, nil), gtk.NewCellRendererText(), "markup", position_int)
         col.SetSortColumnId(position_int)
         col.SetReorderable(true)
         col.SetResizable(true)
@@ -483,14 +482,12 @@ func (m *MainWindow) InitializeTabs() {
 
     // Sorting.
     // By default we are sorting by server name.
-    m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"]["Name"], gtk.SORT_ASCENDING)
+    m.all_servers_store_sortable.SetSortColumnId(m.column_pos["Servers"][ctx.Translator.Translate("Name", nil)], gtk.SORT_ASCENDING)
 
     // Sorting functions.
-    // Race conditions and GC crazyness appears when activated, so for
-    // now commenting it out.
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Name"], m.sortServersByName)
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Players"], m.sortServersByPlayers)
-    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"]["Ping"], m.sortServersByPing)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"][ctx.Translator.Translate("Name", nil)], m.sortServersByName)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"][ctx.Translator.Translate("Players", nil)], m.sortServersByPlayers)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Servers"][ctx.Translator.Translate("Ping", nil)], m.sortServersByPing)
 
     // Selection changed signal, which will update server's short info pane.
     m.all_servers.Connect("cursor-changed", m.showShortServerInformation)
@@ -500,8 +497,8 @@ func (m *MainWindow) InitializeTabs() {
     tab_allsrv_hbox.PackStart(tab_all_srv_ctl_vbox, false, true, 5)
 
     // Checkbox for hiding offline servers.
-    m.all_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
-    m.all_servers_hide_offline.SetTooltipText("Hide offline servers on Servers tab")
+    m.all_servers_hide_offline = gtk.NewCheckButtonWithLabel(ctx.Translator.Translate("Hide offline servers", nil))
+    m.all_servers_hide_offline.SetTooltipText(ctx.Translator.Translate("Hide offline servers on Servers tab", nil))
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_offline, false, true, 5)
     m.all_servers_hide_offline.Clicked(m.hideOfflineAllServers)
     // Restore value of hide offline servers checkbox.
@@ -516,8 +513,8 @@ func (m *MainWindow) InitializeTabs() {
     }
 
     // Checkbox for hiding passworded servers.
-    m.all_servers_hide_private = gtk.NewCheckButtonWithLabel("Hide private servers")
-    m.all_servers_hide_private.SetTooltipText("Hide servers which requires password to enter")
+    m.all_servers_hide_private = gtk.NewCheckButtonWithLabel(ctx.Translator.Translate("Hide private servers", nil))
+    m.all_servers_hide_private.SetTooltipText(ctx.Translator.Translate("Hide servers which requires password to enter", nil))
     tab_all_srv_ctl_vbox.PackStart(m.all_servers_hide_private, false, true, 5)
     m.all_servers_hide_private.Clicked(m.hidePrivateAllServers)
     // Restore checkbox value.
@@ -532,8 +529,8 @@ func (m *MainWindow) InitializeTabs() {
 
     // Filtering by version.
     m.all_servers_version = gtk.NewComboBoxText()
-    m.all_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
-    m.all_servers_version.AppendText("All versions")
+    m.all_servers_version.SetTooltipText(ctx.Translator.Translate("Show only servers which uses selected version of Urban Terror", nil))
+    m.all_servers_version.AppendText(ctx.Translator.Translate("All versions", nil))
     for i := range common.SUPPORTED_URT_VERSIONS {
         m.all_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
     }
@@ -549,8 +546,8 @@ func (m *MainWindow) InitializeTabs() {
 
     // Filtering by gamemode
     m.all_servers_gamemode = gtk.NewComboBoxText()
-    m.all_servers_gamemode.SetTooltipText("Show only servers which uses selected game mode")
-    m.all_servers_gamemode.AppendText("All gamemodes")
+    m.all_servers_gamemode.SetTooltipText(ctx.Translator.Translate("Show only servers which uses selected game mode", nil))
+    m.all_servers_gamemode.AppendText(ctx.Translator.Translate("All gamemodes", nil))
     // Get sorted gamemodes keys.
     gm_keys := make([]int, 0, len(m.gamemodes))
     for i := range m.gamemodes {
@@ -582,10 +579,10 @@ func (m *MainWindow) InitializeTabs() {
     swin2 := gtk.NewScrolledWindow(nil, nil)
     swin2.Add(m.fav_servers)
     tab_fav_srv_hbox.PackStart(swin2, true, true, 5)
-    m.tab_widget.AppendPage(tab_fav_srv_hbox, gtk.NewLabel("Favorites"))
+    m.tab_widget.AppendPage(tab_fav_srv_hbox, gtk.NewLabel(ctx.Translator.Translate("Favorites", nil)))
     m.fav_servers.SetModel(m.fav_servers_store)
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Status", gtk.NewCellRendererPixbuf(), "pixbuf", 0))
-    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Public", gtk.NewCellRendererPixbuf(), "pixbuf", 1))
+    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Status", nil), gtk.NewCellRendererPixbuf(), "pixbuf", 0))
+    m.fav_servers.AppendColumn(gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate("Public", nil), gtk.NewCellRendererPixbuf(), "pixbuf", 1))
 
     // +2 because we have 2 static columns.
     fav_servers_columns_to_append := make([]*gtk.TreeViewColumn, len(m.column_names) + 2)
@@ -593,19 +590,19 @@ func (m *MainWindow) InitializeTabs() {
         // Check if we have column position saved. If so - use it.
         // Otherwise use default position.
         // Should be actual only for first launch.
-        position := ctx.Cfg.Cfg["/mainwindow/fav_servers/" + name + "_position"]
+        position := ctx.Cfg.Cfg["/mainwindow/fav_servers/" + ctx.Translator.Translate(name, nil) + "_position"]
         if len(position) == 0 {
             position = pos
         }
         position_int, _ := strconv.Atoi(position)
         // Same for width.
-        width := ctx.Cfg.Cfg["/mainwindow/fav_servers/" + name + "_width"]
+        width := ctx.Cfg.Cfg["/mainwindow/fav_servers/" + ctx.Translator.Translate(name, nil) + "_width"]
         if len(width) == 0 {
             width = "-1"
         }
         width_int, _ := strconv.Atoi(width)
 
-        col := gtk.NewTreeViewColumnWithAttributes(name, gtk.NewCellRendererText(), "markup", position_int)
+        col := gtk.NewTreeViewColumnWithAttributes(ctx.Translator.Translate(name, nil), gtk.NewCellRendererText(), "markup", position_int)
         // For some reason this cause panic on Windows, so disabling
         // default sorting here.
         if runtime.GOOS != "windows" {
@@ -629,6 +626,11 @@ func (m *MainWindow) InitializeTabs() {
         m.fav_servers.AppendColumn(fav_servers_columns_to_append[i])
     }
 
+    // Sorting functions.
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Favorites"][ctx.Translator.Translate("Name", nil)], m.sortServersByName)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Favorites"][ctx.Translator.Translate("Players", nil)], m.sortServersByPlayers)
+    m.all_servers_store_sortable.SetSortFunc(m.column_pos["Favorites"][ctx.Translator.Translate("Ping", nil)], m.sortServersByPing)
+
     // Selection changed signal, which will update server's short info pane.
     m.fav_servers.Connect("cursor-changed", m.showShortServerInformation)
 
@@ -637,8 +639,8 @@ func (m *MainWindow) InitializeTabs() {
     tab_fav_srv_hbox.PackStart(tab_fav_srv_ctl_vbox, false, true, 5)
 
     // Checkbox for hiding offline servers.
-    m.fav_servers_hide_offline = gtk.NewCheckButtonWithLabel("Hide offline servers")
-    m.fav_servers_hide_offline.SetTooltipText("Hide offline servers on Favorites tab")
+    m.fav_servers_hide_offline = gtk.NewCheckButtonWithLabel(ctx.Translator.Translate("Hide offline servers", nil))
+    m.fav_servers_hide_offline.SetTooltipText(ctx.Translator.Translate("Hide offline servers on Favorites tab", nil))
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_offline, false, true, 5)
     m.fav_servers_hide_offline.Clicked(m.hideOfflineFavoriteServers)
     // Restore value of hide offline servers checkbox.
@@ -653,8 +655,8 @@ func (m *MainWindow) InitializeTabs() {
     }
 
     // Checkbox for hiding passworded servers.
-    m.fav_servers_hide_private = gtk.NewCheckButtonWithLabel("Hide private servers")
-    m.fav_servers_hide_private.SetTooltipText("Hide servers which requires password to enter")
+    m.fav_servers_hide_private = gtk.NewCheckButtonWithLabel(ctx.Translator.Translate("Hide private servers", nil))
+    m.fav_servers_hide_private.SetTooltipText(ctx.Translator.Translate("Hide servers which requires password to enter", nil))
     tab_fav_srv_ctl_vbox.PackStart(m.fav_servers_hide_private, false, true, 5)
     m.fav_servers_hide_private.Clicked(m.hidePrivateFavoriteServers)
     // Restore checkbox value.
@@ -668,8 +670,8 @@ func (m *MainWindow) InitializeTabs() {
     }
 
     m.fav_servers_version = gtk.NewComboBoxText()
-    m.fav_servers_version.SetTooltipText("Show only servers which uses selected version of Urban Terror")
-    m.fav_servers_version.AppendText("All versions")
+    m.fav_servers_version.SetTooltipText(ctx.Translator.Translate("Show only servers which uses selected version of Urban Terror", nil))
+    m.fav_servers_version.AppendText(ctx.Translator.Translate("All versions", nil))
     for i := range common.SUPPORTED_URT_VERSIONS {
         m.fav_servers_version.AppendText(common.SUPPORTED_URT_VERSIONS[i])
     }
@@ -685,8 +687,8 @@ func (m *MainWindow) InitializeTabs() {
 
     // Filtering by gamemode
     m.fav_servers_gamemode = gtk.NewComboBoxText()
-    m.fav_servers_gamemode.SetTooltipText("Show only servers which uses selected game mode")
-    m.fav_servers_gamemode.AppendText("All gamemodes")
+    m.fav_servers_gamemode.SetTooltipText(ctx.Translator.Translate("Show only servers which uses selected game mode", nil))
+    m.fav_servers_gamemode.AppendText(ctx.Translator.Translate("All gamemodes", nil))
     // Gamemode keys already sorted while adding same filter to "Servers"
     // tab, so just re-use them.
     for i := range gm_keys {
@@ -752,8 +754,8 @@ func (m *MainWindow) InitializeToolbar() {
     button_update_all_servers_icon_pixbuf.SetSize(24, 24)
     button_update_all_servers_icon_pixbuf.Write(button_update_all_servers_icon_bytes)
     button_update_all_servers_icon := gtk.NewImageFromPixbuf(button_update_all_servers_icon_pixbuf.GetPixbuf())
-    button_update_all_servers := gtk.NewToolButton(button_update_all_servers_icon, "Update all servers")
-    button_update_all_servers.SetTooltipText("Update all servers in currently selected tab")
+    button_update_all_servers := gtk.NewToolButton(button_update_all_servers_icon, ctx.Translator.Translate("Update all servers", nil))
+    button_update_all_servers.SetTooltipText(ctx.Translator.Translate("Update all servers in currently selected tab", nil))
     button_update_all_servers.OnClicked(m.UpdateServers)
     m.toolbar.Insert(button_update_all_servers, 0)
 
@@ -762,8 +764,8 @@ func (m *MainWindow) InitializeToolbar() {
     button_update_one_server_icon_pixbuf.SetSize(24, 24)
     button_update_one_server_icon_pixbuf.Write(button_update_one_server_icon_bytes)
     button_update_one_server_icon := gtk.NewImageFromPixbuf(button_update_one_server_icon_pixbuf.GetPixbuf())
-    button_update_one_server := gtk.NewToolButton(button_update_one_server_icon, "Update selected server")
-    button_update_one_server.SetTooltipText("Update only selected server")
+    button_update_one_server := gtk.NewToolButton(button_update_one_server_icon, ctx.Translator.Translate("Update selected server", nil))
+    button_update_one_server.SetTooltipText(ctx.Translator.Translate("Update only selected server", nil))
     button_update_one_server.OnClicked(m.updateOneServer)
     m.toolbar.Insert(button_update_one_server, 1)
 
@@ -777,8 +779,8 @@ func (m *MainWindow) InitializeToolbar() {
     fav_button_icon_pixbuf.SetSize(24, 24)
     fav_button_icon_pixbuf.Write(fav_button_icon_bytes)
     fav_button_icon := gtk.NewImageFromPixbuf(fav_button_icon_pixbuf.GetPixbuf())
-    fav_button := gtk.NewToolButton(fav_button_icon, "Add to favorites")
-    fav_button.SetTooltipText("Add selected server to favorites")
+    fav_button := gtk.NewToolButton(fav_button_icon, ctx.Translator.Translate("Add to favorites", nil))
+    fav_button.SetTooltipText(ctx.Translator.Translate("Add selected server to favorites", nil))
     fav_button.OnClicked(m.addToFavorites)
     m.toolbar.Insert(fav_button, 3)
 
@@ -787,8 +789,8 @@ func (m *MainWindow) InitializeToolbar() {
     fav_edit_button_icon_pixbuf.SetSize(24, 24)
     fav_edit_button_icon_pixbuf.Write(fav_edit_button_icon_bytes)
     fav_edit_button_icon := gtk.NewImageFromPixbuf(fav_edit_button_icon_pixbuf.GetPixbuf())
-    fav_edit_button := gtk.NewToolButton(fav_edit_button_icon, "Edit favorite")
-    fav_edit_button.SetTooltipText("Edit selected favorite server")
+    fav_edit_button := gtk.NewToolButton(fav_edit_button_icon, ctx.Translator.Translate("Edit favorite", nil))
+    fav_edit_button.SetTooltipText(ctx.Translator.Translate("Edit selected favorite server", nil))
     fav_edit_button.OnClicked(m.editFavorite)
     m.toolbar.Insert(fav_edit_button, 4)
 
@@ -798,8 +800,8 @@ func (m *MainWindow) InitializeToolbar() {
     fav_delete_button_icon_pixbuf.SetSize(24, 24)
     fav_delete_button_icon_pixbuf.Write(fav_delete_button_icon_bytes)
     fav_delete_button_icon := gtk.NewImageFromPixbuf(fav_delete_button_icon_pixbuf.GetPixbuf())
-    fav_delete_button := gtk.NewToolButton(fav_delete_button_icon, "Remove from favorites")
-    fav_delete_button.SetTooltipText("Remove selected server from favorites")
+    fav_delete_button := gtk.NewToolButton(fav_delete_button_icon, ctx.Translator.Translate("Remove from favorites", nil))
+    fav_delete_button.SetTooltipText(ctx.Translator.Translate("Remove selected server from favorites", nil))
     fav_delete_button.OnClicked(m.deleteFromFavorites)
     m.toolbar.Insert(fav_delete_button, 5)
 
@@ -809,8 +811,8 @@ func (m *MainWindow) InitializeToolbar() {
     copy_srv_addr_button_icon_pixbuf.SetSize(24, 24)
     copy_srv_addr_button_icon_pixbuf.Write(copy_srv_addr_button_icon_bytes)
     copy_srv_addr_button_icon := gtk.NewImageFromPixbuf(copy_srv_addr_button_icon_pixbuf.GetPixbuf())
-    copy_srv_addr_button := gtk.NewToolButton(copy_srv_addr_button_icon, "Copy server's creds")
-    copy_srv_addr_button.SetTooltipText("Copy server's credentials to clipboard for sharing")
+    copy_srv_addr_button := gtk.NewToolButton(copy_srv_addr_button_icon, ctx.Translator.Translate("Copy server's creds", nil))
+    copy_srv_addr_button.SetTooltipText(ctx.Translator.Translate("Copy server's credentials to clipboard for sharing", nil))
     copy_srv_addr_button.OnClicked(m.copyServerCredentialsToClipboard)
     m.toolbar.Insert(copy_srv_addr_button, 6)
 
@@ -819,7 +821,7 @@ func (m *MainWindow) InitializeToolbar() {
     toolbar_separator_toolitem.SetExpand(true)
     m.toolbar.Insert(toolbar_separator_toolitem, 7)
     // Toolbar's label.
-    m.toolbar_label = gtk.NewLabel("URTrator is ready")
+    m.toolbar_label = gtk.NewLabel(ctx.Translator.Translate("URTrator is ready", nil))
     toolbar_label_toolitem := gtk.NewToolItem()
     toolbar_label_toolitem.Add(m.toolbar_label)
     m.toolbar.Insert(toolbar_label_toolitem, 8)
@@ -837,7 +839,7 @@ func (m *MainWindow) initializeTrayIcon() {
     m.tray_icon = gtk.NewStatusIconFromPixbuf(logo)
     m.tray_icon.SetName("URTrator")
     m.tray_icon.SetTitle("URTrator")
-    m.tray_icon.SetTooltipText("URTrator is ready")
+    m.tray_icon.SetTooltipText(ctx.Translator.Translate("URTrator is ready", nil))
 
     // Tray menu is still buggy on windows, so skipping initialization,
     // if OS is Windows.
@@ -845,7 +847,7 @@ func (m *MainWindow) initializeTrayIcon() {
         m.tray_menu = gtk.NewMenu()
 
         // Open/Close URTrator menu item.
-        open_close_item := gtk.NewMenuItemWithLabel("Show / Hide URTrator")
+        open_close_item := gtk.NewMenuItemWithLabel(ctx.Translator.Translate("Show / Hide URTrator", nil))
         open_close_item.Connect("activate", m.showHide)
         m.tray_menu.Append(open_close_item)
 
@@ -854,7 +856,7 @@ func (m *MainWindow) initializeTrayIcon() {
         m.tray_menu.Append(sep1)
 
         // Exit menu item.
-        exit_item := gtk.NewMenuItemWithLabel("Exit")
+        exit_item := gtk.NewMenuItemWithLabel(ctx.Translator.Translate("Exit", nil))
         exit_item.Connect("activate", m.window.Destroy)
         m.tray_menu.Append(exit_item)
 
