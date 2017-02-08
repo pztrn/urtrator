@@ -4,7 +4,7 @@
 
 Chat on Matrix: #gitter_urtrator=2Flobby:matrix.org (Gitter bridge).
 
-![Main Window](/doc/screenshots/0.1-main_window.png)
+![Main Window](/doc/screenshots/0.2-main_window.png)
 
 URTrator is a desktop application that should (eventually) replace
 Urban Terror's and IRC client interfaces for you, because they're
@@ -100,6 +100,10 @@ go install github.com/pztrn/urtrator
 
 Feel free to ping me everywhere you can and ask for adding a language
 for translation, if not already added [here](https://www.transifex.com/issuewarrior/urtrator/dashboard/).
+
+Also, if you're testing (or using) URTrator from source tree with `go run`
+you should also specify `URTRATOR_BINDIR` variable. This variable tells
+URTrator where it sources is and from where translations should be taken.
 
 ## GTK warnings in console
 
