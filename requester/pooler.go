@@ -45,7 +45,9 @@ func (p *Pooler) Initialize() {
 func (p *Pooler) PingOneServer(server_address string) {
     var wait sync.WaitGroup
 
+    Cache.ServersMutex.Lock()
     server := Cache.Servers[server_address].Server
+    Cache.ServersMutex.Unlock()
 
     wait.Add(1)
     go func(srv *datamodels.Server) {
@@ -63,6 +65,7 @@ func (p *Pooler) PingServers(servers_type string) {
     cur_requests := 0
     var wait sync.WaitGroup
 
+    Cache.ServersMutex.Lock()
     for _, server_to_ping := range Cache.Servers {
         if servers_type == "favorites" && server_to_ping.Server.Favorite != "1" {
             continue
@@ -90,6 +93,7 @@ func (p *Pooler) PingServers(servers_type string) {
         }(server_to_ping.Server)
     }
     wait.Wait()
+    Cache.ServersMutex.Unlock()
 }
 
 func (p *Pooler) pingServersExecutor(server *datamodels.Server) error {
@@ -132,7 +136,9 @@ func (p *Pooler) pingServersExecutor(server *datamodels.Server) error {
 func (p *Pooler) UpdateOneServer(server_address string) {
     var wait sync.WaitGroup
 
+    Cache.ServersMutex.Lock()
     server := Cache.Servers[server_address].Server
+    Cache.ServersMutex.Unlock()
 
     wait.Add(1)
     go func(server *datamodels.Server) {
@@ -151,6 +157,7 @@ func (p *Pooler) UpdateOneServer(server_address string) {
 func (p *Pooler) UpdateServers(servers_type string) {
     var wait sync.WaitGroup
 
+    Cache.ServersMutex.Lock()
     for _, server := range Cache.Servers {
         if servers_type == "favorites" && server.Server.Favorite != "1" {
             continue
@@ -162,6 +169,7 @@ func (p *Pooler) UpdateServers(servers_type string) {
         }(server.Server)
     }
     wait.Wait()
+    Cache.ServersMutex.Unlock()
     p.PingServers(servers_type)
     Eventer.LaunchEvent("flushServers", map[string]string{})
 

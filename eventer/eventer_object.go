@@ -17,6 +17,7 @@ import (
 
     // github
     "github.com/mattn/go-gtk/glib"
+    "github.com/mattn/go-gtk/gtk"
 )
 
 type Eventer struct {
@@ -54,6 +55,14 @@ func (e *Eventer) LaunchEvent(event string, data map[string]string) error {
         e.reallyLaunchEvent(event, data)
         return false
     })
+
+    for {
+        if gtk.EventsPending() {
+            gtk.MainIteration()
+        } else {
+            break
+        }
+    }
 
     return nil
 }

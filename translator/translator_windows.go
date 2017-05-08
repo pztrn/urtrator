@@ -28,7 +28,7 @@ import (
     "os"
 )
 
-// Detect language on Unices.
+// Detect language on Windows.
 func (t *Translator) detectLanguage() {
     fmt.Println("ToDo! Forcing en_US for now!")
     t.Language = "en_US"

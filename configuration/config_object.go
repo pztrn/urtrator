@@ -31,6 +31,9 @@ func (c *Config) initializePathsMac() {
     fmt.Println("Will use data path: " + data_path)
     c.TEMP["DATA"] = data_path
 
+    profile_path := path.Join(home_path, "Library", "Application Support", "Quake3", "q3ut4")
+    c.TEMP["DEFAULT_PROFILE_PATH"] = profile_path
+
     if _, err := os.Stat(data_path); os.IsNotExist(err) {
         os.MkdirAll(data_path, 0755)
     }
@@ -46,6 +49,9 @@ func (c *Config) initializePathsNix() {
     fmt.Println("Will use data path: " + data_path)
     c.TEMP["DATA"] = data_path
 
+    profile_path := path.Join(home_path, ".q3a", "q3ut4")
+    c.TEMP["DEFAULT_PROFILE_PATH"] = profile_path
+
     if _, err := os.Stat(data_path); os.IsNotExist(err) {
         os.MkdirAll(data_path, 0755)
     }
@@ -57,6 +63,10 @@ func (c *Config) initializePathsWin() {
     homedrive := os.Getenv("HOMEDRIVE")
     data_path := path.Join(homedrive, homepath_without_drive, "AppData", "Roaming", "URTrator")
     c.TEMP["DATA"] = data_path
+
+    // Verify it!
+    profile_path := path.Join(homedrive, homepath_without_drive, "AppData", "UrbanTerror43", "q3ut4")
+    c.TEMP["DEFAULT_PROFILE_PATH"] = profile_path
 
     if _, err := os.Stat(data_path); os.IsNotExist(err) {
         os.MkdirAll(data_path, 0755)

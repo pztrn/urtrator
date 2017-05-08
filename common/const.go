@@ -17,4 +17,5 @@ const (
 var SUPPORTED_URT_VERSIONS []string = []string{
     "4.2.023",
     "4.3.1",
+    "4.3.2",
 }

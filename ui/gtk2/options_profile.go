@@ -33,6 +33,8 @@ type OptionsProfile struct {
     profile_name *gtk.Entry
     // Binary path.
     binary_path *gtk.Entry
+    // Profile directory path.
+    profile_path *gtk.Entry
     // Urban Terror versions combobox
     urt_version_combo *gtk.ComboBoxText
     // Another X session?
@@ -42,6 +44,8 @@ type OptionsProfile struct {
 
     // File chooser dialog for selecting binary.
     f *gtk.FileChooserDialog
+    // Profile directory chooser dialog.
+    p *gtk.FileChooserDialog
 
     // Flags.
     // This is profile update?
@@ -56,6 +60,15 @@ func (op *OptionsProfile) browseForBinary() {
     op.f = gtk.NewFileChooserDialog(ctx.Translator.Translate("URTrator - Select Urban Terror binary", nil), op.window, gtk.FILE_CHOOSER_ACTION_OPEN, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
     op.f.Response(op.browseForBinaryHelper)
     op.f.Run()
+}
+
+func (op *OptionsProfile) browseForProfile() {
+    op.p = gtk.NewFileChooserDialog(ctx.Translator.Translate("URTrator - Select Urban Terror profile path", nil), op.window, gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+    op.p.Response(op.browseForProfileHelper)
+    if op.profile_path.GetText() != "" {
+        op.p.SetCurrentFolder(op.profile_path.GetText())
+    }
+    op.p.Run()
 }
 
 func (op *OptionsProfile) browseForBinaryHelper() {
@@ -122,6 +135,16 @@ func (op *OptionsProfile) browseForBinaryHelper() {
             }
         }
     }
+
+    if op.profile_path.GetText() == "" {
+        op.profile_path.SetText(ctx.Cfg.TEMP["DEFAULT_PROFILE_PATH"])
+    }
+}
+
+func (op *OptionsProfile) browseForProfileHelper() {
+    directory := op.p.GetFilename()
+    op.profile_path.SetText(directory)
+    op.p.Destroy()
 }
 
 func (op *OptionsProfile) closeByCancel() {
@@ -148,7 +171,7 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.window.SetPosition(gtk.WIN_POS_CENTER)
     op.window.SetIcon(logo)
 
-    op.table = gtk.NewTable(6, 2, false)
+    op.table = gtk.NewTable(7, 2, false)
     op.table.SetRowSpacings(2)
 
     // Profile name.
@@ -173,8 +196,8 @@ func (op *OptionsProfile) Initialize(update bool) {
     op.urt_version_combo = gtk.NewComboBoxText()
     op.urt_version_combo.SetTooltipText(urt_version_tooltip)
     op.urt_version_combo.AppendText("4.2.023")
-    op.urt_version_combo.AppendText("4.3.0")
     op.urt_version_combo.AppendText("4.3.1")
+    op.urt_version_combo.AppendText("4.3.2")
     op.urt_version_combo.SetActive(2)
     op.table.Attach(op.urt_version_combo, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
 
@@ -195,34 +218,53 @@ func (op *OptionsProfile) Initialize(update bool) {
     binpath_hbox.PackStart(button_select_binary, false, true, 5)
     op.table.Attach(binpath_hbox, 1, 2, 2, 3, gtk.FILL, gtk.FILL, 0, 0)
 
+    // Path to Urban Terror's profile directory.
+    // Should be in user's home directory automatically, but can be
+    // changed :).
+    select_profile_path_tooltip := ctx.Translator.Translate("Urban Terror profile path.\n\nSpecify directory where configs, demos\nand downloaded maps are located.\n\nDefault: $HOME/.q3ut4", nil)
+    profile_path_hbox := gtk.NewHBox(false, 0)
+    profile_path_label := gtk.NewLabel(ctx.Translator.Translate("Profile path:", nil))
+    profile_path_label.SetTooltipText(select_profile_path_tooltip)
+    profile_path_label.SetAlignment(0, 0)
+    op.table.Attach(profile_path_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
+
+    op.profile_path = gtk.NewEntry()
+    op.profile_path.SetTooltipText(select_profile_path_tooltip)
+    button_select_path := gtk.NewButtonWithLabel(ctx.Translator.Translate("Browse", nil))
+    button_select_path.SetTooltipText(select_profile_path_tooltip)
+    button_select_path.Clicked(op.browseForProfile)
+    profile_path_hbox.PackStart(op.profile_path, true, true, 5)
+    profile_path_hbox.PackStart(button_select_path, false, true, 5)
+    op.table.Attach(profile_path_hbox, 1, 2, 3, 4, gtk.FILL, gtk.FILL, 0, 0)
+
     // Should we use additional X session?
     another_x_tooltip := ctx.Translator.Translate("If this is checked, Urban Terror will be launched in another X session.\n\nThis could help if you're experiencing visual lag, glitches and FPS drops under compositing WMs, like Mutter and KWin.", nil)
     another_x_label := gtk.NewLabel(ctx.Translator.Translate("Start Urban Terror in another X session?", nil))
     another_x_label.SetTooltipText(another_x_tooltip)
     another_x_label.SetAlignment(0, 0)
-    op.table.Attach(another_x_label, 0, 1, 3, 4, gtk.FILL, gtk.SHRINK, 5, 5)
+    op.table.Attach(another_x_label, 0, 1, 4, 5, gtk.FILL, gtk.SHRINK, 5, 5)
     op.another_x_session = gtk.NewCheckButtonWithLabel("")
     op.another_x_session.SetTooltipText(another_x_tooltip)
     // macOS and Windows can't do that :).
     if runtime.GOOS != "linux" {
         op.another_x_session.SetSensitive(false)
     }
-    op.table.Attach(op.another_x_session, 1, 2, 3, 4, gtk.FILL, gtk.FILL, 5, 5)
+    op.table.Attach(op.another_x_session, 1, 2, 4, 5, gtk.FILL, gtk.FILL, 5, 5)
 
     // Additional game parameters.
     params_tooltip := ctx.Translator.Translate("Additional parameters that will be passed to Urban Terror executable.", nil)
     params_label := gtk.NewLabel(ctx.Translator.Translate("Additional parameters:", nil))
     params_label.SetTooltipText(params_tooltip)
     params_label.SetAlignment(0, 0)
-    op.table.Attach(params_label, 0, 1, 4, 5, gtk.FILL, gtk.SHRINK, 5, 5)
+    op.table.Attach(params_label, 0, 1, 5, 6, gtk.FILL, gtk.SHRINK, 5, 5)
 
     op.additional_parameters = gtk.NewEntry()
     op.additional_parameters.SetTooltipText(params_tooltip)
-    op.table.Attach(op.additional_parameters, 1, 2, 4, 5, gtk.FILL, gtk.FILL, 5, 5)
+    op.table.Attach(op.additional_parameters, 1, 2, 5, 6, gtk.FILL, gtk.FILL, 5, 5)
 
     // Invisible thing.
     inv_label := gtk.NewLabel("")
-    op.table.Attach(inv_label, 1, 2, 5, 6, gtk.EXPAND, gtk.FILL, 5, 5)
+    op.table.Attach(inv_label, 1, 2, 6, 7, gtk.EXPAND, gtk.FILL, 5, 5)
 
     // The buttons.
     buttons_box := gtk.NewHBox(false, 0)
@@ -266,13 +308,18 @@ func (op *OptionsProfile) InitializeUpdate(profile_name string) {
     op.profile_name.SetText(profile.Name)
     op.binary_path.SetText(profile.Binary)
     op.additional_parameters.SetText(profile.Additional_params)
+    if profile.Profile_path == "" {
+        op.profile_path.SetText(ctx.Cfg.TEMP["DEFAULT_PROFILE_PATH"])
+    } else {
+        op.profile_path.SetText(profile.Profile_path)
+    }
     if profile.Second_x_session == "1" {
         op.another_x_session.SetActive(true)
     }
 
-    if profile.Version == "4.3.0" {
+    if profile.Version == "4.3.1" {
         op.urt_version_combo.SetActive(1)
-    } else if profile.Version == "4.3.1" {
+    } else if profile.Version == "4.3.2" {
         op.urt_version_combo.SetActive(2)
     } else {
         op.urt_version_combo.SetActive(0)
@@ -332,6 +379,12 @@ func (op *OptionsProfile) saveProfile() {
             ctx.Cache.Profiles[profile_name].Profile.Version = op.urt_version_combo.GetActiveText()
             ctx.Cache.Profiles[profile_name].Profile.Binary = op.binary_path.GetText()
             ctx.Cache.Profiles[profile_name].Profile.Additional_params = op.additional_parameters.GetText()
+
+            if op.profile_path.GetText() == "" {
+                ctx.Cache.Profiles[profile_name].Profile.Profile_path = "~/.q3ut4"
+            } else {
+                ctx.Cache.Profiles[profile_name].Profile.Profile_path = op.profile_path.GetText()
+            }
 
             if op.another_x_session.GetActive() {
                 ctx.Cache.Profiles[profile_name].Profile.Second_x_session = "1"

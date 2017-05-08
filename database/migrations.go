@@ -49,6 +49,7 @@ func migrate_full(db *Database, version int) {
     if version == 7 {seven_to_eight(db); version = 8}
     if version == 8 {eight_to_nine(db); version = 9}
     if version == 9 {nine_to_ten(db); version = 10}
+    if version == 10 {ten_to_eleven(db); version = 11}
 }
 
 // Initial database structure.
@@ -122,4 +123,11 @@ func nine_to_ten(db *Database) {
     fmt.Println("Upgrading database from 9 to 10...")
     db.Db.MustExec("ALTER TABLE servers ADD bots VARCHAR(2) NOT NULL DEFAULT '0'")
     db.Db.MustExec("UPDATE database SET version=10")
+}
+
+// Urban terror's profile path.
+func ten_to_eleven(db *Database) {
+    fmt.Println("Upgrading database from 10 to 11...")
+    db.Db.MustExec("ALTER TABLE urt_profiles ADD profile_path VARCHAR(4096) NOT NULL DEFAULT '~/.q3ut4'")
+    db.Db.MustExec("UPDATE database SET version=11")
 }

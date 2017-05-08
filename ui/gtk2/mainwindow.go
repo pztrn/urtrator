@@ -153,6 +153,10 @@ type MainWindow struct {
     // Used when user changed active tab, to show information about
     // server which is selected on activated tab.
     use_other_servers_tab bool
+    // Does servers updating already in progress?
+    // This helps to prevent random crashes when more than one
+    // updating process in progress.
+    servers_already_updating bool
 }
 
 func (m *MainWindow) addToFavorites() {
@@ -617,6 +621,8 @@ func (m *MainWindow) serversUpdateCompleted(data map[string]string) {
         m.fav_servers.Emit("cursor-changed")
     }
 
+    m.servers_already_updating = false
+
 }
 
 func (m *MainWindow) setQuickConnectDetails(data map[string]string) {
@@ -628,8 +634,10 @@ func (m *MainWindow) setQuickConnectDetails(data map[string]string) {
 func (m *MainWindow) setToolbarLabelText(data map[string]string) {
     fmt.Println("Setting toolbar's label text...")
     if strings.Contains(data["text"], "<markup>") {
+        fmt.Println("With markup")
         m.toolbar_label.SetMarkup(data["text"])
     } else {
+        fmt.Println("Without markup")
         m.toolbar_label.SetLabel(data["text"])
     }
 }
@@ -792,6 +800,11 @@ func (m *MainWindow) unlockInterface() {
 }
 
 func (m *MainWindow) updateOneServer() {
+    if m.servers_already_updating {
+        return
+    }
+    m.servers_already_updating = true
+
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Updating selected server...", nil) + "</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     srv_address := m.getIpFromServersList(current_tab)
@@ -803,6 +816,11 @@ func (m *MainWindow) updateOneServer() {
 
 // Triggered when "Update all servers" button is clicked.
 func (m *MainWindow) UpdateServers() {
+    if m.servers_already_updating {
+        return
+    }
+    m.servers_already_updating = true
+
     ctx.Eventer.LaunchEvent("setToolbarLabelText", map[string]string{"text": "<markup><span foreground=\"red\" font_weight=\"bold\">" + ctx.Translator.Translate("Updating servers...", nil) + "</span></markup>"})
     current_tab := m.tab_widget.GetTabLabelText(m.tab_widget.GetNthPage(m.tab_widget.GetCurrentPage()))
     fmt.Println("Updating servers on tab '" + current_tab + "'...")

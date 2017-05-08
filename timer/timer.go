@@ -77,12 +77,14 @@ func (t *Timer) executeTasks() {
 }
 
 func (t *Timer) GetTaskStatus(task_name string) bool {
-    _, ok := t.tasks[task_name]
+    t.tasksMutex.Lock()
+    task, ok := t.tasks[task_name]
+    t.tasksMutex.Unlock()
     if !ok {
         return false
     }
 
-    return t.tasks[task_name].InProgress
+    return task.InProgress
 }
 
 func (t *Timer) Initialize() {
@@ -105,7 +107,9 @@ func (t *Timer) initializeStorage() {
 }
 
 func (t *Timer) RemoveTask(task_name string) {
+    t.tasksMutex.Lock()
     _, ok := t.tasks[task_name]
+    t.tasksMutex.Unlock()
     if !ok {
         return
     }
@@ -116,10 +120,12 @@ func (t *Timer) RemoveTask(task_name string) {
 }
 
 func (t *Timer) SetTaskNotInProgress(data map[string]string) {
+    t.tasksMutex.Lock()
     _, ok := t.tasks[data["task_name"]]
     if !ok {
         return
     }
 
     t.tasks[data["task_name"]].InProgress = false
+    t.tasksMutex.Unlock()
 }

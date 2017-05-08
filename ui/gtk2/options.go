@@ -194,7 +194,7 @@ func (o *OptionsDialog) initializeAppearanceTab() {
     }
     o.language_combo.SetActive(lang_active)
 
-    appearance_table.Attach(o.language_combo, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
+    appearance_table.Attach(o.language_combo, 1, 2, 0, 1, gtk.FILL | gtk.EXPAND, gtk.FILL, 5, 5)
 
     appearance_vbox.PackStart(appearance_table, false, true, 0)
     o.tab_widget.AppendPage(appearance_vbox, gtk.NewLabel(ctx.Translator.Translate("Appearance", nil)))
@@ -212,7 +212,7 @@ func (o *OptionsDialog) initializeGeneralTab() {
 
     o.show_tray_icon = gtk.NewCheckButtonWithLabel("")
     o.show_tray_icon.SetTooltipText(ctx.Translator.Translate("Show icon in tray", nil))
-    general_table.Attach(o.show_tray_icon, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 5, 5)
+    general_table.Attach(o.show_tray_icon, 1, 2, 0, 1, gtk.FILL | gtk.EXPAND, gtk.FILL, 5, 5)
 
     // Autoupdate checkbox.
     autoupdate_tooltip := ctx.Translator.Translate("Should URTrator check for updates and update itself? Not working now.", nil)
@@ -223,7 +223,7 @@ func (o *OptionsDialog) initializeGeneralTab() {
 
     o.autoupdate = gtk.NewCheckButtonWithLabel("")
     o.autoupdate.SetTooltipText(autoupdate_tooltip)
-    general_table.Attach(o.autoupdate, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
+    general_table.Attach(o.autoupdate, 1, 2, 1, 2, gtk.FILL | gtk.EXPAND, gtk.FILL, 5, 5)
 
     // Vertical separator.
     sep := gtk.NewVBox(false, 0)
@@ -260,7 +260,7 @@ func (o *OptionsDialog) initializeServersOptionsTab() {
 
     o.servers_autoupdate = gtk.NewCheckButtonWithLabel("")
     o.servers_autoupdate.SetTooltipText(servers_autoupdate_cb_tooptip)
-    servers_updating_table.Attach(o.servers_autoupdate, 1, 2, 1, 2, gtk.FILL, gtk.FILL, 5, 5)
+    servers_updating_table.Attach(o.servers_autoupdate, 1, 2, 1, 2, gtk.EXPAND | gtk.FILL, gtk.FILL, 5, 5)
 
     // Servers update timeout.
     servers_autoupdate_timeout_tooltip := ctx.Translator.Translate("Timeout which will trigger servers information update, in minutes.", nil)
@@ -417,7 +417,7 @@ func (o *OptionsDialog) ShowOptionsDialog() {
     o.window.SetTitle(ctx.Translator.Translate("URTrator - Options", nil))
     o.window.Connect("destroy", o.closeOptionsDialogWithDiscard)
     o.window.SetModal(true)
-    o.window.SetSizeRequest(550, 400)
+    o.window.SetSizeRequest(750, 600)
     o.window.SetPosition(gtk.WIN_POS_CENTER)
     o.window.SetIcon(logo)
 

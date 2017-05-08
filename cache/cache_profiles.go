@@ -44,9 +44,7 @@ func (c *Cache) deleteProfile(data map[string]string) {
     _, ok1 := c.Profiles[data["profile_name"]]
     if !ok1 {
         fmt.Println("Profile deleted")
-        Database.Unlock()
         Database.Db.MustExec(Database.Db.Rebind("DELETE FROM urt_profiles WHERE name=?"), data["profile_name"])
-        Database.Lock()
     } else {
         fmt.Println("Something goes wrong! Profile is still here!")
     }
@@ -81,7 +79,6 @@ func (c *Cache) FlushProfiles(data map[string]string) {
         }
     }
 
-    Database.Unlock()
     tx := Database.Db.MustBegin()
     fmt.Println("Adding new profiles...")
     for _, profile := range new_profiles {
@@ -92,7 +89,6 @@ func (c *Cache) FlushProfiles(data map[string]string) {
         tx.NamedExec("UPDATE urt_profiles SET name=:name, version=:version, binary=:binary, second_x_session=:second_x_session, additional_parameters=:additional_parameters WHERE name=:name", &profile)
     }
     tx.Commit()
-    Database.Lock()
     fmt.Println("Done")
 }
 

@@ -233,7 +233,7 @@ func (m *MainWindow) InitializeMainMenu() {
     about_menu.Append(about_menu_sep1)
 
     // Drop databases thing.
-    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("Drop database data...", nil))
+    about_menu_drop_database_data_item := gtk.NewMenuItemWithMnemonic(ctx.Translator.Translate("Drop local caches and settings", nil))
     about_menu.Append(about_menu_drop_database_data_item)
     about_menu_drop_database_data_item.Connect("activate", m.dropDatabasesData)
 }
@@ -335,6 +335,7 @@ func (m *MainWindow) initializeStorages() {
     // Application isn't initialized.
     m.initialized = false
     m.use_other_servers_tab = false
+    m.servers_already_updating = false
     // Gamemodes.
     m.gamemodes = make(map[string]string)
     m.gamemodes = map[string]string{
