@@ -176,7 +176,7 @@ func (m *MainWindow) initializeTabs() {
     serverspagewidget := widgets.NewQWidget(nil, core.Qt__Widget)
     serverspagewidget_policy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Expanding, widgets.QSizePolicy__Expanding, widgets.QSizePolicy__DefaultType)
     serverspagewidget.SetSizePolicy(serverspagewidget_policy)
-    m.tabs.AddTab(serverspagewidget, "Servers")
+    m.tabs.AddTab(serverspagewidget, ctx.Translator.Translate("Servers", nil))
     serverspagewidget_layout := widgets.NewQHBoxLayout()
     serverspagewidget_layout.SetContentsMargins(4, 4, 4, 4)
     serverspagewidget.SetLayout(serverspagewidget_layout)
@@ -200,7 +200,7 @@ func (m *MainWindow) initializeTabs() {
 
     // Hide offline servers checkbox.
     m.all_servers_hide_offline = widgets.NewQCheckBox(nil)
-    m.all_servers_hide_offline.SetText("Hide offline servers")
+    m.all_servers_hide_offline.SetText(ctx.Translator.Translate("Hide offline servers", nil))
     m.all_servers_hide_offline.SetSizePolicy(filters_size_policy)
     serverspagewidget_filters_layout.AddWidget(m.all_servers_hide_offline, 0, core.Qt__AlignTop)
     // Restore value of hide offline servers checkbox.
@@ -216,7 +216,7 @@ func (m *MainWindow) initializeTabs() {
 
     // Hide private servers.
     m.all_servers_hide_private = widgets.NewQCheckBox(nil)
-    m.all_servers_hide_private.SetText("Hide private servers")
+    m.all_servers_hide_private.SetText(ctx.Translator.Translate("Hide private servers", nil))
     m.all_servers_hide_private.SetSizePolicy(filters_size_policy)
     serverspagewidget_filters_layout.AddWidget(m.all_servers_hide_private, 0, core.Qt__AlignTop)
     // Restore checkbox value.
@@ -251,7 +251,7 @@ func (m *MainWindow) initializeTabs() {
     // Create a strings slice with gamemodes, using sorted keys.
     gmodes := make([]string, 0, len(m.gamemodes))
     // Add "All gamemodes" as first gamemode :)
-    gmodes = append(gmodes, "All gamemodes")
+    gmodes = append(gmodes, ctx.Translator.Translate("All gamemodes", nil))
     for i := range gm_keys {
         ks := strconv.Itoa(gm_keys[i])
         gmodes = append(gmodes, m.gamemodes[ks])
@@ -268,7 +268,7 @@ func (m *MainWindow) initializeTabs() {
     favoritespagewidget := widgets.NewQWidget(nil, core.Qt__Widget)
     favoritespagewidget_policy := widgets.NewQSizePolicy2(widgets.QSizePolicy__Expanding, widgets.QSizePolicy__Expanding, widgets.QSizePolicy__DefaultType)
     favoritespagewidget.SetSizePolicy(favoritespagewidget_policy)
-    m.tabs.AddTab(favoritespagewidget, "Favorites")
+    m.tabs.AddTab(favoritespagewidget, ctx.Translator.Translate("Favorites", nil))
     favoritespagewidget_layout := widgets.NewQHBoxLayout()
     favoritespagewidget_layout.SetContentsMargins(4, 4, 4, 4)
     favoritespagewidget.SetLayout(favoritespagewidget_layout)
@@ -292,7 +292,7 @@ func (m *MainWindow) initializeTabs() {
 
     // Hide offline servers checkbox.
     m.fav_servers_hide_offline = widgets.NewQCheckBox(nil)
-    m.fav_servers_hide_offline.SetText("Hide offline servers")
+    m.fav_servers_hide_offline.SetText(ctx.Translator.Translate("Hide offline servers", nil))
     m.fav_servers_hide_offline.SetSizePolicy(filters_size_policy)
     favoritespagewidget_filters_layout.AddWidget(m.fav_servers_hide_offline, 0, core.Qt__AlignTop)
     // Restore it's value.
@@ -307,7 +307,7 @@ func (m *MainWindow) initializeTabs() {
 
     // Hide private servers.
     m.fav_servers_hide_private = widgets.NewQCheckBox(nil)
-    m.fav_servers_hide_private.SetText("Hide private servers")
+    m.fav_servers_hide_private.SetText(ctx.Translator.Translate("Hide private servers", nil))
     m.fav_servers_hide_private.SetSizePolicy(filters_size_policy)
     favoritespagewidget_filters_layout.AddWidget(m.fav_servers_hide_private, 0, core.Qt__AlignTop)
     fav_servers_hide_private_cb_val, ok := ctx.Cfg.Cfg["/serverslist/favorite/hide_private"]

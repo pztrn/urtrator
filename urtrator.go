@@ -14,6 +14,7 @@ import (
     "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/context"
     "github.com/pztrn/urtrator/ui/gtk2"
+    //"github.com/pztrn/urtrator/ui/qt5"
 
     // stdlib
     "fmt"

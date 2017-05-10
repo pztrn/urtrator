@@ -393,6 +393,7 @@ func (op *OptionsProfile) saveProfile() {
             }
         }
     }
+    ctx.Eventer.LaunchEvent("flushProfiles", nil)
     ctx.Eventer.LaunchEvent("loadProfilesIntoOptionsWindow", map[string]string{})
     ctx.Eventer.LaunchEvent("loadProfilesIntoMainWindow", map[string]string{})
     op.window.Destroy()

@@ -34,14 +34,18 @@ func (c *Cache) CreateProfile(name string) {
 func (c *Cache) deleteProfile(data map[string]string) {
     fmt.Println("Deleting profile " + data["profile_name"])
 
+    c.ProfilesMutex.Lock()
     _, ok := c.Profiles[data["profile_name"]]
+    c.ProfilesMutex.Unlock()
     if ok {
         c.ProfilesMutex.Lock()
         delete(c.Profiles, data["profile_name"])
         c.ProfilesMutex.Unlock()
     }
 
+    c.ProfilesMutex.Lock()
     _, ok1 := c.Profiles[data["profile_name"]]
+    c.ProfilesMutex.Unlock()
     if !ok1 {
         fmt.Println("Profile deleted")
         Database.Db.MustExec(Database.Db.Rebind("DELETE FROM urt_profiles WHERE name=?"), data["profile_name"])
@@ -61,32 +65,30 @@ func (c *Cache) FlushProfiles(data map[string]string) {
 
     cached_profiles := make(map[string]*datamodels.Profile)
     for i := range raw_profiles {
-        cached_profiles[raw_profiles[i].Name] = &raw_profiles[i]
+        cached_profiles[raw_profiles[i].Name] = c.Profiles[raw_profiles[i].Name].Profile
     }
 
     new_profiles := make(map[string]*datamodels.Profile)
 
+    c.ProfilesMutex.Lock()
     for _, profile := range c.Profiles {
         _, ok := cached_profiles[profile.Profile.Name]
         if !ok {
             fmt.Println("Flushing new profile " + profile.Profile.Name)
-            new_profiles[profile.Profile.Name] = &datamodels.Profile{}
-            new_profiles[profile.Profile.Name].Name = profile.Profile.Name
-            new_profiles[profile.Profile.Name].Version = profile.Profile.Version
-            new_profiles[profile.Profile.Name].Binary = profile.Profile.Binary
-            new_profiles[profile.Profile.Name].Second_x_session = profile.Profile.Second_x_session
-            new_profiles[profile.Profile.Name].Additional_params = profile.Profile.Additional_params
+            new_profiles[profile.Profile.Name] = profile.Profile
         }
     }
+    c.ProfilesMutex.Unlock()
 
     tx := Database.Db.MustBegin()
     fmt.Println("Adding new profiles...")
     for _, profile := range new_profiles {
-        tx.NamedExec("INSERT INTO urt_profiles (name, version, binary, second_x_session, additional_parameters) VALUES (:name, :version, :binary, :second_x_session, :additional_parameters)", &profile)
+        tx.NamedExec("INSERT INTO urt_profiles (name, version, binary, second_x_session, additional_parameters, profile_path) VALUES (:name, :version, :binary, :second_x_session, :additional_parameters, :profile_path)", &profile)
     }
     fmt.Println("Updating existing profiles...")
     for _, profile := range cached_profiles {
-        tx.NamedExec("UPDATE urt_profiles SET name=:name, version=:version, binary=:binary, second_x_session=:second_x_session, additional_parameters=:additional_parameters WHERE name=:name", &profile)
+        fmt.Println(fmt.Sprintf("%+v", profile))
+        tx.NamedExec("UPDATE urt_profiles SET name=:name, version=:version, binary=:binary, second_x_session=:second_x_session, additional_parameters=:additional_parameters, profile_path=:profile_path WHERE name=:name", &profile)
     }
     tx.Commit()
     fmt.Println("Done")
@@ -101,15 +103,12 @@ func (c *Cache) LoadProfiles(data map[string]string) {
         fmt.Println(err.Error())
     }
 
+    c.ProfilesMutex.Lock()
     for _, profile := range raw_profiles {
         c.Profiles[profile.Name] = &cachemodels.Profile{}
-        c.Profiles[profile.Name].Profile = &datamodels.Profile{}
-        c.Profiles[profile.Name].Profile.Name = profile.Name
-        c.Profiles[profile.Name].Profile.Version = profile.Version
-        c.Profiles[profile.Name].Profile.Binary = profile.Binary
-        c.Profiles[profile.Name].Profile.Second_x_session = profile.Second_x_session
-        c.Profiles[profile.Name].Profile.Additional_params = profile.Additional_params
+        c.Profiles[profile.Name].Profile = &profile
     }
+    c.ProfilesMutex.Unlock()
 
     fmt.Println("Load completed. Loaded " + strconv.Itoa(len(c.Profiles)) + " profiles.")
 }

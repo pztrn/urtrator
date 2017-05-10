@@ -363,12 +363,14 @@ func (o *OptionsDialog) loadProfiles(data map[string]string) {
     fmt.Println("Loading profiles...")
     o.profiles_list_store.Clear()
 
+    ctx.Cache.ProfilesMutex.Lock()
     for _, p := range ctx.Cache.Profiles {
         var iter gtk.TreeIter
         o.profiles_list_store.Append(&iter)
         o.profiles_list_store.Set(&iter, 0, p.Profile.Name)
         o.profiles_list_store.Set(&iter, 1, p.Profile.Version)
     }
+    ctx.Cache.ProfilesMutex.Unlock()
 }
 
 func (o *OptionsDialog) saveAppearance() {
