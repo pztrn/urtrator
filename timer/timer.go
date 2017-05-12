@@ -91,6 +91,7 @@ func (t *Timer) Initialize() {
     fmt.Println("Initializing timer...")
 
     t.initializeStorage()
+    Eventer.AddEventHandler("taskDone", t.SetTaskNotInProgress)
 
     ticker := time.NewTicker(time.Second * 1)
     go func() {
@@ -98,8 +99,6 @@ func (t *Timer) Initialize() {
             go t.executeTasks()
         }
     }()
-
-    Eventer.AddEventHandler("taskDone", t.SetTaskNotInProgress)
 }
 
 func (t *Timer) initializeStorage() {

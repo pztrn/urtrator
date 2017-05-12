@@ -47,8 +47,8 @@ func (c *Cache) deleteProfile(data map[string]string) {
     _, ok1 := c.Profiles[data["profile_name"]]
     c.ProfilesMutex.Unlock()
     if !ok1 {
-        fmt.Println("Profile deleted")
         Database.Db.MustExec(Database.Db.Rebind("DELETE FROM urt_profiles WHERE name=?"), data["profile_name"])
+        fmt.Println("Profile deleted")
     } else {
         fmt.Println("Something goes wrong! Profile is still here!")
     }

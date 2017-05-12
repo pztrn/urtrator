@@ -18,6 +18,7 @@ import (
     "strings"
 
     // Local
+    "github.com/pztrn/urtrator/cachemodels"
     "github.com/pztrn/urtrator/common"
     "github.com/pztrn/urtrator/datamodels"
 
@@ -247,8 +248,17 @@ func (f *FavoriteDialog) saveFavorite() error {
     }
 
     fmt.Println("Saving favorite server...")
+    fmt.Println(fmt.Sprintf("%+v", f.server))
 
     key := strings.Split(f.server_address.GetText(), ":")[0] + ":" + port
+
+    // Check if server already in cache. This would replace data about it.
+    _, ok := ctx.Cache.Servers[key]
+    if !ok {
+        ctx.Cache.Servers[key] = &cachemodels.Server{}
+        ctx.Cache.Servers[key].Server = &datamodels.Server{}
+    }
+
     ctx.Cache.Servers[key].Server.Ip = f.server.Ip
     ctx.Cache.Servers[key].Server.Port = f.server.Port
     ctx.Cache.Servers[key].Server.Name = f.server.Name
