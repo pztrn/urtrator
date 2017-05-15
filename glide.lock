@@ -1,0 +1,34 @@
+hash: 70afc85692c35e634c2b935b6183e205c6c8a41a28dee9ec89af2bb01c932682
+updated: 2017-05-14T19:25:50.391136144-07:00
+imports:
+- name: github.com/couchbase/goutils
+  version: 82b8055850965344f7d89d8a0abe364ac09dfa5e
+  subpackages:
+  - platform
+- name: github.com/jmoiron/sqlx
+  version: d9bd385d68c068f1fabb5057e3dedcbcbb039d0f
+  subpackages:
+  - reflectx
+- name: github.com/mattn/go-gtk
+  version: 4d185b2c694f34edad33988eddaf1314bfd9f132
+  subpackages:
+  - gdk
+  - gdkpixbuf
+  - glib
+  - gtk
+  - pango
+- name: github.com/mattn/go-pointer
+  version: 46aacf851f34ad5bb503ee6d162915f3a5a5962c
+- name: github.com/mattn/go-sqlite3
+  version: cf7286f069c3ef596efcc87781a4653a2e7607bd
+- name: github.com/therecipe/qt
+  version: d0995a0002fadf7a6dc29ea85bffe3b0224757b6
+  subpackages:
+  - core
+  - gui
+  - widgets
+- name: golang.org/x/net
+  version: 84f0e6f92b10139f986b1756e149a7d9de270cdc
+  subpackages:
+  - context
+testImports: []

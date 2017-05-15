@@ -1,0 +1,48 @@
+version: 1.0.{build}
+clone_depth: 1
+clone_folder: C:\work\src\github.com\therecipe\qt
+install:
+- cmd: >-
+    set PATH=%PATH%;C:\Qt\Qt5.8.0\Tools\mingw530_32\bin
+
+    set GOPATH=C:\work
+
+
+    set QT=qt-opensource-windows-x86-android-5.8.0.exe
+
+    curl -sL --retry 10 --retry-delay 10 -o %TMP%\%QT% https://download.qt.io/official_releases/qt/5.8/5.8.0/%QT%
+
+    %TMP%\%QT% --script %GOPATH%\src\github.com\therecipe\qt\internal\ci\iscript.qs
+
+    DEL %TMP%\%QT% /Q
+
+
+    set SDK=tools_r25.2.5-windows.zip
+
+    curl -sL --retry 10 --retry-delay 10 -o %TMP%\%SDK% https://dl.google.com/android/repository/%SDK%
+
+    7z x %TMP%\%SDK% -oC:\android-sdk-windows\
+
+    DEL %TMP%\%SDK% /Q
+
+
+    C:\android-sdk-windows\tools\android.bat list sdk
+
+    echo y | C:\android-sdk-windows\tools\android.bat -s update sdk -f -u -t 1,2,3,4,5,6
+
+    echo y | C:\android-sdk-windows\tools\android.bat -s update sdk -a -f -u -t 5
+
+    set NDK=android-ndk-r14b-windows-x86_64.zip
+
+    curl -sL --retry 10 --retry-delay 10 -o %TMP%\%NDK% https://dl.google.com/android/repository/%NDK%
+
+    7z x %TMP%\%NDK% -oC:\
+
+    DEL %TMP%\%NDK% /Q
+build_script:
+- cmd: >-
+    go get -v github.com/therecipe/qt/cmd/...
+
+    %GOPATH%\bin\qtsetup full desktop
+
+    %GOPATH%\bin\qtsetup full android
