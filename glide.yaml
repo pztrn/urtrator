@@ -1,0 +1,17 @@
+package: github.com/pztrn/urtrator
+import:
+- package: github.com/couchbase/goutils
+  subpackages:
+  - platform
+- package: github.com/jmoiron/sqlx
+- package: github.com/mattn/go-gtk
+  subpackages:
+  - gdk
+  - gdkpixbuf
+  - glib
+  - gtk
+- package: github.com/mattn/go-sqlite3
+- package: github.com/therecipe/qt
+  subpackages:
+  - core
+  - widgets
