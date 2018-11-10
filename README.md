@@ -76,6 +76,12 @@ go install gitlab.com/pztrn/urtrator
 
 # Important information
 
+## macOS users - problems with Retina displays and blurry font
+
+If you're on macOS and experiencing blurry font - apply [Retinizer](http://retinizer.mikelpr.com/) on .app. This will patch everything to use current screen DPI.
+
+This isn't applied by default because it **might** create problems on displays with standart DPI.
+
 ## Translation
 
 Feel free to ping me everywhere you can and ask for adding a language for translation, if not already added [here](https://www.transifex.com/issuewarrior/urtrator/dashboard/).
