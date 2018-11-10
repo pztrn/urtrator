@@ -10,12 +10,12 @@
 package common
 
 const (
-    URTRATOR_VERSION = "0.2.0-devel"
+	URTRATOR_VERSION = "0.2.0-devel"
 )
 
 // Self-named.
 var SUPPORTED_URT_VERSIONS []string = []string{
-    "4.2.023",
-    "4.3.1",
-    "4.3.2",
+	"4.2.023",
+	"4.3.3",
+	"4.3.4",
 }

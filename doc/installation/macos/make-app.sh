@@ -50,13 +50,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # Okay, let's compile.
-echo "Getting URTrator (and dependencies) sources"
-go get -u -v -d gitlab.com/pztrn/urtrator
-if [ $? -ne 0 ]; then
-    echo "Failed to get URTrator sources"
-    exit 1
-fi
-
 echo "Building URTrator..."
 go install -v gitlab.com/pztrn/urtrator
 if [ $? -ne 0 ]; then
@@ -108,11 +101,12 @@ echo -e '#!/bin/bash\ncd "${0%/*}"\nexport GTK_PATH="../lib/gtk-2.0/"\nexport GT
 chmod +x ./URTrator.app/Contents/MacOS/urtrator.sh
 #####################################################################
 # Copying helper binaries.
-cp /usr/local/Cellar/gdk-pixbuf/2.36.0_2/bin/gdk-pixbuf-query-loaders ./URTrator.app/Contents/MacOS/
+cp /usr/local/Cellar/gdk-pixbuf/2.38.0/bin/gdk-pixbuf-query-loaders ./URTrator.app/Contents/MacOS/
 
 # Copy GTK engines as needed for default theme.
 cp /usr/local/lib/gtk-2.0/2.10.0/engines/* ./URTrator.app/Contents/Framework/
-cp /usr/local/Cellar/gdk-pixbuf/2.36.0_2/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so ./URTrator.app/Contents/Framework/
+cp /usr/local/lib/gtk-2.0/modules/* ./URTrator.app/Contents/Framework/
+cp /usr/local/Cellar/gdk-pixbuf/2.38.0/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so ./URTrator.app/Contents/Framework/
 chmod -R 0644 ./URTrator.app/Contents/Framework/*
 chmod -R 0755 ./URTrator.app/Contents/MacOS/*
 
