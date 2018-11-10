@@ -10,6 +10,6 @@
 package configuration
 
 func New() *Config {
-    c := Config{}
-    return &c
+	c := Config{}
+	return &c
 }

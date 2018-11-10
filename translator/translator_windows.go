@@ -22,23 +22,23 @@
 package translator
 
 import (
-    // stdlib
-    "fmt"
-    "path/filepath"
-    "os"
+	// stdlib
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
 // Detect language on Windows.
 func (t *Translator) detectLanguage() {
-    fmt.Println("ToDo! Forcing en_US for now!")
-    t.Language = "en_US"
+	fmt.Println("ToDo! Forcing en_US for now!")
+	t.Language = "en_US"
 }
 
 func (t *Translator) detectTranslationsDirectory() error {
-    // Translations MUST reside in directory neear binary!
-    // ToDo: more checks.
-    dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-    t.translationsPath = filepath.Join(dir, "translations")
+	// Translations MUST reside in directory neear binary!
+	// ToDo: more checks.
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	t.translationsPath = filepath.Join(dir, "translations")
 
-    return nil
+	return nil
 }

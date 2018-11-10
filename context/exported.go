@@ -10,6 +10,6 @@
 package context
 
 func New() *Context {
-    c := Context{}
-    return &c
+	c := Context{}
+	return &c
 }

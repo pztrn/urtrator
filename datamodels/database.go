@@ -10,5 +10,5 @@
 package datamodels
 
 type Database struct {
-    Version             string      `db:"version"`
+	Version string `db:"version"`
 }

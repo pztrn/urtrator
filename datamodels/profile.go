@@ -10,16 +10,16 @@
 package datamodels
 
 type Profile struct {
-    // Profile name.
-    Name                string          `db:"name"`
-    // Game version.
-    Version             string          `db:"version"`
-    // Binary path.
-    Binary              string          `db:"binary"`
-    // Will we use second X session?
-    Second_x_session    string          `db:"second_x_session"`
-    // Additional game parameters we will pass.
-    Additional_params   string          `db:"additional_parameters"`
-    // Profile path.
-    Profile_path        string          `db:"profile_path"`
+	// Profile name.
+	Name string `db:"name"`
+	// Game version.
+	Version string `db:"version"`
+	// Binary path.
+	Binary string `db:"binary"`
+	// Will we use second X session?
+	Second_x_session string `db:"second_x_session"`
+	// Additional game parameters we will pass.
+	Additional_params string `db:"additional_parameters"`
+	// Profile path.
+	Profile_path string `db:"profile_path"`
 }

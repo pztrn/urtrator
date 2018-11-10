@@ -10,6 +10,6 @@
 package datamodels
 
 type Configuration struct {
-    Key             string      `db:"key"`
-    Value           string      `db:"value"`
+	Key   string `db:"key"`
+	Value string `db:"value"`
 }

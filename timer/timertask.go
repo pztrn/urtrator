@@ -10,25 +10,25 @@
 package timer
 
 import (
-    // stdlib
-    "time"
+	// stdlib
+	"time"
 )
 
 type TimerTask struct {
-    // Task name.
-    Name        string
-    // Task timeout, in seconds.
-    Timeout     int
-    // What we should call?
-    // This should be an event name.
-    Callee      string
+	// Task name.
+	Name string
+	// Task timeout, in seconds.
+	Timeout int
+	// What we should call?
+	// This should be an event name.
+	Callee string
 
-    // Internal variables, used by Timer.
-    // These variables can be defined, but they will be most likely
-    // overrided after first task launch.
-    // Next task launch time.
-    NextLaunch  time.Time
-    // Is task currently executed?
-    // Kinda alternative to mutex.
-    InProgress  bool
+	// Internal variables, used by Timer.
+	// These variables can be defined, but they will be most likely
+	// overrided after first task launch.
+	// Next task launch time.
+	NextLaunch time.Time
+	// Is task currently executed?
+	// Kinda alternative to mutex.
+	InProgress bool
 }

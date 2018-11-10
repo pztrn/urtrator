@@ -10,66 +10,66 @@
 package eventer
 
 import (
-    crand "crypto/rand"
-    "errors"
-    "fmt"
-    //"reflect"
+	crand "crypto/rand"
+	"errors"
+	"fmt"
+	//"reflect"
 
-    // github
-    "github.com/mattn/go-gtk/glib"
-    "github.com/mattn/go-gtk/gtk"
+	// github
+	"github.com/mattn/go-gtk/glib"
+	"github.com/mattn/go-gtk/gtk"
 )
 
 type Eventer struct {
-    // Events
-    events map[string]map[string]func(data map[string]string)
+	// Events
+	events map[string]map[string]func(data map[string]string)
 }
 
 func (e *Eventer) AddEventHandler(event string, handler func(data map[string]string)) {
-    _, ok := e.events[event]
-    if !ok {
-        e.events[event] = make(map[string]func(data map[string]string))
-    }
-    event_id_raw := make([]byte, 16)
-    crand.Read(event_id_raw)
-    event_id := fmt.Sprintf("%x", event_id_raw)
-    e.events[event][event_id] = handler
+	_, ok := e.events[event]
+	if !ok {
+		e.events[event] = make(map[string]func(data map[string]string))
+	}
+	event_id_raw := make([]byte, 16)
+	crand.Read(event_id_raw)
+	event_id := fmt.Sprintf("%x", event_id_raw)
+	e.events[event][event_id] = handler
 }
 
 func (e *Eventer) Initialize() {
-    e.initializeStorage()
+	e.initializeStorage()
 }
 
 func (e *Eventer) initializeStorage() {
-    e.events = make(map[string]map[string]func(data map[string]string))
+	e.events = make(map[string]map[string]func(data map[string]string))
 }
 
 func (e *Eventer) LaunchEvent(event string, data map[string]string) error {
-    _, ok := e.events[event]
-    if !ok {
-        return errors.New("Event " + event + " not found!")
-    }
+	_, ok := e.events[event]
+	if !ok {
+		return errors.New("Event " + event + " not found!")
+	}
 
-    fmt.Println("Launching event " + event)
-    glib.IdleAdd(func() bool {
-        e.reallyLaunchEvent(event, data)
-        return false
-    })
+	fmt.Println("Launching event " + event)
+	glib.IdleAdd(func() bool {
+		e.reallyLaunchEvent(event, data)
+		return false
+	})
 
-    for {
-        if gtk.EventsPending() {
-            gtk.MainIteration()
-        } else {
-            break
-        }
-    }
+	for {
+		if gtk.EventsPending() {
+			gtk.MainIteration()
+		} else {
+			break
+		}
+	}
 
-    return nil
+	return nil
 }
 
 func (e *Eventer) reallyLaunchEvent(event string, data map[string]string) {
-    fmt.Println("Really launching event " + event + "...")
-    for _, val := range e.events[event] {
-        val(data)
-    }
+	fmt.Println("Really launching event " + event + "...")
+	for _, val := range e.events[event] {
+		val(data)
+	}
 }

@@ -10,6 +10,6 @@
 package colorizer
 
 func New() *Colorizer {
-    c := Colorizer {}
-    return &c
+	c := Colorizer{}
+	return &c
 }

@@ -10,6 +10,6 @@
 package eventer
 
 func New() *Eventer {
-    e := Eventer{}
-    return &e
+	e := Eventer{}
+	return &e
 }

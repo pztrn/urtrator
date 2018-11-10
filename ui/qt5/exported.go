@@ -10,16 +10,16 @@
 package ui
 
 import (
-    // local
-    "github.com/pztrn/urtrator/context"
+	// local
+	"github.com/pztrn/urtrator/context"
 )
 
 var (
-    ctx *context.Context
+	ctx *context.Context
 )
 
 func NewMainWindow(c *context.Context) *MainWindow {
-    ctx = c
-    m := MainWindow{}
-    return &m
+	ctx = c
+	m := MainWindow{}
+	return &m
 }

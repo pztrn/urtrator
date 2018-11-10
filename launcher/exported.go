@@ -10,6 +10,6 @@
 package launcher
 
 func New() *Launcher {
-    l := Launcher{}
-    return &l
+	l := Launcher{}
+	return &l
 }
