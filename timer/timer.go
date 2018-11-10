@@ -46,16 +46,16 @@ func (t *Timer) AddTask(task *TimerTask) error {
 
 	_, ok := t.tasks[task.Name]
 	if ok {
-		error_text := "Task '" + task.Name + "' already exist! Ignoring..."
-		fmt.Println(error_text)
-		return errors.New(error_text)
+		errorText := "Task '" + task.Name + "' already exist! Ignoring..."
+		fmt.Println(errorText)
+		return errors.New(errorText)
 	}
 
 	task.InProgress = false
 
-	curtime := time.Now()
-	nextlaunch := curtime.Add(time.Duration(task.Timeout) * time.Second)
-	task.NextLaunch = nextlaunch
+	curTime := time.Now()
+	nextLaunch := curTime.Add(time.Duration(task.Timeout) * time.Second)
+	task.NextLaunch = nextLaunch
 
 	t.tasksMutex.Lock()
 	t.tasks[task.Name] = task
@@ -67,20 +67,21 @@ func (t *Timer) AddTask(task *TimerTask) error {
 
 func (t *Timer) executeTasks() {
 	t.tasksMutex.Lock()
-	for task_name, task := range t.tasks {
+	defer t.tasksMutex.Unlock()
+	for taskName, task := range t.tasks {
 		// Check if task should be run.
 		curtime := time.Now()
 		diff := curtime.Sub(task.NextLaunch)
 		//fmt.Println(diff)
 		if diff > 0 {
-			fmt.Println("Checking task '" + task_name + "'...")
+			fmt.Println("Checking task '" + taskName + "'...")
 			// Check if task is already running.
 			if task.InProgress {
 				fmt.Println("Already executing, skipping...")
 				continue
 			}
 
-			fmt.Println("Launching task '" + task_name + "'...")
+			fmt.Println("Launching task '" + taskName + "'...")
 			task.InProgress = true
 			Eventer.LaunchEvent(task.Callee, map[string]string{})
 
@@ -89,12 +90,11 @@ func (t *Timer) executeTasks() {
 			task.NextLaunch = nextlaunch
 		}
 	}
-	t.tasksMutex.Unlock()
 }
 
-func (t *Timer) GetTaskStatus(task_name string) bool {
+func (t *Timer) GetTaskStatus(taskName string) bool {
 	t.tasksMutex.Lock()
-	task, ok := t.tasks[task_name]
+	task, ok := t.tasks[taskName]
 	t.tasksMutex.Unlock()
 	if !ok {
 		return false
@@ -111,7 +111,7 @@ func (t *Timer) Initialize() {
 
 	ticker := time.NewTicker(time.Second * 1)
 	go func() {
-		for _ = range ticker.C {
+		for range ticker.C {
 			go t.executeTasks()
 		}
 	}()
@@ -121,26 +121,26 @@ func (t *Timer) initializeStorage() {
 	t.tasks = make(map[string]*TimerTask)
 }
 
-func (t *Timer) RemoveTask(task_name string) {
+func (t *Timer) RemoveTask(taskName string) {
 	t.tasksMutex.Lock()
-	_, ok := t.tasks[task_name]
+	_, ok := t.tasks[taskName]
 	t.tasksMutex.Unlock()
 	if !ok {
 		return
 	}
 
 	t.tasksMutex.Lock()
-	delete(t.tasks, task_name)
+	delete(t.tasks, taskName)
 	t.tasksMutex.Unlock()
 }
 
 func (t *Timer) SetTaskNotInProgress(data map[string]string) {
 	t.tasksMutex.Lock()
-	_, ok := t.tasks[data["task_name"]]
+	defer t.tasksMutex.Unlock()
+	_, ok := t.tasks[data["taskName"]]
 	if !ok {
 		return
 	}
 
-	t.tasks[data["task_name"]].InProgress = false
-	t.tasksMutex.Unlock()
+	t.tasks[data["taskName"]].InProgress = false
 }
