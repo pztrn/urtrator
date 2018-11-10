@@ -10,21 +10,21 @@
 package ui
 
 import (
-    // local
-    "github.com/pztrn/urtrator/context"
+	// local
+	"gitlab.com/pztrn/urtrator/context"
 
-    // Other
-    "github.com/mattn/go-gtk/gdkpixbuf"
+	// Other
+	"github.com/mattn/go-gtk/gdkpixbuf"
 )
 
 var (
-    ctx *context.Context
+	ctx *context.Context
 
-    logo *gdkpixbuf.Pixbuf
+	logo *gdkpixbuf.Pixbuf
 )
 
 func NewMainWindow(c *context.Context) *MainWindow {
-    ctx = c
-    m := MainWindow{}
-    return &m
+	ctx = c
+	m := MainWindow{}
+	return &m
 }

@@ -10,23 +10,23 @@
 package timer
 
 import (
-    // stdlib
-    "fmt"
+	// stdlib
+	"fmt"
 
-    // local
-    "github.com/pztrn/urtrator/configuration"
-    "github.com/pztrn/urtrator/eventer"
+	// local
+	"gitlab.com/pztrn/urtrator/configuration"
+	"gitlab.com/pztrn/urtrator/eventer"
 )
 
 var (
-    Cfg *configuration.Config
-    Eventer *eventer.Eventer
+	Cfg     *configuration.Config
+	Eventer *eventer.Eventer
 )
 
 func New(e *eventer.Eventer, cc *configuration.Config) *Timer {
-    Cfg = cc
-    Eventer = e
-    fmt.Println("Creating Timer object...")
-    t := Timer{}
-    return &t
+	Cfg = cc
+	Eventer = e
+	fmt.Println("Creating Timer object...")
+	t := Timer{}
+	return &t
 }

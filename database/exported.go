@@ -10,16 +10,16 @@
 package database
 
 import (
-    // Local
-    "github.com/pztrn/urtrator/configuration"
+	// Local
+	"gitlab.com/pztrn/urtrator/configuration"
 )
 
 var (
-    cfg *configuration.Config
+	cfg *configuration.Config
 )
 
 func New(c *configuration.Config) *Database {
-    cfg = c
-    d := Database{}
-    return &d
+	cfg = c
+	d := Database{}
+	return &d
 }

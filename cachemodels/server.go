@@ -10,20 +10,20 @@
 package cachemodels
 
 import (
-    // local
-    "github.com/pztrn/urtrator/datamodels"
+	// local
+	"gitlab.com/pztrn/urtrator/datamodels"
 
-    // Other
-    "github.com/mattn/go-gtk/gtk"
+	// Other
+	"github.com/mattn/go-gtk/gtk"
 )
 
 type Server struct {
-    Server *datamodels.Server
-    AllServersIter *gtk.TreeIter
-    AllServersIterSet bool
-    AllServersIterInList bool
+	Server               *datamodels.Server
+	AllServersIter       *gtk.TreeIter
+	AllServersIterSet    bool
+	AllServersIterInList bool
 
-    FavServersIter *gtk.TreeIter
-    FavServersIterSet bool
-    FavServersIterInList bool
+	FavServersIter       *gtk.TreeIter
+	FavServersIterSet    bool
+	FavServersIterInList bool
 }

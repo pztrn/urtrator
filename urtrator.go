@@ -10,26 +10,26 @@
 package main
 
 import (
-    // local
-    "github.com/pztrn/urtrator/common"
-    "github.com/pztrn/urtrator/context"
-    "github.com/pztrn/urtrator/ui/gtk2"
-    //"github.com/pztrn/urtrator/ui/qt5"
+	// local
+	"gitlab.com/pztrn/urtrator/common"
+	"gitlab.com/pztrn/urtrator/context"
+	"gitlab.com/pztrn/urtrator/ui/gtk2"
+	//"github.com/pztrn/urtrator/ui/qt5"
 
-    // stdlib
-    "fmt"
-    "runtime"
+	// stdlib
+	"fmt"
+	"runtime"
 )
 
 func main() {
-    fmt.Println("This is URTrator, version " + common.URTRATOR_VERSION)
+	fmt.Println("This is URTrator, version " + common.URTRATOR_VERSION)
 
-    numCPUs := runtime.NumCPU()
-    runtime.GOMAXPROCS(numCPUs)
+	numCPUs := runtime.NumCPU()
+	runtime.GOMAXPROCS(numCPUs)
 
-    ctx := context.New()
-    ctx.Initialize()
+	ctx := context.New()
+	ctx.Initialize()
 
-    ui := ui.NewMainWindow(ctx)
-    ui.Initialize()
+	ui := ui.NewMainWindow(ctx)
+	ui.Initialize()
 }

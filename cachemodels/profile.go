@@ -10,10 +10,10 @@
 package cachemodels
 
 import (
-    // local
-    "github.com/pztrn/urtrator/datamodels"
+	// local
+	"gitlab.com/pztrn/urtrator/datamodels"
 )
 
 type Profile struct {
-    Profile *datamodels.Profile
+	Profile *datamodels.Profile
 }

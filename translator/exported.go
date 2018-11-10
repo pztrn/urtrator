@@ -10,17 +10,17 @@
 package translator
 
 import (
-    // local
-    "github.com/pztrn/urtrator/configuration"
+	// local
+	"gitlab.com/pztrn/urtrator/configuration"
 )
 
 var (
-    // Configuration.
-    cfg *configuration.Config
+	// Configuration.
+	cfg *configuration.Config
 )
 
 func New(c *configuration.Config) *Translator {
-    cfg = c
-    t := Translator{}
-    return &t
+	cfg = c
+	t := Translator{}
+	return &t
 }

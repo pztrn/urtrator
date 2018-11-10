@@ -51,14 +51,14 @@ fi
 
 # Okay, let's compile.
 echo "Getting URTrator (and dependencies) sources"
-go get -u -v -d github.com/pztrn/urtrator
+go get -u -v -d gitlab.com/pztrn/urtrator
 if [ $? -ne 0 ]; then
     echo "Failed to get URTrator sources"
     exit 1
 fi
 
 echo "Building URTrator..."
-go install -v github.com/pztrn/urtrator
+go install -v gitlab.com/pztrn/urtrator
 if [ $? -ne 0 ]; then
     echo "Failed to build URTrator! Please, create a new bug report at https://github.com/pztrn/urtrator and attach FULL console output!"
     exit 1
@@ -69,7 +69,7 @@ mkdir -p URTrator.app/Contents/{MacOS,Framework,Resources}
 # Copying URTrator binary
 cp $GOPATH/bin/urtrator URTrator.app/Contents/MacOS/
 # Copying main resources.
-cp $GOPATH/src/github.com/pztrn/urtrator/artwork/urtrator.icns ./URTrator.app/Contents/Resources/
+cp $GOPATH/src/gitlab.com/pztrn/urtrator/artwork/urtrator.icns ./URTrator.app/Contents/Resources/
 cp -R ./Resources/themes ./URTrator.app/Contents/Resources/
 
 #####################################################################
@@ -90,7 +90,7 @@ INFOPLIST='<?xml version="1.0" encoding="UTF-8"?>
   <key>CFBundleIconFile</key>
   <string>urtrator.icns</string>
   <key>CFBundleShortVersionString</key>
-  <string>0.1.0</string>
+  <string>0.2.0</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>

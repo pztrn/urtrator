@@ -10,40 +10,40 @@
 package ui
 
 import (
-    // local
-    "github.com/pztrn/urtrator/common"
+	// local
+	"gitlab.com/pztrn/urtrator/common"
 
-    // other
-    "github.com/mattn/go-gtk/gtk"
+	// other
+	"github.com/mattn/go-gtk/gtk"
 )
 
 func ShowAboutDialog() {
-    ad := gtk.NewAboutDialog()
+	ad := gtk.NewAboutDialog()
 
-    ad.SetProgramName("URTrator")
-    ad.SetComments(ctx.Translator.Translate("Urban Terror servers browser and game launcher", nil))
-    ad.SetVersion(common.URTRATOR_VERSION)
-    ad.SetWebsite("http://urtrator.pztrn.name")
-    ad.SetLogo(logo)
+	ad.SetProgramName("URTrator")
+	ad.SetComments(ctx.Translator.Translate("Urban Terror servers browser and game launcher", nil))
+	ad.SetVersion(common.URTRATOR_VERSION)
+	ad.SetWebsite("https://gitlab.com/pztrn/urtrator")
+	ad.SetLogo(logo)
 
-    // ToDo: put it in plain text files.
-    var authors []string
-    authors = append(authors, "Stanislav N. aka pztrn - project creator, main developer.")
-    ad.SetAuthors(authors)
+	// ToDo: put it in plain text files.
+	var authors []string
+	authors = append(authors, "Stanislav N. aka pztrn - project creator, main developer.")
+	ad.SetAuthors(authors)
 
-    var artists []string
-    artists = append(artists, "UrTConnector team, for great icons and allowing to use them.")
-    ad.SetArtists(artists)
+	var artists []string
+	artists = append(artists, "UrTConnector team, for great icons and allowing to use them.")
+	ad.SetArtists(artists)
 
-    var documenters []string
-    documenters = append(documenters, "No one at this moment")
-    ad.SetDocumenters(documenters)
+	var documenters []string
+	documenters = append(documenters, "No one at this moment")
+	ad.SetDocumenters(documenters)
 
-    ad.SetCopyright("Stanislav N. aka pztrn")
-    ad.SetLicense(GPL_LICENSE)
+	ad.SetCopyright("Stanislav N. aka pztrn")
+	ad.SetLicense(GPL_LICENSE)
 
-    ad.Run()
-    ad.Destroy()
+	ad.Run()
+	ad.Destroy()
 }
 
 var GPL_LICENSE = `

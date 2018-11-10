@@ -10,19 +10,19 @@
 package cache
 
 import (
-    // local
-    event "github.com/pztrn/urtrator/eventer"
-    "github.com/pztrn/urtrator/database"
+	// local
+	"gitlab.com/pztrn/urtrator/database"
+	event "gitlab.com/pztrn/urtrator/eventer"
 )
 
 var (
-    Database *database.Database
-    Eventer *event.Eventer
+	Database *database.Database
+	Eventer  *event.Eventer
 )
 
 func New(d *database.Database, e *event.Eventer) *Cache {
-    Database = d
-    Eventer = e
-    c := Cache{}
-    return &c
+	Database = d
+	Eventer = e
+	c := Cache{}
+	return &c
 }

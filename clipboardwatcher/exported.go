@@ -9,20 +9,20 @@
 // ToDo: put full text of license here.
 package clipboardwatcher
 
-import(
-    // local
-    "github.com/pztrn/urtrator/cache"
-    "github.com/pztrn/urtrator/eventer"
+import (
+	// local
+	"gitlab.com/pztrn/urtrator/cache"
+	"gitlab.com/pztrn/urtrator/eventer"
 )
 
 var (
-    Cache *cache.Cache
-    Eventer *eventer.Eventer
+	Cache   *cache.Cache
+	Eventer *eventer.Eventer
 )
 
 func New(c *cache.Cache, e *eventer.Eventer) *ClipboardWatcher {
-    Cache = c
-    Eventer = e
-    cw := ClipboardWatcher{}
-    return &cw
+	Cache = c
+	Eventer = e
+	cw := ClipboardWatcher{}
+	return &cw
 }

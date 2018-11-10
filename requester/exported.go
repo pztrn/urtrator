@@ -10,29 +10,29 @@
 package requester
 
 import (
-    // stdlib
-    "fmt"
+	// stdlib
+	"fmt"
 
-    // local
-    "github.com/pztrn/urtrator/cache"
-    "github.com/pztrn/urtrator/configuration"
-    "github.com/pztrn/urtrator/eventer"
-    "github.com/pztrn/urtrator/timer"
+	// local
+	"gitlab.com/pztrn/urtrator/cache"
+	"gitlab.com/pztrn/urtrator/configuration"
+	"gitlab.com/pztrn/urtrator/eventer"
+	"gitlab.com/pztrn/urtrator/timer"
 )
 
 var (
-    Cache *cache.Cache
-    Cfg *configuration.Config
-    Eventer *eventer.Eventer
-    Timer *timer.Timer
+	Cache   *cache.Cache
+	Cfg     *configuration.Config
+	Eventer *eventer.Eventer
+	Timer   *timer.Timer
 )
 
 func New(c *cache.Cache, e *eventer.Eventer, cc *configuration.Config, t *timer.Timer) *Requester {
-    Cache = c
-    Cfg = cc
-    Eventer = e
-    Timer = t
-    fmt.Println("Creating Requester object...")
-    r := Requester{}
-    return &r
+	Cache = c
+	Cfg = cc
+	Eventer = e
+	Timer = t
+	fmt.Println("Creating Requester object...")
+	r := Requester{}
+	return &r
 }
