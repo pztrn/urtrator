@@ -1,12 +1,28 @@
-// URTator - Urban Terror server browser and game launcher, written in
+// URTrator - Urban Terror server browser and game launcher, written in
 // Go.
 //
-// Copyright (c) 2016, Stanslav N. a.k.a pztrn (or p0z1tr0n)
-// All rights reserved.
+// Copyright (c) 2016-2018, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
+// URTrator contributors.
 //
-// Licensed under Terms and Conditions of GNU General Public License
-// version 3 or any higher.
-// ToDo: put full text of license here.
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject
+// to the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+// OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package common
 
 var SERVER_OFFLINE = `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`
