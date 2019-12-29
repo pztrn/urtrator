@@ -1,6 +1,6 @@
 # URTrator
 
-![Main Window](/doc/screenshots/0.2-main_window.png)
+![Main Window](doc/screenshots/0.2-main_window.png)
 
 URTrator is a desktop application that should (eventually) replace Urban Terror's and IRC client interfaces for you, because they're pretty shitty :).
 
@@ -53,8 +53,8 @@ URTrator written in Go and GTK2, so you should have them installed. Make sure yo
 Then execute:
 
 ```
-go get -d gitlab.com/pztrn/urtrator
-go install gitlab.com/pztrn/urtrator
+go get -d go.dev.pztrn.name/urtrator
+go install go.dev.pztrn.name/urtrator
 ```
 
 First command will get sources of URTrator and dependencies, second command will build executable for you and place it in ``$GOROOT/bin``.
@@ -65,13 +65,13 @@ First command will get sources of URTrator and dependencies, second command will
 ``go get`` will do initial repo clone for you, but flag ``-u`` is required to get updated URTrator source. So, for updating sources just issue:
 
 ```
-go get -d -u gitlab.com/pztrn/urtrator
+go get -d -u go.dev.pztrn.name/urtrator
 ```
 
 Again, this will only update sources. To build executable you have to issue:
 
 ```
-go install gitlab.com/pztrn/urtrator
+go install go.dev.pztrn.name/urtrator
 ```
 
 # Important information
