@@ -1,7 +1,7 @@
 // URTrator - Urban Terror server browser and game launcher, written in
 // Go.
 //
-// Copyright (c) 2016-2018, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
+// Copyright (c) 2016-2020, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
 // URTrator contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -27,8 +27,8 @@ package clipboardwatcher
 
 import (
 	// local
-	"gitlab.com/pztrn/urtrator/cache"
-	"gitlab.com/pztrn/urtrator/eventer"
+	"go.dev.pztrn.name/urtrator/cache"
+	"go.dev.pztrn.name/urtrator/eventer"
 )
 
 var (

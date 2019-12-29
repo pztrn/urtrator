@@ -51,7 +51,7 @@ fi
 
 # Okay, let's compile.
 echo "Building URTrator..."
-go install -v gitlab.com/pztrn/urtrator
+go install -v go.dev.pztrn.name/urtrator
 if [ $? -ne 0 ]; then
     echo "Failed to build URTrator! Please, create a new bug report at https://github.com/pztrn/urtrator and attach FULL console output!"
     exit 1
@@ -62,7 +62,7 @@ mkdir -p URTrator.app/Contents/{MacOS,Framework,Resources}
 # Copying URTrator binary
 cp $GOPATH/bin/urtrator URTrator.app/Contents/MacOS/
 # Copying main resources.
-cp $GOPATH/src/gitlab.com/pztrn/urtrator/artwork/urtrator.icns ./URTrator.app/Contents/Resources/
+cp $GOPATH/src/go.dev.pztrn.name/urtrator/artwork/urtrator.icns ./URTrator.app/Contents/Resources/
 cp -R ./Resources/themes ./URTrator.app/Contents/Resources/
 
 #####################################################################

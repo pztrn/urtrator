@@ -1,7 +1,7 @@
 // URTrator - Urban Terror server browser and game launcher, written in
 // Go.
 //
-// Copyright (c) 2016-2018, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
+// Copyright (c) 2016-2020, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
 // URTrator contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -31,7 +31,7 @@ import (
 	"sort"
 
 	// Local
-	"gitlab.com/pztrn/urtrator/ioq3dataparser"
+	"go.dev.pztrn.name/urtrator/ioq3dataparser"
 
 	// Other
 	"github.com/mattn/go-gtk/glib"

@@ -1,7 +1,7 @@
 // URTrator - Urban Terror server browser and game launcher, written in
 // Go.
 //
-// Copyright (c) 2016-2018, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
+// Copyright (c) 2016-2020, Stanslav N. a.k.a pztrn (or p0z1tr0n) and
 // URTrator contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -31,16 +31,16 @@ import (
 	"fmt"
 
 	// local
-	"gitlab.com/pztrn/urtrator/cache"
-	"gitlab.com/pztrn/urtrator/clipboardwatcher"
-	"gitlab.com/pztrn/urtrator/colorizer"
-	"gitlab.com/pztrn/urtrator/configuration"
-	"gitlab.com/pztrn/urtrator/database"
-	"gitlab.com/pztrn/urtrator/eventer"
-	"gitlab.com/pztrn/urtrator/launcher"
-	"gitlab.com/pztrn/urtrator/requester"
-	"gitlab.com/pztrn/urtrator/timer"
-	"gitlab.com/pztrn/urtrator/translator"
+	"go.dev.pztrn.name/urtrator/cache"
+	"go.dev.pztrn.name/urtrator/clipboardwatcher"
+	"go.dev.pztrn.name/urtrator/colorizer"
+	"go.dev.pztrn.name/urtrator/configuration"
+	"go.dev.pztrn.name/urtrator/database"
+	"go.dev.pztrn.name/urtrator/eventer"
+	"go.dev.pztrn.name/urtrator/launcher"
+	"go.dev.pztrn.name/urtrator/requester"
+	"go.dev.pztrn.name/urtrator/timer"
+	"go.dev.pztrn.name/urtrator/translator"
 
 	// Github
 	"github.com/mattn/go-gtk/gtk"
